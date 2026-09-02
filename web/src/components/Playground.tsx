@@ -16,6 +16,8 @@ import { GitHubPRDisplay, CodexRateLimitsSection, CodexTokenDetailsSection, Clau
 import { CostCard } from "./CostCard.js";
 import { GalleryCard } from "./GalleryCard.js";
 import { EnvironmentPanel } from "./EnvironmentPanel.js";
+import { InboxRow } from "./InboxPage.js";
+import type { InboxItem } from "../api.js";
 import type { GalleryEntryInfo } from "../api.js";
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
@@ -561,6 +563,38 @@ const PERM_SPECTATOR = mockPermission({
 
 // ─── Playground Component ───────────────────────────────────────────────────
 
+// ─── Review Inbox fixtures ───────────────────────────────────────────────────
+
+const INBOX_NOW = 1_800_000_000_000;
+const INBOX_ITEMS: InboxItem[] = [
+  {
+    id: "session:pg-1", kind: "session", title: "Nightly test sweep", subtitle: "Cron · Nightly tests",
+    summary: "Ran the full suite, fixed two flaky timers in ws.test.ts, and updated the snapshot for the cost card. All 1,640 tests pass.",
+    cwd: "/Users/stan/Dev/project/.worktrees/nightly", branch: "cron/nightly-tests", isWorktree: true, backend: "claude",
+    sessionId: "pg-1", cronJobId: "nightly-tests", completedAt: INBOX_NOW - 25 * 60_000, costUsd: 0.83,
+    linesAdded: 41, linesRemoved: 12, outcome: "completed", hasChanges: true, review: "pending",
+  },
+  {
+    id: "race:pg-2", kind: "race", title: "Add rate limiting to the public API", subtitle: "Race · Claude Code, Codex",
+    summary: "2 of 2 entries completed. Pick a winner to merge.", cwd: "/Users/stan/Dev/project", branch: "main", isWorktree: true,
+    sessionId: "pg-2a", raceId: "pg-2", completedAt: INBOX_NOW - 3 * 3_600_000, costUsd: 1.92,
+    linesAdded: 120, linesRemoved: 8, outcome: "completed", hasChanges: true, review: "pending",
+  },
+  {
+    id: "pipeline:pg-3", kind: "pipeline", title: "Ship feature", subtitle: "Pipeline · 1/3 stages",
+    summary: "Failed: tests failed in stage \"Verify\" (3 failures in auth.test.ts)", cwd: "/Users/stan/Dev/project", branch: "", isWorktree: false,
+    sessionId: "pg-3b", runId: "pg-3", completedAt: INBOX_NOW - 26 * 3_600_000, costUsd: 0.31,
+    linesAdded: 0, linesRemoved: 0, outcome: "failed", hasChanges: false, review: "pending",
+  },
+  {
+    id: "session:pg-4", kind: "session", title: "Explain the WebSocket reconnect path", subtitle: "Codex",
+    summary: "Reconnect replays events from the last acknowledged sequence number; see ws-bridge.ts for the buffer.",
+    cwd: "/Users/stan/Dev/project", branch: "", isWorktree: false, backend: "codex",
+    sessionId: "pg-4", completedAt: INBOX_NOW - 3 * 86_400_000, costUsd: 0.04,
+    linesAdded: 0, linesRemoved: 0, outcome: "completed", hasChanges: false, review: "reviewed", reviewedAt: INBOX_NOW - 86_400_000,
+  },
+];
+
 export function Playground() {
   const [darkMode, setDarkMode] = useState(
     () => document.documentElement.classList.contains("dark")
@@ -880,6 +914,15 @@ export function Playground() {
               <PermissionBanner permission={PERM_ASK_MULTI} sessionId={MOCK_SESSION_ID} />
             </Card>
           </div>
+        </Section>
+
+        {/* ─── Review Inbox ───────────────────────────────────────────── */}
+        <Section title="Review Inbox" description="Rows from #/inbox — finished sessions, races, and pipeline runs with summary, stats, and Open / Diff / Open PR / Retry / review actions">
+          <ul className="max-w-3xl divide-y divide-cc-border/60 border border-cc-border rounded-2xl bg-cc-bg px-2 py-1">
+            {INBOX_ITEMS.map((item) => (
+              <InboxRow key={item.id} item={item} now={INBOX_NOW} onReview={() => {}} onOpenPr={async () => {}} onRetry={async () => {}} />
+            ))}
+          </ul>
         </Section>
 
         {/* ─── Thread layout (ChatGPT / Codex desktop style) ───────────── */}

@@ -262,6 +262,7 @@ export function Sidebar() {
   const clearRecentlyRenamed = useStore((s) => s.clearRecentlyRenamed);
   const pendingPermissions = useStore((s) => s.pendingPermissions);
   const collapsedProjects = useStore((s) => s.collapsedProjects);
+  const inboxPendingCount = useStore((s) => s.inboxPendingCount ?? 0);
   const toggleProjectCollapse = useStore((s) => s.toggleProjectCollapse);
 
   /* Folder state (kept for logic compatibility) */
@@ -767,6 +768,25 @@ export function Sidebar() {
             </svg>
           </span>
           New session
+        </button>
+
+        <button
+          onClick={() => navigateTo("#/inbox")}
+          className={`${navRow} ${hash === "#/inbox" ? "bg-cc-active text-cc-fg" : "text-cc-fg hover:bg-cc-hover"}`}
+          aria-current={hash === "#/inbox" ? "page" : undefined}
+        >
+          <span className="w-5 h-5 flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-[18px] h-[18px]">
+              <path d="M3 11.5l2-7h10l2 7v4a1 1 0 01-1 1H4a1 1 0 01-1-1v-4z" strokeLinejoin="round" />
+              <path d="M3 11.5h4l1 2h4l1-2h4" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <span className="flex-1 text-left">Inbox</span>
+          {inboxPendingCount > 0 && (
+            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-cc-fg text-cc-bg text-[11px] font-semibold flex items-center justify-center tabular-nums">
+              {inboxPendingCount > 99 ? "99+" : inboxPendingCount}
+            </span>
+          )}
         </button>
 
         <div role="search">

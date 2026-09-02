@@ -40,6 +40,7 @@ import { OrchestratorPage } from "./components/OrchestratorPage.js";
 import { RacePage } from "./components/RacePage.js";
 import { KanbanPage } from "./components/KanbanPage.js";
 import { SkillsPage } from "./components/SkillsPage.js";
+import { InboxPage } from "./components/InboxPage.js";
 
 function useHash() {
   return useSyncExternalStore(
@@ -126,6 +127,7 @@ export default function App() {
   const isRacesPage = hash === "#/races" || hash.startsWith("#/races/");
   const isKanbanPage = hash === "#/kanban";
   const isSkillsPage = hash === "#/skills";
+  const isInboxPage = hash === "#/inbox";
   // Replay routes: #/replay/:filename or #/replay/session/:id
   const replayFileMatch = hash.match(/^#\/replay\/(?!session\/)(.+)$/);
   const replaySessionMatch = hash.match(/^#\/replay\/session\/(.+)$/);
@@ -134,7 +136,7 @@ export default function App() {
   const publicReplayMatch = hash.match(/^#\/public-replay\/(.+)$/);
   const isPublicReplayPage = !!publicReplayMatch;
 
-  const isSessionView = !isSettingsPage && !isTerminalPage && !isEnvironmentsPage && !isScheduledPage && !isGalleryPage && !isWebhooksPage && !isAdaptersPage && !isClawHubPage && !isAgentsPage && !isPromptsPage && !isIntegrationsPage && !isLinearSettingsPage && !isMemoryPage && !isRouterPage && !isCollectiveMindPage && !isOrchestratorPage && !isRacesPage && !isKanbanPage && !isSkillsPage && !isReplayPage && !isPublicReplayPage && !isHubPage && !isMonitorPage && !isCommandsPage;
+  const isSessionView = !isSettingsPage && !isTerminalPage && !isEnvironmentsPage && !isScheduledPage && !isGalleryPage && !isWebhooksPage && !isAdaptersPage && !isClawHubPage && !isAgentsPage && !isPromptsPage && !isIntegrationsPage && !isLinearSettingsPage && !isMemoryPage && !isRouterPage && !isCollectiveMindPage && !isOrchestratorPage && !isRacesPage && !isKanbanPage && !isSkillsPage && !isInboxPage && !isReplayPage && !isPublicReplayPage && !isHubPage && !isMonitorPage && !isCommandsPage;
 
   useEffect(() => {
     capturePageView(hash || "#/");
@@ -201,6 +203,19 @@ export default function App() {
     const interval = setInterval(check, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [authChecked, authRequired]);
+
+  // Keep the sidebar's inbox badge fresh without every page polling on its own.
+  useEffect(() => {
+    if (!authChecked || authRequired) return;
+    const tick = () => {
+      api.getInbox()
+        .then((r) => useStore.getState().setInboxPendingCount(r.counts.pending))
+        .catch(() => {});
+    };
+    tick();
+    const interval = setInterval(tick, 30 * 1000);
+    return () => clearInterval(interval);
+  }, [authChecked, authRequired, hash]);
 
   // Auth gates — placed after all hooks to satisfy Rules of Hooks
   if (!authChecked) {
@@ -370,6 +385,12 @@ export default function App() {
           {isSkillsPage && (
             <div className="absolute inset-0">
               <SkillsPage embedded />
+            </div>
+          )}
+
+          {isInboxPage && (
+            <div className="absolute inset-0 overflow-y-auto">
+              <InboxPage embedded />
             </div>
           )}
 

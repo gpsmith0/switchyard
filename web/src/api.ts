@@ -758,6 +758,47 @@ export interface SessionFolder {
   createdAt: number;
 }
 
+// ─── Review Inbox ───────────────────────────────────────────────────────────
+
+export type InboxItemKind = "session" | "race" | "pipeline";
+export type InboxReviewStatus = "pending" | "reviewed" | "dismissed";
+export type InboxOutcome = "completed" | "failed" | "cancelled";
+
+export interface InboxItem {
+  id: string;
+  kind: InboxItemKind;
+  title: string;
+  subtitle: string;
+  summary: string;
+  cwd: string;
+  branch: string;
+  isWorktree: boolean;
+  backend?: string;
+  sessionId?: string;
+  raceId?: string;
+  runId?: string;
+  cronJobId?: string;
+  completedAt: number;
+  costUsd: number;
+  linesAdded: number;
+  linesRemoved: number;
+  outcome: InboxOutcome;
+  hasChanges: boolean;
+  review: InboxReviewStatus;
+  reviewedAt?: number;
+}
+
+export interface InboxCounts {
+  pending: number;
+  reviewed: number;
+  dismissed: number;
+}
+
+export interface InboxResponse {
+  items: InboxItem[];
+  counts: InboxCounts;
+}
+
 export const api = {
   // Auth
   getAuthStatus: () => get<LoginAuthStatus>("/auth/status"),
@@ -1310,4 +1351,12 @@ export const api = {
     post<RaceInfo>(`/races/${encodeURIComponent(id)}/cancel`),
   deleteRace: (id: string) =>
     del<{ ok: boolean }>(`/races/${encodeURIComponent(id)}`),
+  // Review Inbox
+  getInbox: () => get<InboxResponse>("/inbox"),
+  reviewInboxItem: (id: string, status: InboxReviewStatus) =>
+    post<{ ok: boolean; id: string; status: InboxReviewStatus; reviewedAt?: number }>(`/inbox/${encodeURIComponent(id)}/review`, { status }),
+  createInboxPr: (id: string, data?: { title?: string; body?: string }) =>
+    post<{ url: string; branch: string; created: boolean }>(`/inbox/${encodeURIComponent(id)}/pr`, data ?? {}),
+  retryInboxItem: (id: string) =>
+    post<{ ok: boolean; cronJobId: string }>(`/inbox/${encodeURIComponent(id)}/retry`),
 };

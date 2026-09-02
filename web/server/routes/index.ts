@@ -24,6 +24,7 @@ import { registerMonitorRoutes } from "./monitor-routes.js";
 import { registerCommandsRoutes } from "./commands-routes.js";
 import { registerAgentMcpRoutes } from "./agent-mcp-routes.js";
 import { registerRaceRoutes } from "./race-routes.js";
+import { registerInboxRoutes } from "./inbox-routes.js";
 
 export function createRoutes(deps: RouteDeps): Hono {
   const api = new Hono();
@@ -57,6 +58,7 @@ export function createRoutes(deps: RouteDeps): Hono {
   registerMonitorRoutes(api, deps);
   registerCommandsRoutes(api, deps);
   registerRaceRoutes(api, deps);
+  registerInboxRoutes(api, deps);
 
   return api;
 }

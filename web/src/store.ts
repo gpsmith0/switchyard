@@ -98,6 +98,9 @@ interface AppState {
   notificationDesktop: boolean;
   sidebarOpen: boolean;
   taskPanelOpen: boolean;
+  /** Number of finished runs waiting in the review inbox (polled by App) */
+  inboxPendingCount: number;
+  setInboxPendingCount: (n: number) => void;
   homeResetKey: number;
   activeTab: "chat" | "diff" | "files";
   diffPanelSelectedFile: Map<string, string>;
@@ -321,6 +324,8 @@ export const useStore = create<AppState>((set) => ({
   notificationDesktop: getInitialNotificationDesktop(),
   sidebarOpen: typeof window !== "undefined" ? window.innerWidth >= 768 : true,
   taskPanelOpen: typeof window !== "undefined" ? window.innerWidth >= 1024 : false,
+  inboxPendingCount: 0,
+  setInboxPendingCount: (n) => set({ inboxPendingCount: n }),
   homeResetKey: 0,
   activeTab: "chat",
   diffPanelSelectedFile: new Map(),
