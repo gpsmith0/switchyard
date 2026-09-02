@@ -87,25 +87,12 @@ export function PermissionBanner({
   const suggestions = permission.permission_suggestions;
   const severity = toolSeverity(permission.tool_name);
 
-  const severityBorder =
-    severity === "read"
-      ? "border-l-4 border-l-blue-400/50"
-      : severity === "ask"
-      ? "border-l-4 border-l-cc-primary/50"
-      : "border-l-4 border-l-amber-400/50";
-
   return (
-    <div className="px-4 py-3 border-t border-cc-border animate-[fadeSlideIn_0.2s_ease-out]">
-      <div className={`max-w-3xl mx-auto rounded-xl border bg-cc-card shadow-sm p-4 ${severityBorder}`}>
+    <div className="px-4 py-2 animate-[fadeSlideIn_0.2s_ease-out]">
+      <div className="max-w-3xl mx-auto rounded-2xl border border-cc-border bg-cc-card shadow-panel p-4">
         <div className="flex items-start gap-2 sm:gap-3">
           {/* Icon */}
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
-            isAskUser
-              ? "bg-gradient-to-br from-cc-primary/15 to-cc-primary/5 border border-cc-primary/20"
-              : severity === "read"
-              ? "bg-gradient-to-br from-blue-400/15 to-blue-400/5 border border-blue-400/20"
-              : "bg-gradient-to-br from-cc-warning/15 to-cc-warning/5 border border-cc-warning/20"
-          }`}>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 bg-cc-hover">
             {isAskUser ? (
               <svg viewBox="0 0 20 20" fill="currentColor" className="w-4.5 h-4.5 text-cc-primary">
                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
@@ -125,13 +112,11 @@ export function PermissionBanner({
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
-              <span className={`text-[13px] font-semibold ${
-                isAskUser ? "text-cc-primary" : severity === "read" ? "text-blue-400" : "text-cc-warning"
-              }`}>
+              <span className="text-[14px] font-medium text-cc-fg">
                 {isAskUser ? "Question" : "Permission Request"}
               </span>
               {!isAskUser && (
-                <span className="rounded-full bg-cc-hover px-2 py-0.5 text-[10px] font-mono-code text-cc-muted">{permission.tool_name}</span>
+                <span className="rounded-md bg-cc-hover px-1.5 py-0.5 text-[12px] font-mono-code text-cc-muted">{permission.tool_name}</span>
               )}
             </div>
 
@@ -161,25 +146,25 @@ export function PermissionBanner({
                   <button
                     onClick={() => handleAllow()}
                     disabled={loading || myRole === "spectator"}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-cc-success hover:bg-cc-success/90 text-white px-4 py-2 text-[13px] font-medium shadow-sm hover:shadow-md transition-all duration-200 disabled:opacity-50 cursor-pointer min-h-[40px]"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-cc-primary hover:bg-cc-primary-hover text-cc-bg px-4 h-9 text-[13px] font-medium transition-colors duration-120 disabled:opacity-50 cursor-pointer"
                   >
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
                       <path d="M3 8.5l3.5 3.5 6.5-7" />
                     </svg>
                     Allow
-                    <span className="rounded-md bg-white/15 border border-white/10 px-1.5 py-0.5 text-[9px] font-mono-code ml-0.5">Y</span>
+                    <span className="text-[11px] opacity-60 ml-0.5">Y</span>
                   </button>
 
                   <button
                     onClick={handleDeny}
                     disabled={loading || myRole === "spectator"}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-cc-error/30 text-cc-error hover:bg-cc-error/10 px-4 py-2 text-[13px] font-medium transition-all duration-200 disabled:opacity-50 cursor-pointer min-h-[40px]"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-cc-border text-cc-fg hover:bg-cc-hover px-4 h-9 text-[13px] font-medium transition-colors duration-120 disabled:opacity-50 cursor-pointer"
                   >
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5">
                       <path d="M4 4l8 8M12 4l-8 8" />
                     </svg>
                     Deny
-                    <span className="rounded-md bg-cc-hover border border-cc-border/60 px-1.5 py-0.5 text-[9px] font-mono-code text-cc-muted ml-0.5">N</span>
+                    <span className="text-[11px] text-cc-muted ml-0.5">N</span>
                   </button>
 
                   {myRole === "spectator" && (
@@ -196,7 +181,7 @@ export function PermissionBanner({
                         onClick={() => handleAllow(undefined, [suggestion])}
                         disabled={loading || myRole === "spectator"}
                         title={`${suggestion.type}: ${JSON.stringify(suggestion)}`}
-                        className="rounded-full border border-cc-primary/20 bg-cc-primary/5 text-cc-primary px-3 py-1 text-[11px] font-medium hover:bg-cc-primary/10 disabled:opacity-50 transition-colors cursor-pointer"
+                        className="rounded-full border border-cc-border text-cc-muted hover:text-cc-fg px-3 h-7 text-[12px] font-medium hover:bg-cc-hover disabled:opacity-50 transition-colors cursor-pointer"
                       >
                         {suggestionLabel(suggestion)}
                       </button>

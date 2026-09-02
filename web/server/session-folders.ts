@@ -1,12 +1,12 @@
 /**
  * Session Folders — user-defined groups for organizing sessions.
- * Stored in ~/.campfire/session-folders.json
+ * Stored in ~/.switchyard/session-folders.json
  */
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
-const FOLDERS_FILE = join(homedir(), ".campfire", "session-folders.json");
+const FOLDERS_FILE = join(homedir(), ".switchyard", "session-folders.json");
 
 export interface SessionFolder {
   id: string;
@@ -21,7 +21,7 @@ interface FoldersData {
 }
 
 function ensureDir(): void {
-  const dir = join(homedir(), ".campfire");
+  const dir = join(homedir(), ".switchyard");
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
 }
 

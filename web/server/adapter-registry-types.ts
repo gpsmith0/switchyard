@@ -1,8 +1,8 @@
 /**
  * Types for the adapter registry — manages third-party agent adapters
- * installed via npm into ~/.campfire/adapters/.
+ * installed via npm into ~/.switchyard/adapters/.
  *
- * Each adapter package declares a "campfireAdapter" field in its package.json
+ * Each adapter package declares a "switchyardAdapter" field in its package.json
  * containing an AdapterMetadata object that tells the registry how to launch
  * and configure the backend.
  */

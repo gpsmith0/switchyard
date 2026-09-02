@@ -3,7 +3,7 @@ import type { RouteDeps } from "./route-deps.js";
 import { generateAgentToolDefinitions } from "../agent-mcp-tools.js";
 
 function isInternalAuthorized(c: { req: { header: (name: string) => string | undefined } }): boolean {
-  const expected = process.env.CAMPFIRE_INTERNAL_AGENT_MCP_TOKEN;
+  const expected = process.env.SWITCHYARD_INTERNAL_AGENT_MCP_TOKEN;
   if (!expected) return false;
   const header = c.req.header("Authorization") || "";
   return header === `Bearer ${expected}`;

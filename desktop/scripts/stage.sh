@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stage the Campfire backend + Bun runtime for the desktop app.
+# Stage the Switchyard backend + Bun runtime for the desktop app.
 #
 # Produces desktop/vendor/:
 #   backend/   server source, built frontend (dist/), bin/, and a minimal
@@ -38,7 +38,7 @@ bun -e '
   const missing = keep.filter((k) => !deps[k]);
   if (missing.length) throw new Error("runtime deps missing from web/package.json: " + missing);
   const pkg = {
-    name: "campfire-desktop-backend",
+    name: "switchyard-desktop-backend",
     private: true,
     version: web.version,
     type: web.type,

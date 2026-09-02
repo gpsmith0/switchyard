@@ -8,7 +8,7 @@ const originalHome = process.env.HOME;
 describe("race-store", () => {
   beforeEach(() => {
     vi.resetModules();
-    process.env.HOME = mkdtempSync(join(tmpdir(), "campfire-races-"));
+    process.env.HOME = mkdtempSync(join(tmpdir(), "switchyard-races-"));
   });
 
   afterEach(() => {
@@ -16,7 +16,7 @@ describe("race-store", () => {
   });
 
   it("persists, lists, reads, and deletes race records", async () => {
-    // The race store is file-backed like the rest of Campfire's session-adjacent state.
+    // The race store is file-backed like the rest of Switchyard's session-adjacent state.
     const store = await import("./race-store.js");
     const race = {
       raceId: "race-1",

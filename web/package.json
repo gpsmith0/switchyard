@@ -1,21 +1,21 @@
 {
-  "name": "the-campfire",
+  "name": "@gpsmith0/switchyard",
   "version": "0.4.2",
   "type": "module",
-  "description": "Campfire \u2014 collaborative web platform for AI coding agents. Run Claude Code, Codex, Goose, Aider, and more from one browser UI with real-time collaboration, permission voting, and automation.",
+  "description": "Switchyard \u2014 collaborative web platform for AI coding agents. Run Claude Code, Codex, Goose, Aider, and more from one browser UI with real-time collaboration, permission voting, and automation.",
   "license": "MIT",
   "author": "The Vibe Company",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/stretchcloud/campfire.git",
+    "url": "git+https://github.com/gpsmith0/switchyard.git",
     "directory": "web"
   },
-  "homepage": "https://github.com/stretchcloud/campfire#readme",
+  "homepage": "https://github.com/gpsmith0/switchyard#readme",
   "bugs": {
-    "url": "https://github.com/stretchcloud/campfire/issues"
+    "url": "https://github.com/gpsmith0/switchyard/issues"
   },
   "bin": {
-    "the-campfire": "./bin/cli.ts"
+    "switchyard": "./bin/cli.ts"
   },
   "files": [
     "bin/",

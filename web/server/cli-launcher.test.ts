@@ -145,7 +145,7 @@ beforeEach(() => {
   mockNodeSpawn.mockReturnValue(createMockCodexProc());
   mockResolveBinary.mockReturnValue("/usr/bin/claude");
   mockGetSettings.mockReturnValue(defaultSettings);
-  delete process.env.CAMPFIRE_CLAUDE_TRANSPORT;
+  delete process.env.SWITCHYARD_CLAUDE_TRANSPORT;
 });
 
 afterEach(() => {
@@ -190,8 +190,8 @@ describe("launch", () => {
     expect(options.stderr).toBe("pipe");
   });
 
-  it("keeps legacy Claude --sdk-url mode behind CAMPFIRE_CLAUDE_TRANSPORT", () => {
-    process.env.CAMPFIRE_CLAUDE_TRANSPORT = "sdk-url";
+  it("keeps legacy Claude --sdk-url mode behind SWITCHYARD_CLAUDE_TRANSPORT", () => {
+    process.env.SWITCHYARD_CLAUDE_TRANSPORT = "sdk-url";
 
     launcher.launch({ cwd: "/tmp/project" });
 
@@ -280,7 +280,7 @@ describe("launch", () => {
     const info = launcher.launch({ cwd: "/tmp/project" });
 
     // Restored sessions may contain a stale Claude binary path. That should
-    // fail the affected session without crashing the Campfire server.
+    // fail the affected session without crashing the Switchyard server.
     expect(info.state).toBe("exited");
     expect(info.exitCode).toBe(127);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to spawn Claude stdio session"));
@@ -288,7 +288,7 @@ describe("launch", () => {
   });
 
   it("marks only the Claude sdk-url session exited when Bun.spawn throws", () => {
-    process.env.CAMPFIRE_CLAUDE_TRANSPORT = "sdk-url";
+    process.env.SWITCHYARD_CLAUDE_TRANSPORT = "sdk-url";
     mockSpawn.mockImplementationOnce(() => {
       throw new Error("ENOENT: no such file or directory, posix_spawn '/home/user/.local/bin/claude'");
     });
@@ -532,7 +532,7 @@ describe("launch", () => {
     await vi.waitFor(() => expect(info.state).toBe("exited"));
 
     // A missing Node/Codex executable should fail the affected session without
-    // becoming an uncaught child_process error that crashes the Campfire server.
+    // becoming an uncaught child_process error that crashes the Switchyard server.
     expect(info.exitCode).toBe(127);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("failed to spawn"));
     errorSpy.mockRestore();
@@ -978,7 +978,7 @@ describe("persistence", () => {
 
 describe("getStartingSessions", () => {
   it("returns only sessions in starting state", () => {
-    process.env.CAMPFIRE_CLAUDE_TRANSPORT = "sdk-url";
+    process.env.SWITCHYARD_CLAUDE_TRANSPORT = "sdk-url";
     launcher.launch({ cwd: "/tmp" });
 
     const starting = launcher.getStartingSessions();
@@ -987,7 +987,7 @@ describe("getStartingSessions", () => {
   });
 
   it("excludes sessions that have been connected", () => {
-    process.env.CAMPFIRE_CLAUDE_TRANSPORT = "sdk-url";
+    process.env.SWITCHYARD_CLAUDE_TRANSPORT = "sdk-url";
     launcher.launch({ cwd: "/tmp" });
     launcher.markConnected("test-session-id");
 

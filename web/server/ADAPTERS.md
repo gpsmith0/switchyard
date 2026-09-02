@@ -1,10 +1,10 @@
 # Adapter Contribution Guide
 
-This document explains how to add a new agent backend adapter to Campfire.
+This document explains how to add a new agent backend adapter to Switchyard.
 
 ## Architecture
 
-Campfire uses a unified `AgentAdapter` interface (`adapter-types.ts`) that translates between any agent backend's protocol and the browser's message format. The browser UI is completely unaware of which backend is running.
+Switchyard uses a unified `AgentAdapter` interface (`adapter-types.ts`) that translates between any agent backend's protocol and the browser's message format. The browser UI is completely unaware of which backend is running.
 
 ```
 Browser <-> WsBridge <-> AgentAdapter <-> Backend Process (stdio/websocket)
@@ -106,7 +106,7 @@ See `aider-adapter.ts`. Parses unstructured text output, detecting SEARCH/REPLAC
 
 ## Tool Name Mapping
 
-Map your backend's tool names to Campfire-standard names so the UI renders them correctly:
+Map your backend's tool names to Switchyard-standard names so the UI renders them correctly:
 
 ```typescript
 const toolMap: Record<string, string> = {

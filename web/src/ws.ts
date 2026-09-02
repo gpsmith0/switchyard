@@ -314,7 +314,7 @@ function getWsUrl(sessionId: string): string {
 }
 
 function getLastSeqStorageKey(sessionId: string): string {
-  return `campfire:last-seq:${sessionId}`;
+  return `switchyard:last-seq:${sessionId}`;
 }
 
 function getLastSeq(sessionId: string): number {

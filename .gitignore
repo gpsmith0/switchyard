@@ -16,7 +16,7 @@ landing/dist/
 # Session data
 vibe-sessions/
 
-# Campfire data
+# Switchyard data
 .companion/
 
 # IDE

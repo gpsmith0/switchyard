@@ -1,13 +1,13 @@
 # Changelog
 
-> Campfire began as a fork of [the-companion](https://github.com/The-Vibe-Company/companion) and diverged into a separate product. Pre-fork history (versions up to 0.42.0) lives in the upstream repository; Campfire's own releases start at 0.1.0.
+> Switchyard began as a fork of [the-companion](https://github.com/The-Vibe-Company/companion) and diverged into a separate product. Pre-fork history (versions up to 0.42.0) lives in the upstream repository; Switchyard's own releases start at 0.1.0.
 
 ## 0.4.2 (2026-07-08)
 
 ### Fixes
 
-* **server:** scrub inherited Claude Code session env markers (`CLAUDECODE`, `CLAUDE_CODE_SESSION_ID`, `CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH`, …) at bootstrap. A Campfire server started from inside a Claude Code session — an agent-run terminal, or the desktop app opened from such a shell — passed those markers to spawned `claude` CLIs, which then expected host-managed OAuth, skipped their own keychain credentials, and failed every call with `401 authentication_failed`. Deliberate configuration (`CLAUDE_CODE_OAUTH_TOKEN`, `ANTHROPIC_*`) is preserved
-* **desktop:** the update banner now shows a **Download update** link to the GitHub releases page inside the desktop app instead of CLI instructions (`the-campfire install` / Update & Restart), which only update the npm-installed server — not the app bundle. Desktop updates = download the new DMG and replace the app; `~/.campfire` state survives
+* **server:** scrub inherited Claude Code session env markers (`CLAUDECODE`, `CLAUDE_CODE_SESSION_ID`, `CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH`, …) at bootstrap. A Switchyard server started from inside a Claude Code session — an agent-run terminal, or the desktop app opened from such a shell — passed those markers to spawned `claude` CLIs, which then expected host-managed OAuth, skipped their own keychain credentials, and failed every call with `401 authentication_failed`. Deliberate configuration (`CLAUDE_CODE_OAUTH_TOKEN`, `ANTHROPIC_*`) is preserved
+* **desktop:** the update banner now shows a **Download update** link to the GitHub releases page inside the desktop app instead of CLI instructions (`switchyard install` / Update & Restart), which only update the npm-installed server — not the app bundle. Desktop updates = download the new DMG and replace the app; `~/.switchyard` state survives
 
 ## 0.4.1 (2026-07-07)
 
@@ -19,7 +19,7 @@
 
 ### Features
 
-* **desktop:** native macOS app (Apple Silicon) distributed as a DMG on GitHub Releases. An Electron shell boots the full Campfire server — every backend and feature included — as a bundled Bun sidecar, so no Bun install is required. Attaches to an already-running Campfire on port 4567 (service installs, `bunx the-campfire`) instead of double-spawning against `~/.campfire`; otherwise picks the first free port. Native menu, window-state persistence, external links open in the default browser, sidecar logs at `~/.campfire/logs/desktop-server.log`, crash dialog with relaunch. Build locally with `make dmg`; CI builds the DMG on the free macos-14 runner and attaches it to each release
+* **desktop:** native macOS app (Apple Silicon) distributed as a DMG on GitHub Releases. An Electron shell boots the full Switchyard server — every backend and feature included — as a bundled Bun sidecar, so no Bun install is required. Attaches to an already-running Switchyard on port 4567 (service installs, `bunx @gpsmith0/switchyard`) instead of double-spawning against `~/.switchyard`; otherwise picks the first free port. Native menu, window-state persistence, external links open in the default browser, sidecar logs at `~/.switchyard/logs/desktop-server.log`, crash dialog with relaunch. Build locally with `make dmg`; CI builds the DMG on the free macos-14 runner and attaches it to each release
 * **agents:** the orchestration MCP server is now spawned via the absolute path of the running Bun executable instead of a PATH lookup, so multi-agent tools work in the desktop app (where Bun ships inside the bundle) and on machines without a global Bun install
 
 ## 0.3.2 (2026-07-07)
@@ -53,14 +53,14 @@
 ### Fixes
 
 * **npm:** include the project README and LICENSE in the published tarball so the npm package page renders documentation (previously the package root had neither)
-* **ci:** publish the Docker image to GitHub Container Registry (`ghcr.io/stretchcloud/campfire`) using the workflow's built-in token — the Docker Hub path required credentials that were never configured, so no image had ever been published
+* **ci:** publish the Docker image to GitHub Container Registry (`ghcr.io/gpsmith0/switchyard`) using the workflow's built-in token — the Docker Hub path required credentials that were never configured, so no image had ever been published
 
 ## 0.2.0 (2026-07-07)
 
 ### Features
 
 * **races:** cost-cascade mode — run backends sequentially cheapest-first and stop at the first entry that completes with a non-empty change set; failures, timeouts, and empty patches escalate to the next backend
-* **mcp:** default-deny injection policy with static scanning for auto-injected MCP servers (curated catalog match + shell-metacharacter/inline-eval/plaintext-http checks); `CAMPFIRE_MCP_AUTO_INJECT_POLICY=permissive` escape hatch
+* **mcp:** default-deny injection policy with static scanning for auto-injected MCP servers (curated catalog match + shell-metacharacter/inline-eval/plaintext-http checks); `SWITCHYARD_MCP_AUTO_INJECT_POLICY=permissive` escape hatch
 
 ### Security
 
@@ -73,14 +73,14 @@
 
 ## 0.1.0 (2026-07-07)
 
-First public release of Campfire — a collaborative web platform for AI coding agents.
+First public release of Switchyard — a collaborative web platform for AI coding agents.
 
 ### Features
 
 * Multi-backend sessions: Claude Code, Codex, Goose, Aider, OpenHands, OpenClaw, and OpenCode behind one normalized browser protocol, plus community adapters installable from npm
 * Real-time collaboration: owner/collaborator/spectator roles, presence, invite links, and multi-viewer permission voting (majority-rules, any-deny-blocks, owner-decides)
 * Automation: cron-scheduled sessions, agent profiles with webhook/schedule triggers, multi-stage orchestrator pipelines, and backend races in isolated git worktrees
-* Agent-to-agent delegation: lead sessions can hand one-turn subtasks to other backends via the built-in `campfire_agents` MCP server
+* Agent-to-agent delegation: lead sessions can hand one-turn subtasks to other backends via the built-in `switchyard_agents` MCP server
 * Session durability: disk persistence, crash recovery with `--resume`, sequence-numbered reconnect replay, and always-on raw protocol recording with replay UI
 * Git-native workflow: branch/worktree tracking, ahead/behind counts, PR status polling, diff review
 * Embedded terminal, session gallery, prompt library, environment profiles, webhooks with HMAC signing, Linear integration, and optional Docker sandboxing

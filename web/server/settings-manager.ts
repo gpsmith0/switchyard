@@ -90,7 +90,7 @@ export function normalizeMemorySettings(raw: unknown): MemorySettings {
   };
 }
 
-export interface CampfireSettings {
+export interface SwitchyardSettings {
   openrouterApiKey: string;
   openrouterModel: string;
   moltbookApiKey: string;
@@ -110,7 +110,7 @@ export interface CampfireSettings {
   /**
    * Semantic memory v2: decay policies + recall depths per namespace class.
    * Always populated by normalize() at runtime — typed optional only so
-   * pre-v2 CampfireSettings literals (test mocks) keep compiling. Use
+   * pre-v2 SwitchyardSettings literals (test mocks) keep compiling. Use
    * getMemorySettings() for guaranteed-present typed access.
    */
   memory?: MemorySettings;
@@ -119,11 +119,11 @@ export interface CampfireSettings {
   updatedAt: number;
 }
 
-const DEFAULT_PATH = join(homedir(), ".campfire", "settings.json");
+const DEFAULT_PATH = join(homedir(), ".switchyard", "settings.json");
 
 let loaded = false;
 let filePath = DEFAULT_PATH;
-let settings: CampfireSettings = {
+let settings: SwitchyardSettings = {
   openrouterApiKey: "",
   openrouterModel: DEFAULT_OPENROUTER_MODEL,
   moltbookApiKey: "",
@@ -140,7 +140,7 @@ let settings: CampfireSettings = {
   updatedAt: 0,
 };
 
-function normalize(raw: Partial<CampfireSettings> | null | undefined): CampfireSettings {
+function normalize(raw: Partial<SwitchyardSettings> | null | undefined): SwitchyardSettings {
   return {
     openrouterApiKey: typeof raw?.openrouterApiKey === "string" ? raw.openrouterApiKey : "",
     openrouterModel:
@@ -169,7 +169,7 @@ function ensureLoaded(): void {
   try {
     if (existsSync(filePath)) {
       const raw = readFileSync(filePath, "utf-8");
-      settings = normalize(JSON.parse(raw) as Partial<CampfireSettings>);
+      settings = normalize(JSON.parse(raw) as Partial<SwitchyardSettings>);
     }
   } catch {
     settings = normalize(null);
@@ -182,7 +182,7 @@ function persist(): void {
   writeFileSync(filePath, JSON.stringify(settings, null, 2), "utf-8");
 }
 
-export function getSettings(): CampfireSettings {
+export function getSettings(): SwitchyardSettings {
   ensureLoaded();
   return { ...settings };
 }
@@ -212,11 +212,11 @@ function mergeMemoryPatch(current: MemorySettings, patch: unknown): MemorySettin
 }
 
 export function updateSettings(
-  patch: Partial<Pick<CampfireSettings, "openrouterApiKey" | "openrouterModel" | "moltbookApiKey" | "linearApiKey" | "claudeOAuthToken" | "openaiApiKey" | "anthropicApiKey" | "embeddingProvider" | "embeddingApiKey" | "embeddingModel" | "embeddingBaseUrl" | "onboardingCompleted">> & {
+  patch: Partial<Pick<SwitchyardSettings, "openrouterApiKey" | "openrouterModel" | "moltbookApiKey" | "linearApiKey" | "claudeOAuthToken" | "openaiApiKey" | "anthropicApiKey" | "embeddingProvider" | "embeddingApiKey" | "embeddingModel" | "embeddingBaseUrl" | "onboardingCompleted">> & {
     /** Partial memory settings — deep-merged over the current values. */
     memory?: unknown;
   },
-): CampfireSettings {
+): SwitchyardSettings {
   ensureLoaded();
   const { memory: memoryPatch, ...rest } = patch;
   settings = {

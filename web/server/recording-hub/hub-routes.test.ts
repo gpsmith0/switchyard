@@ -11,18 +11,18 @@ let previousRecordingsDir: string | undefined;
 let recordingCounter: number;
 
 beforeEach(() => {
-  previousRecordingsDir = process.env.CAMPFIRE_RECORDINGS_DIR;
+  previousRecordingsDir = process.env.SWITCHYARD_RECORDINGS_DIR;
   tempDir = mkdtempSync(join(tmpdir(), "hub-routes-test-"));
-  process.env.CAMPFIRE_RECORDINGS_DIR = tempDir;
+  process.env.SWITCHYARD_RECORDINGS_DIR = tempDir;
   recordingCounter = 0;
   vi.resetModules();
 });
 
 afterEach(() => {
   if (previousRecordingsDir === undefined) {
-    delete process.env.CAMPFIRE_RECORDINGS_DIR;
+    delete process.env.SWITCHYARD_RECORDINGS_DIR;
   } else {
-    process.env.CAMPFIRE_RECORDINGS_DIR = previousRecordingsDir;
+    process.env.SWITCHYARD_RECORDINGS_DIR = previousRecordingsDir;
   }
   rmSync(tempDir, { recursive: true, force: true });
 });

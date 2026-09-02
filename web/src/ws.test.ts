@@ -127,7 +127,7 @@ describe("connectSession", () => {
   });
 
   it("sends session_subscribe with last_seq on open", () => {
-    localStorage.setItem("campfire:last-seq:s1", "12");
+    localStorage.setItem("switchyard:last-seq:s1", "12");
     wsModule.connectSession("s1");
 
     lastWs.onopen?.(new Event("open"));
@@ -348,7 +348,7 @@ describe("handleMessage: event_replay", () => {
     });
 
     expect(useStore.getState().streaming.get("s1")).toBe("Hello");
-    expect(localStorage.getItem("campfire:last-seq:s1")).toBe("1");
+    expect(localStorage.getItem("switchyard:last-seq:s1")).toBe("1");
     expect(lastWs.send).toHaveBeenCalledWith(
       JSON.stringify({ type: "session_ack", last_seq: 1 }),
     );

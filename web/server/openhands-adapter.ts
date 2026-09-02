@@ -339,8 +339,8 @@ export class OpenHandsAdapter implements AgentAdapter {
         protocolVersion: "v1",
         clientCapabilities: {},
         clientInfo: {
-          name: "campfire",
-          title: "Campfire",
+          name: "switchyard",
+          title: "Switchyard",
           version: "1.0.0",
         },
       });

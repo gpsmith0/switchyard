@@ -5,7 +5,7 @@ import { execSync, type ExecSyncOptionsWithStringEncoding } from "node:child_pro
 // ---------------------------------------------------------------------------
 
 export interface ContainerConfig {
-  /** Docker image to use (e.g. "campfire-dev", "node:22-slim") */
+  /** Docker image to use (e.g. "switchyard-dev", "node:22-slim") */
   image: string;
   /** Container ports to expose (e.g. [3000, 8080]) */
   ports: number[];
@@ -105,7 +105,7 @@ export class ContainerManager {
     hostCwd: string,
     config: ContainerConfig,
   ): ContainerInfo {
-    const name = `campfire-${sessionId.slice(0, 8)}`;
+    const name = `switchyard-${sessionId.slice(0, 8)}`;
     const homedir = process.env.HOME || process.env.USERPROFILE || "/root";
 
     // Validate port numbers
@@ -288,10 +288,10 @@ export class ContainerManager {
   }
 
   /**
-   * Build the campfire-dev Docker image from the Dockerfile.dev.
+   * Build the switchyard-dev Docker image from the Dockerfile.dev.
    * Returns the build output log. Throws on failure.
    */
-  buildImage(dockerfilePath: string, tag: string = "campfire-dev:latest"): string {
+  buildImage(dockerfilePath: string, tag: string = "switchyard-dev:latest"): string {
     const contextDir = dockerfilePath.replace(/\/[^/]+$/, "") || ".";
     try {
       const output = exec(

@@ -1,6 +1,6 @@
 /**
  * Tests for the OpenClawAdapter — validates that OpenClaw ACP JSON-RPC messages
- * are correctly translated to the Campfire's BrowserIncomingMessage types.
+ * are correctly translated to the Switchyard's BrowserIncomingMessage types.
  *
  * OpenClaw uses the same ACP protocol as Goose, but with different tool naming
  * conventions (plain names instead of developer__ prefixed names) and different
@@ -167,7 +167,7 @@ describe("OpenClawAdapter", () => {
     const initReq = sent.find((m) => m.method === "initialize");
     expect(initReq).toBeTruthy();
     expect(initReq?.jsonrpc).toBe("2.0");
-    expect((initReq?.params as any)?.clientInfo?.name).toBe("campfire");
+    expect((initReq?.params as any)?.clientInfo?.name).toBe("switchyard");
   });
 
   it("emits session_init after successful initialization", async () => {
@@ -299,7 +299,7 @@ describe("OpenClawAdapter", () => {
     expect(resultMsg).toBeTruthy();
   });
 
-  it("maps OpenClaw tool names to Campfire-compatible names", async () => {
+  it("maps OpenClaw tool names to Switchyard-compatible names", async () => {
     const { proc, messages } = await createInitializedAdapter();
     messages.length = 0;
 

@@ -81,9 +81,9 @@ function resolveEnvVars(options: StartRaceOptions, backend: BackendType): Record
   let envVars: Record<string, string> | undefined = options.env ? { ...options.env } : undefined;
 
   if (options.envSlug) {
-    const campfireEnv = envManager.getEnv(options.envSlug);
-    if (campfireEnv) {
-      envVars = { ...campfireEnv.variables, ...envVars };
+    const switchyardEnv = envManager.getEnv(options.envSlug);
+    if (switchyardEnv) {
+      envVars = { ...switchyardEnv.variables, ...envVars };
     } else {
       console.warn(`[race-controller] Environment "${options.envSlug}" not found, ignoring`);
     }

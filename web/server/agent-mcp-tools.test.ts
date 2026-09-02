@@ -27,8 +27,8 @@ describe("agent MCP tools", () => {
     // the PATH-resolved `bun`.
     expect(config.command).toBe("bun");
     expect(config.args).toEqual(["/app/web/server/agent-mcp-stdio.ts"]);
-    expect(config.env?.CAMPFIRE_PARENT_SESSION_ID).toBe("parent-1");
-    expect(config.env?.CAMPFIRE_AGENT_MCP_BACKENDS).toBe("codex");
+    expect(config.env?.SWITCHYARD_PARENT_SESSION_ID).toBe("parent-1");
+    expect(config.env?.SWITCHYARD_AGENT_MCP_BACKENDS).toBe("codex");
   });
 
   it("uses the absolute runtime path when running under Bun", () => {

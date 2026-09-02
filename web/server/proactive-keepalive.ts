@@ -14,8 +14,8 @@
 
 import type { CliLauncher } from "./cli-launcher.js";
 
-const BASE_DELAY_MS = Number(process.env.CAMPFIRE_KEEPALIVE_DELAY_MS) || 3_000;
-const MAX_ATTEMPTS = Number(process.env.CAMPFIRE_KEEPALIVE_MAX_ATTEMPTS) || 3;
+const BASE_DELAY_MS = Number(process.env.SWITCHYARD_KEEPALIVE_DELAY_MS) || 3_000;
+const MAX_ATTEMPTS = Number(process.env.SWITCHYARD_KEEPALIVE_MAX_ATTEMPTS) || 3;
 const STABILITY_WINDOW_MS = 30_000;
 
 export class ProactiveKeepalive {

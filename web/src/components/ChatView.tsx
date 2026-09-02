@@ -38,9 +38,9 @@ export function ChatView({ sessionId }: Readonly<{ sessionId: string }>) {
     <div className="flex flex-col h-full min-h-0 relative">
       {/* CLI launching banner */}
       {connStatus === "connected" && !cliConnected && cliLaunching && (
-        <div className="px-4 py-1.5 bg-cc-accent/5 border-b border-cc-border text-center flex items-center justify-center gap-3">
-          <span className="w-1 h-1 rounded-full bg-cc-accent animate-pulse" />
-          <span className="text-[11px] text-cc-muted font-mono-code">
+        <div className="px-4 py-1.5 border-b border-cc-border/60 text-center flex items-center justify-center gap-3">
+          <span className="w-1 h-1 rounded-full bg-cc-success animate-pulse" />
+          <span className="text-[12.5px] text-cc-muted">
             starting agent...
           </span>
         </div>
@@ -48,9 +48,9 @@ export function ChatView({ sessionId }: Readonly<{ sessionId: string }>) {
 
       {/* Completed subagent banner — one-shot MCP workers stop after returning their result */}
       {isCompletedSubagent && !cliLaunching && (
-        <div className="px-4 py-1.5 bg-cc-hover/40 border-b border-cc-border text-center flex items-center justify-center gap-2">
+        <div className="px-4 py-1.5 border-b border-cc-border/60 text-center flex items-center justify-center gap-2">
           <span className="w-1 h-1 rounded-full bg-cc-muted/60" />
-          <span className="text-[11px] text-cc-muted font-mono-code">
+          <span className="text-[12.5px] text-cc-muted">
             {subagentTerminalLabel}
           </span>
         </div>
@@ -58,14 +58,14 @@ export function ChatView({ sessionId }: Readonly<{ sessionId: string }>) {
 
       {/* CLI disconnected banner — only when not launching */}
       {connStatus === "connected" && !cliConnected && !cliLaunching && !isCompletedSubagent && (
-        <div className="px-4 py-1.5 bg-cc-warning/5 border-b border-cc-border text-center flex items-center justify-center gap-3">
+        <div className="px-4 py-1.5 border-b border-cc-border/60 text-center flex items-center justify-center gap-3">
           <span className="w-1 h-1 rounded-full bg-cc-warning animate-pulse" />
-          <span className="text-[11px] text-cc-warning/80 font-mono-code">
+          <span className="text-[12.5px] text-cc-warning">
             agent disconnected
           </span>
           <button
             onClick={() => api.relaunchSession(sessionId).catch(console.error)}
-            className="text-[11px] font-mono-code px-2 py-0.5 rounded bg-cc-warning/10 hover:bg-cc-warning/20 text-cc-warning transition-colors cursor-pointer"
+            className="text-[12.5px] px-2.5 h-6 rounded-full border border-cc-border text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer"
           >
             reconnect
           </button>
@@ -74,9 +74,9 @@ export function ChatView({ sessionId }: Readonly<{ sessionId: string }>) {
 
       {/* WebSocket disconnected banner */}
       {connStatus === "disconnected" && !isCompletedSubagent && (
-        <div className="px-4 py-1.5 bg-cc-warning/5 border-b border-cc-border text-center flex items-center justify-center gap-2">
+        <div className="px-4 py-1.5 border-b border-cc-border/60 text-center flex items-center justify-center gap-2">
           <span className="w-1 h-1 rounded-full bg-cc-warning animate-pulse" />
-          <span className="text-[11px] text-cc-warning/80 font-mono-code">
+          <span className="text-[12.5px] text-cc-warning">
             reconnecting...
           </span>
         </div>
@@ -87,7 +87,7 @@ export function ChatView({ sessionId }: Readonly<{ sessionId: string }>) {
 
       {/* Permission banners */}
       {perms.length > 0 && (
-        <div className="shrink-0 max-h-[55dvh] overflow-y-auto border-t border-cc-border">
+        <div className="shrink-0 max-h-[55dvh] overflow-y-auto">
           {perms.map((p) => (
             <PermissionBanner key={p.request_id} permission={p} sessionId={sessionId} />
           ))}

@@ -100,10 +100,10 @@ export class SessionRecorder {
 /**
  * Manages recording for all sessions.
  *
- * Always enabled by default. Disable explicitly with CAMPFIRE_RECORD=0.
+ * Always enabled by default. Disable explicitly with SWITCHYARD_RECORD=0.
  *
  * Automatic rotation: when total lines across all recording files exceed
- * maxLines (default 100 000, override with CAMPFIRE_RECORDINGS_MAX_LINES),
+ * maxLines (default 100 000, override with SWITCHYARD_RECORDINGS_MAX_LINES),
  * the oldest files are deleted until we're back under the limit.
  */
 export class RecorderManager {
@@ -124,11 +124,11 @@ export class RecorderManager {
     this.globalEnabled = options?.globalEnabled ?? RecorderManager.resolveEnabled();
     this.recordingsDir =
       options?.recordingsDir ??
-      process.env.CAMPFIRE_RECORDINGS_DIR ??
-      join(homedir(), ".campfire", "recordings");
+      process.env.SWITCHYARD_RECORDINGS_DIR ??
+      join(homedir(), ".switchyard", "recordings");
     this.maxLines =
       options?.maxLines ??
-      (Number(process.env.CAMPFIRE_RECORDINGS_MAX_LINES) || DEFAULT_MAX_LINES);
+      (Number(process.env.SWITCHYARD_RECORDINGS_MAX_LINES) || DEFAULT_MAX_LINES);
 
     if (this.globalEnabled) {
       // Run cleanup at startup (async, non-blocking) and periodically
@@ -139,10 +139,10 @@ export class RecorderManager {
   }
 
   /**
-   * Always on unless explicitly disabled with CAMPFIRE_RECORD=0|false.
+   * Always on unless explicitly disabled with SWITCHYARD_RECORD=0|false.
    */
   private static resolveEnabled(): boolean {
-    const env = process.env.CAMPFIRE_RECORD;
+    const env = process.env.SWITCHYARD_RECORD;
     if (env === "0" || env === "false") return false;
     return true;
   }

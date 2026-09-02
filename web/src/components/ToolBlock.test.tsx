@@ -281,13 +281,13 @@ describe("ToolBlock", () => {
 
     const button = screen.getByRole("button");
 
-    // Expand - the detail area with the border-t class should appear
+    // Expand - the detail area (marked with data-tool-detail) should appear
     fireEvent.click(button);
-    expect(container.querySelector(".border-t")).toBeTruthy();
+    expect(container.querySelector("[data-tool-detail]")).toBeTruthy();
 
     // Collapse - the detail area should disappear
     fireEvent.click(button);
-    expect(container.querySelector(".border-t")).toBeNull();
+    expect(container.querySelector("[data-tool-detail]")).toBeNull();
   });
 
   it("renders Bash command with $ prefix when expanded", () => {

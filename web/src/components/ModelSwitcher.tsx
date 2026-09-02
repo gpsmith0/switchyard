@@ -102,14 +102,14 @@ export function ModelSwitcher({ sessionId }: Readonly<{ sessionId: string }>) {
         aria-label="Switch model"
         aria-expanded={open}
         aria-haspopup="listbox"
-        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-mono-code transition-colors cursor-pointer ${
+        className={`flex items-center gap-1 px-1.5 h-7 rounded-md text-[14px] font-medium transition-colors cursor-pointer ${
           open
             ? "bg-cc-active text-cc-fg"
             : "text-cc-muted hover:text-cc-fg hover:bg-cc-hover"
         }`}
       >
-        <span className="text-[10px]">{currentOption.icon}</span>
-        <span className="max-w-[80px] truncate hidden sm:inline">{currentOption.label}</span>
+        <span className="text-[12px]">{currentOption.icon}</span>
+        <span className="max-w-[120px] truncate hidden sm:inline">{currentOption.label}</span>
         <svg viewBox="0 0 16 16" fill="currentColor" className={`w-2.5 h-2.5 transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
           <path d="M4.427 9.573l3.396-3.396a.25.25 0 01.354 0l3.396 3.396a.25.25 0 01-.177.427H4.604a.25.25 0 01-.177-.427z" />
         </svg>
@@ -119,11 +119,11 @@ export function ModelSwitcher({ sessionId }: Readonly<{ sessionId: string }>) {
       {open && (
         <ul
           aria-label="Available models"
-          className="absolute right-0 top-full mt-1 z-50 min-w-[180px] max-h-64 overflow-y-auto bg-cc-card border border-cc-border rounded-lg shadow-float py-1 animate-slide-down list-none m-0 p-0 py-1"
+          className="absolute right-0 top-full mt-1 z-50 min-w-[180px] max-h-64 overflow-y-auto bg-cc-card border border-cc-border rounded-xl shadow-float py-1 animate-slide-down list-none m-0 p-0 py-1"
         >
           {/* Backend label */}
           <div className="px-3 py-1">
-            <span className="text-[9px] text-cc-muted/50 uppercase tracking-widest font-semibold">
+            <span className="text-[12px] text-cc-muted font-medium">
               {backendType}
             </span>
           </div>
@@ -142,7 +142,7 @@ export function ModelSwitcher({ sessionId }: Readonly<{ sessionId: string }>) {
                   }`}
                 >
                   <span className="text-[11px] w-4 text-center shrink-0">{m.icon}</span>
-                  <span className="text-[11px] font-medium flex-1 truncate">{m.label}</span>
+                  <span className="text-[13.5px] flex-1 truncate">{m.label}</span>
                   {isSelected && (
                     <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 text-cc-primary shrink-0" aria-hidden>
                       <path d="M13.78 4.22a.75.75 0 010 1.06l-7.25 7.25a.75.75 0 01-1.06 0L2.22 9.28a.75.75 0 011.06-1.06L6 10.94l6.72-6.72a.75.75 0 011.06 0z" />

@@ -51,7 +51,7 @@ describe("agent MCP stdio server", () => {
       id: 1,
       result: {
         capabilities: { tools: {} },
-        serverInfo: { name: "campfire-agents" },
+        serverInfo: { name: "switchyard-agents" },
       },
     });
   });
@@ -59,7 +59,7 @@ describe("agent MCP stdio server", () => {
   it("lists enabled ask tools over newline-delimited JSON-RPC", async () => {
     // This verifies the tool discovery request returns quickly with the
     // backend-filtered tools that the lead session should see.
-    const child = startServer({ CAMPFIRE_AGENT_MCP_BACKENDS: "codex,goose" });
+    const child = startServer({ SWITCHYARD_AGENT_MCP_BACKENDS: "codex,goose" });
 
     child.stdin.write(JSON.stringify({ jsonrpc: "2.0", id: "tools", method: "tools/list", params: {} }) + "\n");
 

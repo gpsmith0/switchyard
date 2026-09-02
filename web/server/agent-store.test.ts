@@ -7,13 +7,13 @@ import { tmpdir } from "node:os";
  * Agent store tests.
  *
  * Tests CRUD operations for agent profiles and execution history.
- * Uses a temp directory to avoid polluting the real ~/.campfire/agents/ path.
+ * Uses a temp directory to avoid polluting the real ~/.switchyard/agents/ path.
  * Since agent-store.ts uses a hardcoded path, we test the slugify and
  * validation logic via the public API behavior.
  */
 
 // We test the store module's internal logic by importing and calling it.
-// The store writes to ~/.campfire/agents/ which may not exist in CI,
+// The store writes to ~/.switchyard/agents/ which may not exist in CI,
 // so these tests focus on the validation logic that throws before I/O.
 import * as agentStore from "./agent-store.js";
 

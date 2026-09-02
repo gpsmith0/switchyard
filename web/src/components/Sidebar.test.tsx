@@ -693,7 +693,7 @@ describe("Sidebar", () => {
     expect(screen.queryByText("completed")).not.toBeInTheDocument();
   });
 
-  it("uses the shared Campfire logo for codex sessions", () => {
+  it("uses the shared Switchyard logo for codex sessions", () => {
     // The sidebar header brand should stay stable across backend types. Codex
     // sessions still get their backend pill in the session row.
     const session = makeSession("s1", { backend_type: "codex" });

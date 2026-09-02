@@ -144,17 +144,17 @@ describe("WebhookManager.emit()", () => {
 
     const headers = mockFetch.mock.calls[0][1]?.headers as Record<string, string>;
     expect(headers["Content-Type"]).toBe("application/json");
-    expect(headers["User-Agent"]).toBe("Campfire-Webhook/1.0");
-    expect(headers["X-Campfire-Event"]).toBe("session.created");
-    expect(headers["X-Campfire-Delivery"]).toMatch(/^header-check-/);
+    expect(headers["User-Agent"]).toBe("Switchyard-Webhook/1.0");
+    expect(headers["X-Switchyard-Event"]).toBe("session.created");
+    expect(headers["X-Switchyard-Delivery"]).toMatch(/^header-check-/);
   });
 });
 
 // ===========================================================================
-// HMAC Signing — verify X-Campfire-Signature is correct HMAC-SHA256
+// HMAC Signing — verify X-Switchyard-Signature is correct HMAC-SHA256
 // ===========================================================================
 describe("HMAC signing", () => {
-  it("includes X-Campfire-Signature header when secret is set", async () => {
+  it("includes X-Switchyard-Signature header when secret is set", async () => {
     createTestWebhook({ name: "Signed Hook", secret: "my-secret-key" });
 
     const manager = new WebhookManager();
@@ -170,10 +170,10 @@ describe("HMAC signing", () => {
     // Verify the signature matches our own HMAC-SHA256 computation
     const expectedSignature =
       "sha256=" + createHmac("sha256", "my-secret-key").update(body).digest("hex");
-    expect(headers["X-Campfire-Signature"]).toBe(expectedSignature);
+    expect(headers["X-Switchyard-Signature"]).toBe(expectedSignature);
   });
 
-  it("does not include X-Campfire-Signature when no secret is set", async () => {
+  it("does not include X-Switchyard-Signature when no secret is set", async () => {
     createTestWebhook({ name: "Unsigned Hook" });
 
     const manager = new WebhookManager();
@@ -184,7 +184,7 @@ describe("HMAC signing", () => {
     });
 
     const headers = mockFetch.mock.calls[0][1]?.headers as Record<string, string>;
-    expect(headers["X-Campfire-Signature"]).toBeUndefined();
+    expect(headers["X-Switchyard-Signature"]).toBeUndefined();
   });
 
   it("produces a valid sha256 HMAC hex digest", async () => {
@@ -199,7 +199,7 @@ describe("HMAC signing", () => {
     });
 
     const headers = mockFetch.mock.calls[0][1]?.headers as Record<string, string>;
-    const signature = headers["X-Campfire-Signature"];
+    const signature = headers["X-Switchyard-Signature"];
 
     // Should be "sha256=" followed by exactly 64 hex characters
     expect(signature).toMatch(/^sha256=[a-f0-9]{64}$/);
@@ -444,7 +444,7 @@ describe("WebhookManager.formatSlackPayload()", () => {
       { model: "claude-sonnet" },
     );
 
-    expect(result.text).toBe("Campfire: Session Started \u2014 session abcdef12");
+    expect(result.text).toBe("Switchyard: Session Started \u2014 session abcdef12");
     expect(result.blocks).toHaveLength(2);
     expect(result.blocks[0]).toEqual({
       type: "section",

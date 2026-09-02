@@ -28,8 +28,8 @@ export async function securityHeaders(c: Context, next: Next): Promise<void> {
 
 // ─── Rate Limiting ──────────────────────────────────────────────────────────
 
-const WINDOW_MS = Number(process.env.CAMPFIRE_RATE_LIMIT_WINDOW_MS) || 60_000;
-const MAX_REQUESTS = Number(process.env.CAMPFIRE_RATE_LIMIT_MAX) || 120;
+const WINDOW_MS = Number(process.env.SWITCHYARD_RATE_LIMIT_WINDOW_MS) || 60_000;
+const MAX_REQUESTS = Number(process.env.SWITCHYARD_RATE_LIMIT_MAX) || 120;
 
 interface RateEntry {
   count: number;

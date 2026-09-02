@@ -237,7 +237,7 @@ describe("POST /api/sessions/create", () => {
       isWorktree: false,
     });
     vi.mocked(gitUtils.ensureWorktree).mockReturnValue({
-      worktreePath: "/home/.campfire/worktrees/my-repo/feat-branch",
+      worktreePath: "/home/.switchyard/worktrees/my-repo/feat-branch",
       branch: "feat-branch",
       actualBranch: "feat-branch",
       isNew: true,
@@ -258,13 +258,13 @@ describe("POST /api/sessions/create", () => {
     });
     expect(launcher.launch).toHaveBeenCalledWith(
       expect.objectContaining({
-        cwd: "/home/.campfire/worktrees/my-repo/feat-branch",
+        cwd: "/home/.switchyard/worktrees/my-repo/feat-branch",
         worktreeInfo: expect.objectContaining({
           isWorktree: true,
           repoRoot: "/repo",
           branch: "feat-branch",
           actualBranch: "feat-branch",
-          worktreePath: "/home/.campfire/worktrees/my-repo/feat-branch",
+          worktreePath: "/home/.switchyard/worktrees/my-repo/feat-branch",
         }),
       }),
     );
@@ -992,7 +992,7 @@ describe("GET /api/git/branches", () => {
 describe("POST /api/git/worktree", () => {
   it("creates a worktree", async () => {
     const result = {
-      worktreePath: "/home/.campfire/worktrees/repo/feat",
+      worktreePath: "/home/.switchyard/worktrees/repo/feat",
       branch: "feat",
       actualBranch: "feat",
       isNew: true,
@@ -1151,62 +1151,62 @@ describe("GET /api/fs/home", () => {
 
   it("returns home as cwd when process.cwd() is the package root", async () => {
     const origCwd = process.cwd;
-    const origEnv = process.env.__CAMPFIRE_PACKAGE_ROOT;
+    const origEnv = process.env.__SWITCHYARD_PACKAGE_ROOT;
     try {
-      process.env.__CAMPFIRE_PACKAGE_ROOT = "/opt/campfire";
-      process.cwd = () => "/opt/campfire";
+      process.env.__SWITCHYARD_PACKAGE_ROOT = "/opt/switchyard";
+      process.cwd = () => "/opt/switchyard";
       const res = await app.request("/api/fs/home", { method: "GET" });
       const json = await res.json();
       expect(json.cwd).toBe(json.home);
     } finally {
       process.cwd = origCwd;
-      process.env.__CAMPFIRE_PACKAGE_ROOT = origEnv;
+      process.env.__SWITCHYARD_PACKAGE_ROOT = origEnv;
     }
   });
 
   it("returns home as cwd when process.cwd() is inside the package root", async () => {
     const origCwd = process.cwd;
-    const origEnv = process.env.__CAMPFIRE_PACKAGE_ROOT;
+    const origEnv = process.env.__SWITCHYARD_PACKAGE_ROOT;
     try {
-      process.env.__CAMPFIRE_PACKAGE_ROOT = "/opt/campfire";
-      process.cwd = () => "/opt/campfire/node_modules/.bin";
+      process.env.__SWITCHYARD_PACKAGE_ROOT = "/opt/switchyard";
+      process.cwd = () => "/opt/switchyard/node_modules/.bin";
       const res = await app.request("/api/fs/home", { method: "GET" });
       const json = await res.json();
       expect(json.cwd).toBe(json.home);
     } finally {
       process.cwd = origCwd;
-      process.env.__CAMPFIRE_PACKAGE_ROOT = origEnv;
+      process.env.__SWITCHYARD_PACKAGE_ROOT = origEnv;
     }
   });
 
   it("returns actual cwd when launched from a project directory", async () => {
     const origCwd = process.cwd;
-    const origEnv = process.env.__CAMPFIRE_PACKAGE_ROOT;
+    const origEnv = process.env.__SWITCHYARD_PACKAGE_ROOT;
     try {
-      process.env.__CAMPFIRE_PACKAGE_ROOT = "/opt/campfire";
+      process.env.__SWITCHYARD_PACKAGE_ROOT = "/opt/switchyard";
       process.cwd = () => "/Users/testuser/my-project";
       const res = await app.request("/api/fs/home", { method: "GET" });
       const json = await res.json();
       expect(json.cwd).toBe("/Users/testuser/my-project");
     } finally {
       process.cwd = origCwd;
-      process.env.__CAMPFIRE_PACKAGE_ROOT = origEnv;
+      process.env.__SWITCHYARD_PACKAGE_ROOT = origEnv;
     }
   });
 
   it("returns home as cwd when process.cwd() equals home directory", async () => {
     const { homedir } = await import("node:os");
     const origCwd = process.cwd;
-    const origEnv = process.env.__CAMPFIRE_PACKAGE_ROOT;
+    const origEnv = process.env.__SWITCHYARD_PACKAGE_ROOT;
     try {
-      delete process.env.__CAMPFIRE_PACKAGE_ROOT;
+      delete process.env.__SWITCHYARD_PACKAGE_ROOT;
       process.cwd = () => homedir();
       const res = await app.request("/api/fs/home", { method: "GET" });
       const json = await res.json();
       expect(json.cwd).toBe(json.home);
     } finally {
       process.cwd = origCwd;
-      process.env.__CAMPFIRE_PACKAGE_ROOT = origEnv;
+      process.env.__SWITCHYARD_PACKAGE_ROOT = origEnv;
     }
   });
 });

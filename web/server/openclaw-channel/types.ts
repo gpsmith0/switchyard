@@ -1,8 +1,8 @@
 /**
- * Types for the Campfire OpenClaw channel plugin.
+ * Types for the Switchyard OpenClaw channel plugin.
  *
  * These are simplified versions of the OpenClaw plugin SDK types
- * that define the contract between Campfire and OpenClaw.
+ * that define the contract between Switchyard and OpenClaw.
  */
 
 // ─── Plugin SDK types (subset) ──────────────────────────────────────────────

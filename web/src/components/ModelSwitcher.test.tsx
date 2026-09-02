@@ -31,7 +31,7 @@ describe("ModelSwitcher", () => {
     render(<ModelSwitcher sessionId="codex-session" />);
 
     // Codex runtime model switching is unsupported by the adapter; rendering a
-    // switcher would imply Campfire can override the Codex-configured model.
+    // switcher would imply Switchyard can override the Codex-configured model.
     expect(screen.queryByLabelText("Switch model")).toBeNull();
   });
 

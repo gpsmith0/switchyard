@@ -277,7 +277,7 @@ describe("enrichUserMessage (§3.6.2)", () => {
     // reinforce again or reshape the result.
     const enrichment = {
       items: [{ id: "k1", kind: "knowledge" as const, namespace: "global", summary: "s", weight: 1 }],
-      block: "--- Campfire memory (auto-recalled; may be stale) ---\n--- end memory ---",
+      block: "--- Switchyard memory (auto-recalled; may be stale) ---\n--- end memory ---",
     };
     vi.mocked(semanticMemory.queryForEnrichment).mockResolvedValueOnce(enrichment);
 

@@ -8,13 +8,13 @@ export function Footer() {
         </a>
       </p>
       <div className="flex justify-center gap-6 mt-2">
-        <a href="https://github.com/The-Vibe-Company/campfire" target="_blank" rel="noopener" className="text-cc-muted hover:text-cc-fg transition-colors">
+        <a href="https://github.com/The-Vibe-Company/switchyard" target="_blank" rel="noopener" className="text-cc-muted hover:text-cc-fg transition-colors">
           GitHub
         </a>
-        <a href="https://www.npmjs.com/package/the-campfire" target="_blank" rel="noopener" className="text-cc-muted hover:text-cc-fg transition-colors">
+        <a href="https://www.npmjs.com/package/@gpsmith0/switchyard" target="_blank" rel="noopener" className="text-cc-muted hover:text-cc-fg transition-colors">
           npm
         </a>
-        <a href="https://github.com/The-Vibe-Company/campfire/blob/main/LICENSE" target="_blank" rel="noopener" className="text-cc-muted hover:text-cc-fg transition-colors">
+        <a href="https://github.com/The-Vibe-Company/switchyard/blob/main/LICENSE" target="_blank" rel="noopener" className="text-cc-muted hover:text-cc-fg transition-colors">
           MIT License
         </a>
       </div>

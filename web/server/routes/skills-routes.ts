@@ -9,7 +9,7 @@ export function registerSkillsRoutes(api: Hono, _deps: RouteDeps): void {
     const disabled = skillsManager.getDisabledPlugins();
     const enriched = plugins.map((p) => ({
       ...p,
-      disabledInCampfire: disabled.includes(p.id),
+      disabledInSwitchyard: disabled.includes(p.id),
     }));
     return c.json(enriched);
   });
@@ -20,7 +20,7 @@ export function registerSkillsRoutes(api: Hono, _deps: RouteDeps): void {
     const plugin = skillsManager.getPlugin(id);
     if (!plugin) return c.json({ error: "Plugin not found" }, 404);
     const disabled = skillsManager.isPluginDisabled(id);
-    return c.json({ ...plugin, disabledInCampfire: disabled });
+    return c.json({ ...plugin, disabledInSwitchyard: disabled });
   });
 
   // Read a skill's SKILL.md content
@@ -41,7 +41,7 @@ export function registerSkillsRoutes(api: Hono, _deps: RouteDeps): void {
     return c.json({ content });
   });
 
-  // Toggle plugin enabled/disabled in Campfire
+  // Toggle plugin enabled/disabled in Switchyard
   api.post("/skills/:id/toggle", async (c) => {
     const id = decodeURIComponent(c.req.param("id"));
     const body = await c.req.json().catch(() => ({}));

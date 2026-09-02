@@ -25,11 +25,11 @@ export interface PersistedSession {
 
 // ─── Store ──────────────────────────────────────────────────────────────────
 
-// Persistent storage: ~/.campfire/sessions/ (survives reboots, unlike /tmp/)
-const PERSISTENT_DIR = join(homedir(), ".campfire", "sessions");
+// Persistent storage: ~/.switchyard/sessions/ (survives reboots, unlike /tmp/)
+const PERSISTENT_DIR = join(homedir(), ".switchyard", "sessions");
 // Legacy location (may contain data from older installs or pre-migration)
 const LEGACY_DIR = join(tmpdir(), "vibe-sessions");
-const DEFAULT_DIR = process.env.CAMPFIRE_SESSION_DIR || PERSISTENT_DIR;
+const DEFAULT_DIR = process.env.SWITCHYARD_SESSION_DIR || PERSISTENT_DIR;
 
 export class SessionStore {
   private readonly dir: string;
@@ -42,7 +42,7 @@ export class SessionStore {
     this.migrateFromLegacy();
   }
 
-  /** One-time migration: copy session files from /tmp/vibe-sessions/ to ~/.campfire/sessions/ */
+  /** One-time migration: copy session files from /tmp/vibe-sessions/ to ~/.switchyard/sessions/ */
   private migrateFromLegacy(): void {
     // Skip if using custom dir or legacy dir doesn't exist
     if (this.dir !== PERSISTENT_DIR) return;

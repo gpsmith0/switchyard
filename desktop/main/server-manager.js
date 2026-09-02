@@ -1,9 +1,9 @@
 // Sidecar lifecycle: locate the bundled Bun runtime + backend, spawn the
-// Campfire server, wait for readiness, and tear it down on quit.
+// Switchyard server, wait for readiness, and tear it down on quit.
 //
-// Reuse-first: if a Campfire server already answers on the default port
-// (e.g. the user runs `the-campfire` as a launchd service), the app attaches
-// to it instead of spawning a second server against the same ~/.campfire
+// Reuse-first: if a Switchyard server already answers on the default port
+// (e.g. the user runs `switchyard` as a launchd service), the app attaches
+// to it instead of spawning a second server against the same ~/.switchyard
 // state directory.
 "use strict";
 
@@ -11,7 +11,7 @@ const { spawn } = require("node:child_process");
 const { existsSync, mkdirSync, createWriteStream } = require("node:fs");
 const { join } = require("node:path");
 const os = require("node:os");
-const { findFreePort, probeCampfire, waitForCampfire } = require("./net-utils.js");
+const { findFreePort, probeSwitchyard, waitForSwitchyard } = require("./net-utils.js");
 
 const DEFAULT_PORT = 4567;
 
@@ -46,12 +46,12 @@ class ServerManager {
   }
 
   /**
-   * Ensure a Campfire server is available. Returns { port, external }.
+   * Ensure a Switchyard server is available. Returns { port, external }.
    * Throws with a user-presentable message on failure.
    */
   async ensure() {
     // Explicit override for development / debugging.
-    const overrideUrl = process.env.CAMPFIRE_DESKTOP_URL;
+    const overrideUrl = process.env.SWITCHYARD_DESKTOP_URL;
     if (overrideUrl) {
       const url = new URL(overrideUrl);
       this.port = Number(url.port) || 80;
@@ -59,8 +59,8 @@ class ServerManager {
       return { port: this.port, external: true };
     }
 
-    // Attach to an existing local Campfire (service install, `bunx the-campfire`, dev server).
-    if (await probeCampfire(DEFAULT_PORT)) {
+    // Attach to an existing local Switchyard (service install, `bunx @gpsmith0/switchyard`, dev server).
+    if (await probeSwitchyard(DEFAULT_PORT)) {
       this.port = DEFAULT_PORT;
       this.external = true;
       return { port: DEFAULT_PORT, external: true };
@@ -76,12 +76,12 @@ class ServerManager {
 
     this.port = await findFreePort(DEFAULT_PORT);
 
-    // Sidecar logs go next to the existing service logs so `the-campfire logs`
+    // Sidecar logs go next to the existing service logs so `switchyard logs`
     // habits still work for debugging the desktop flavor.
-    const logDir = join(os.homedir(), ".campfire", "logs");
+    const logDir = join(os.homedir(), ".switchyard", "logs");
     mkdirSync(logDir, { recursive: true });
     const logStream = createWriteStream(join(logDir, "desktop-server.log"), { flags: "a" });
-    logStream.write(`\n──── Campfire desktop sidecar starting (port ${this.port}) ${new Date().toISOString()} ────\n`);
+    logStream.write(`\n──── Switchyard desktop sidecar starting (port ${this.port}) ${new Date().toISOString()} ────\n`);
 
     this.child = spawn(bunBin, [join(backendDir, "server", "index.ts")], {
       cwd: backendDir,
@@ -89,7 +89,7 @@ class ServerManager {
         ...process.env,
         NODE_ENV: "production",
         PORT: String(this.port),
-        __CAMPFIRE_PACKAGE_ROOT: backendDir,
+        __SWITCHYARD_PACKAGE_ROOT: backendDir,
       },
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -112,12 +112,12 @@ class ServerManager {
     // Generous deadline: on the very first launch Gatekeeper verifies the
     // whole bundle (~400 MB) before and while the sidecar starts, which can
     // take well over 30s on slower machines.
-    const ready = await waitForCampfire(this.port, 90000, () => this.child !== null);
+    const ready = await waitForSwitchyard(this.port, 90000, () => this.child !== null);
     if (!ready) {
       this.stop();
       throw new Error(
-        "The Campfire server did not start.\n\n" +
-        `Recent server log (~/.campfire/logs/desktop-server.log):\n${this.logTail()}`,
+        "The Switchyard server did not start.\n\n" +
+        `Recent server log (~/.switchyard/logs/desktop-server.log):\n${this.logTail()}`,
       );
     }
     return { port: this.port, external: false };
@@ -127,7 +127,7 @@ class ServerManager {
   logTail(lines = 12) {
     try {
       const { readFileSync } = require("node:fs");
-      const logPath = join(os.homedir(), ".campfire", "logs", "desktop-server.log");
+      const logPath = join(os.homedir(), ".switchyard", "logs", "desktop-server.log");
       const content = readFileSync(logPath, "utf8");
       return content.split("\n").filter(Boolean).slice(-lines).join("\n");
     } catch {

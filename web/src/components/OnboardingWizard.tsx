@@ -85,7 +85,7 @@ export function OnboardingWizard({ onComplete }: Readonly<{ onComplete: () => vo
     <dialog
       ref={dialogRef}
       open
-      aria-label="Campfire setup wizard"
+      aria-label="Switchyard setup wizard"
       className="fixed inset-0 z-50 flex items-center justify-center w-full h-full m-0 p-0 bg-black/50 backdrop-blur-md border-none outline-none"
     >
       <div className="w-full max-w-[520px] mx-5 bg-cc-card rounded-2xl shadow-float border border-cc-border/60 overflow-hidden animate-slide-up">
@@ -174,10 +174,10 @@ function WelcomeContent({ onNext, onSkip }: Readonly<{ onNext: () => void; onSki
     <div className="text-center">
       {/* Logo area */}
       <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-cc-primary/20 to-cc-primary/5 flex items-center justify-center border border-cc-primary/10">
-        <span className="text-3xl" role="img" aria-label="Campfire">{"\u{1F525}"}</span>
+        <span className="text-3xl" role="img" aria-label="Switchyard">{"\u{1F525}"}</span>
       </div>
 
-      <h1 className="text-[22px] font-bold text-cc-fg tracking-tight">Welcome to Campfire</h1>
+      <h1 className="text-[22px] font-bold text-cc-fg tracking-tight">Welcome to Switchyard</h1>
       <p className="text-[14px] text-cc-muted mt-2 leading-relaxed max-w-[380px] mx-auto">
         A unified web interface for AI coding agents. Run Claude, Codex, Goose, Aider and more from your browser.
       </p>
@@ -489,7 +489,7 @@ function TourContent({ onNext }: Readonly<{ onNext: () => void }>) {
   return (
     <div>
       <h2 className="text-[18px] font-bold text-cc-fg tracking-tight">What you can do</h2>
-      <p className="text-[13px] text-cc-muted mt-1 mb-5">A quick look at Campfire's key capabilities.</p>
+      <p className="text-[13px] text-cc-muted mt-1 mb-5">A quick look at Switchyard's key capabilities.</p>
 
       <div className="grid grid-cols-2 gap-3 mb-6">
         {FEATURES.map((f) => (
@@ -540,7 +540,7 @@ function LaunchContent({ cwd, onComplete }: Readonly<{ cwd: string; onComplete: 
         autoFocus
         className="w-full h-11 mt-8 rounded-xl bg-cc-primary text-white text-[14px] font-semibold hover:bg-cc-primary-hover active:scale-[0.98] transition-all cursor-pointer shadow-sm"
       >
-        Open Campfire
+        Open Switchyard
       </button>
     </div>
   );

@@ -98,7 +98,7 @@ export function ContainerDashboard({ embedded = false }: Readonly<{ embedded?: b
           <h2 className="text-[12px] font-semibold text-cc-fg mb-2">Running Containers</h2>
           <div className="space-y-2">
             {containers.map((c) => {
-              const sessionId = c.name.replace("campfire-", "");
+              const sessionId = c.name.replace("switchyard-", "");
               const sessionName = sessionNames.get(sessionId);
               return (
                 <div key={c.containerId} className="rounded-xl border border-cc-border bg-cc-card overflow-hidden">

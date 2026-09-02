@@ -1,6 +1,6 @@
 {
-  "name": "Campfire",
-  "short_name": "Campfire",
+  "name": "Switchyard",
+  "short_name": "Switchyard",
   "description": "Collaborative web UI for AI coding agents",
   "start_url": "/",
   "scope": "/",

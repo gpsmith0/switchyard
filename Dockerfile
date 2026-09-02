@@ -15,7 +15,7 @@ RUN cd web && bun run build
 FROM oven/bun:1-slim
 
 # Create non-root user
-RUN groupadd -r campfire && useradd -r -g campfire -m -d /home/campfire campfire
+RUN groupadd -r switchyard && useradd -r -g switchyard -m -d /home/switchyard switchyard
 
 WORKDIR /app
 
@@ -31,10 +31,10 @@ COPY web/bin/ ./web/bin/
 COPY --from=builder /app/web/dist ./web/dist
 
 # Create data directories
-RUN mkdir -p /home/campfire/.companion /tmp/vibe-sessions && \
-    chown -R campfire:campfire /home/campfire /tmp/vibe-sessions /app
+RUN mkdir -p /home/switchyard/.companion /tmp/vibe-sessions && \
+    chown -R switchyard:switchyard /home/switchyard /tmp/vibe-sessions /app
 
-USER campfire
+USER switchyard
 
 # Default environment
 ENV NODE_ENV=production

@@ -24,7 +24,7 @@ import type { AgentAdapter } from "./adapter-types.js";
 import { resolveBinary, getEnrichedPath } from "./path-resolver.js";
 import {
   getLegacyCodexHome,
-  resolveCampfireCodexSessionHome,
+  resolveSwitchyardCodexSessionHome,
 } from "./codex-home.js";
 import { getSettings } from "./settings-manager.js";
 import { detectEnvironment } from "./environment-detector.js";
@@ -79,7 +79,7 @@ export interface SdkSessionInfo {
   sessionEnv?: Record<string, string>;
   /** Session that spawned this one, when used as a sub-agent. */
   parentSessionId?: string;
-  /** Orchestration role assigned by Campfire. */
+  /** Orchestration role assigned by Switchyard. */
   orchestrationRole?: "lead" | "subagent" | "race_entry";
   /** Environment detections computed for the session cwd. */
   detectedEnvironment?: DetectedEnvironment;
@@ -127,7 +127,7 @@ export interface LaunchOptions {
  * with legacy Claude --sdk-url WebSocket available by environment flag).
  */
 function useClaudeSdkUrlTransport(): boolean {
-  return process.env.CAMPFIRE_CLAUDE_TRANSPORT === "sdk-url";
+  return process.env.SWITCHYARD_CLAUDE_TRANSPORT === "sdk-url";
 }
 
 /** Build Claude Code CLI arguments for the legacy --sdk-url transport. */
@@ -776,7 +776,7 @@ export class CliLauncher {
     const args: string[] = ["app-server"];
     const internetEnabled = options.codexInternetAccess === true;
     args.push("-c", `tools.webSearch=${internetEnabled ? "true" : "false"}`);
-    const codexHome = resolveCampfireCodexSessionHome(
+    const codexHome = resolveSwitchyardCodexSessionHome(
       sessionId,
       options.codexHome,
     );

@@ -1,13 +1,13 @@
-# Campfire desktop packaging (macOS, Apple Silicon).
+# Switchyard desktop packaging (macOS, Apple Silicon).
 #
 # Distribution is deliberately unsigned/ad-hoc ("cheap" path): no Apple
 # Developer Program membership required. Downloaded builds carry the
 # quarantine attribute, so first launch needs either right-click → Open or:
-#   xattr -cr /Applications/Campfire.app
+#   xattr -cr /Applications/Switchyard.app
 # Signing + notarization can be layered on later by setting mac.identity and
 # notarize options once an Apple Developer certificate exists.
-appId: sh.campfire.desktop
-productName: Campfire
+appId: sh.switchyard.desktop
+productName: Switchyard
 copyright: © 2026 The Vibe Company
 
 directories:
@@ -15,7 +15,7 @@ directories:
   buildResources: build
 
 # The Electron app itself is tiny — just the main process + preload. The whole
-# Campfire server ships as extraResources (outside the asar) because it is
+# Switchyard server ships as extraResources (outside the asar) because it is
 # executed by the bundled Bun runtime, not by Electron's Node.
 files:
   - main/**
@@ -48,4 +48,4 @@ mac:
 
 dmg:
   sign: false
-  artifactName: Campfire-${version}-arm64.dmg
+  artifactName: Switchyard-${version}-arm64.dmg

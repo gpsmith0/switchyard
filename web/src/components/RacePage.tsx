@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api, type CampfireEnv, type RaceInfo } from "../api.js";
+import { api, type SwitchyardEnv, type RaceInfo } from "../api.js";
 import { RaceComparison } from "./RaceComparison.js";
 
 const BACKENDS = [
@@ -20,7 +20,7 @@ export function RacePage() {
   const [prompt, setPrompt] = useState("");
   const [selectedBackends, setSelectedBackends] = useState<string[]>(["claude", "codex"]);
   const [cascade, setCascade] = useState(false);
-  const [envs, setEnvs] = useState<CampfireEnv[]>([]);
+  const [envs, setEnvs] = useState<SwitchyardEnv[]>([]);
   const [selectedEnv, setSelectedEnv] = useState(() => {
     try {
       return localStorage.getItem("cc-selected-env") || "";

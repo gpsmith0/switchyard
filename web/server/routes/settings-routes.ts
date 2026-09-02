@@ -3,9 +3,9 @@ import type { RouteDeps } from "./route-deps.js";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import { DEFAULT_OPENROUTER_MODEL, getSettings, updateSettings, type CampfireSettings } from "../settings-manager.js";
+import { DEFAULT_OPENROUTER_MODEL, getSettings, updateSettings, type SwitchyardSettings } from "../settings-manager.js";
 
-function settingsResponse(s: CampfireSettings) {
+function settingsResponse(s: SwitchyardSettings) {
   return {
     openrouterApiKeyConfigured: !!s.openrouterApiKey.trim(),
     openrouterModel: s.openrouterModel || DEFAULT_OPENROUTER_MODEL,

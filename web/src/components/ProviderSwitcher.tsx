@@ -109,13 +109,13 @@ export function ProviderSwitcher({ sessionId }: Readonly<{ sessionId: string }>)
         onClick={() => setOpen((v) => !v)}
         aria-label="Switch provider"
         aria-expanded={open}
-        className={`flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors cursor-pointer ${
+        className={`flex items-center gap-1 px-1.5 h-7 rounded-md text-[14px] font-medium transition-colors cursor-pointer ${
           open
             ? "bg-cc-active text-cc-fg"
             : `${provider.color} hover:bg-cc-hover`
         }`}
       >
-        <span className="text-[10px]">{provider.icon}</span>
+        <span className="text-[12px]">{provider.icon}</span>
         <span className="hidden sm:inline">{provider.label}</span>
         <svg viewBox="0 0 16 16" fill="currentColor" className={`w-2.5 h-2.5 transition-transform duration-150 ${open ? "rotate-180" : ""}`}>
           <path d="M4.427 9.573l3.396-3.396a.25.25 0 01.354 0l3.396 3.396a.25.25 0 01-.177.427H4.604a.25.25 0 01-.177-.427z" />
@@ -126,10 +126,10 @@ export function ProviderSwitcher({ sessionId }: Readonly<{ sessionId: string }>)
       {open && (
         <ul
           aria-label="Available providers"
-          className="absolute right-0 top-full mt-1 z-50 min-w-[200px] bg-cc-card border border-cc-border rounded-lg shadow-float py-1 animate-slide-down list-none m-0 p-0 py-1"
+          className="absolute right-0 top-full mt-1 z-50 min-w-[200px] bg-cc-card border border-cc-border rounded-xl shadow-float py-1 animate-slide-down list-none m-0 p-0 py-1"
         >
           <li className="px-3 py-1">
-            <span className="text-[9px] text-cc-muted/50 uppercase tracking-widest font-semibold">
+            <span className="text-[12px] text-cc-muted font-medium">
               Providers
             </span>
           </li>
@@ -151,7 +151,7 @@ export function ProviderSwitcher({ sessionId }: Readonly<{ sessionId: string }>)
                   <span className={`text-sm ${info.color}`}>{info.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[11px] font-medium text-cc-fg">{info.label}</span>
+                      <span className="text-[13.5px] text-cc-fg">{info.label}</span>
                       {!b.available && (
                         <span className="text-[8px] text-cc-muted/50 font-mono-code">not installed</span>
                       )}

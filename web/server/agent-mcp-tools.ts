@@ -78,10 +78,10 @@ export function createAgentMcpServerConfig(options: {
     command: resolveBunCommand(),
     args: [`${options.packageRoot}/server/agent-mcp-stdio.ts`],
     env: {
-      CAMPFIRE_AGENT_MCP_URL: `http://127.0.0.1:${options.port}/api/internal/agent-mcp`,
-      CAMPFIRE_AGENT_MCP_TOKEN: options.token,
-      CAMPFIRE_PARENT_SESSION_ID: options.parentSessionId,
-      CAMPFIRE_AGENT_MCP_BACKENDS: (options.backends ?? TOOL_BACKENDS.map((entry) => entry.backendType)).join(","),
+      SWITCHYARD_AGENT_MCP_URL: `http://127.0.0.1:${options.port}/api/internal/agent-mcp`,
+      SWITCHYARD_AGENT_MCP_TOKEN: options.token,
+      SWITCHYARD_PARENT_SESSION_ID: options.parentSessionId,
+      SWITCHYARD_AGENT_MCP_BACKENDS: (options.backends ?? TOOL_BACKENDS.map((entry) => entry.backendType)).join(","),
     },
   };
 }

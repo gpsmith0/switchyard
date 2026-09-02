@@ -18,8 +18,8 @@ const LIMIT = 3;
 
 async function loadMiddleware() {
   // Re-import with a small limit so tests don't need 120 requests per bucket.
-  process.env.CAMPFIRE_RATE_LIMIT_MAX = String(LIMIT);
-  process.env.CAMPFIRE_RATE_LIMIT_WINDOW_MS = "60000";
+  process.env.SWITCHYARD_RATE_LIMIT_MAX = String(LIMIT);
+  process.env.SWITCHYARD_RATE_LIMIT_WINDOW_MS = "60000";
   vi.resetModules();
   return import("./security-middleware.js");
 }
@@ -44,8 +44,8 @@ async function request(
 }
 
 beforeEach(() => {
-  delete process.env.CAMPFIRE_RATE_LIMIT_MAX;
-  delete process.env.CAMPFIRE_RATE_LIMIT_WINDOW_MS;
+  delete process.env.SWITCHYARD_RATE_LIMIT_MAX;
+  delete process.env.SWITCHYARD_RATE_LIMIT_WINDOW_MS;
 });
 
 describe("rateLimiter client identification", () => {

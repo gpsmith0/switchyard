@@ -16,12 +16,12 @@ let tempHome: string;
 beforeEach(() => {
   tempHome = mkdtempSync(join(tmpdir(), "auth-routes-test-"));
   mockHomedir.value = tempHome;
-  delete process.env.CAMPFIRE_PASSWORD;
+  delete process.env.SWITCHYARD_PASSWORD;
   vi.resetModules();
 });
 
 afterEach(() => {
-  delete process.env.CAMPFIRE_PASSWORD;
+  delete process.env.SWITCHYARD_PASSWORD;
   rmSync(tempHome, { recursive: true, force: true });
 });
 

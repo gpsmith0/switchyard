@@ -11,7 +11,7 @@ import { homedir } from "node:os";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-export interface CampfireEnv {
+export interface SwitchyardEnv {
   name: string;
   slug: string;
   variables: Record<string, string>;
@@ -21,8 +21,8 @@ export interface CampfireEnv {
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
-const CAMPFIRE_DIR = join(homedir(), ".campfire");
-const ENVS_DIR = join(CAMPFIRE_DIR, "envs");
+const SWITCHYARD_DIR = join(homedir(), ".switchyard");
+const ENVS_DIR = join(SWITCHYARD_DIR, "envs");
 
 function ensureDir(): void {
   mkdirSync(ENVS_DIR, { recursive: true });
@@ -45,11 +45,11 @@ function slugify(name: string): string {
 
 // ─── CRUD ───────────────────────────────────────────────────────────────────
 
-export function listEnvs(): CampfireEnv[] {
+export function listEnvs(): SwitchyardEnv[] {
   ensureDir();
   try {
     const files = readdirSync(ENVS_DIR).filter((f) => f.endsWith(".json"));
-    const envs: CampfireEnv[] = [];
+    const envs: SwitchyardEnv[] = [];
     for (const file of files) {
       try {
         const raw = readFileSync(join(ENVS_DIR, file), "utf-8");
@@ -65,11 +65,11 @@ export function listEnvs(): CampfireEnv[] {
   }
 }
 
-export function getEnv(slug: string): CampfireEnv | null {
+export function getEnv(slug: string): SwitchyardEnv | null {
   ensureDir();
   try {
     const raw = readFileSync(filePath(slug), "utf-8");
-    return JSON.parse(raw) as CampfireEnv;
+    return JSON.parse(raw) as SwitchyardEnv;
   } catch {
     return null;
   }
@@ -78,7 +78,7 @@ export function getEnv(slug: string): CampfireEnv | null {
 export function createEnv(
   name: string,
   variables: Record<string, string> = {},
-): CampfireEnv {
+): SwitchyardEnv {
   if (!name || !name.trim()) throw new Error("Environment name is required");
   const slug = slugify(name.trim());
   if (!slug) throw new Error("Environment name must contain alphanumeric characters");
@@ -89,7 +89,7 @@ export function createEnv(
   }
 
   const now = Date.now();
-  const env: CampfireEnv = {
+  const env: SwitchyardEnv = {
     name: name.trim(),
     slug,
     variables,
@@ -103,7 +103,7 @@ export function createEnv(
 export function updateEnv(
   slug: string,
   updates: { name?: string; variables?: Record<string, string> },
-): CampfireEnv | null {
+): SwitchyardEnv | null {
   ensureDir();
   const existing = getEnv(slug);
   if (!existing) return null;
@@ -117,7 +117,7 @@ export function updateEnv(
     throw new Error(`An environment with a similar name already exists ("${newSlug}")`);
   }
 
-  const env: CampfireEnv = {
+  const env: SwitchyardEnv = {
     name: newName,
     slug: newSlug,
     variables: updates.variables ?? existing.variables,

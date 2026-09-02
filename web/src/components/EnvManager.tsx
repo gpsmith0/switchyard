@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { api, type CampfireEnv } from "../api.js";
+import { api, type SwitchyardEnv } from "../api.js";
 
 interface Props {
   onClose?: () => void;
@@ -26,7 +26,7 @@ function varCount(n: number): string {
 /* ─── Component ────────────────────────────────────────────────── */
 
 export function EnvManager({ onClose, embedded = false }: Props) {
-  const [envs, setEnvs] = useState<CampfireEnv[]>([]);
+  const [envs, setEnvs] = useState<SwitchyardEnv[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -58,7 +58,7 @@ export function EnvManager({ onClose, embedded = false }: Props) {
     });
   }
 
-  function startEdit(env: CampfireEnv) {
+  function startEdit(env: SwitchyardEnv) {
     setEditingSlug(env.slug);
     setEditName(env.name);
     const rows = Object.entries(env.variables).map(([key, value]) => ({ key, value }));
@@ -126,7 +126,7 @@ export function EnvManager({ onClose, embedded = false }: Props) {
 
   /* ─── Profile Card ─────────────────────────────────────────────── */
 
-  function renderProfileCard(env: CampfireEnv) {
+  function renderProfileCard(env: SwitchyardEnv) {
     const isEditing = editingSlug === env.slug;
     const isRevealed = revealedVars.has(env.slug);
     const isConfirmingDelete = confirmDeleteSlug === env.slug;

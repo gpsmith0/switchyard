@@ -236,6 +236,7 @@ export function Sidebar() {
   const [confirmArchiveId, setConfirmArchiveId] = useState<string | null>(null);
   const [hash, setHash] = useState(() => (typeof window !== "undefined" ? window.location.hash : ""));
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
   const [sessionsExpanded, setSessionsExpanded] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(() => {
     try {
@@ -326,7 +327,8 @@ export function Sidebar() {
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        searchInputRef.current?.focus();
+        setSearchOpen(true);
+        requestAnimationFrame(() => searchInputRef.current?.focus());
       }
     }
     document.addEventListener("keydown", handleKeyDown);
@@ -666,44 +668,59 @@ export function Sidebar() {
     return hash === item.hash;
   }
 
+  /* ─── Shared row style (design.md §6 Sidebar) ────────────────── */
+
+  const navRow =
+    "w-full flex items-center gap-2.5 rounded-lg px-2 h-9 text-[14px] transition-colors duration-120 cursor-pointer";
+
   /* ─── Render nav section ─────────────────────────────────────── */
 
   function renderNavSection(title: string, items: NavItem[]) {
     const isCollapsed = collapsedSections.has(title);
+    const hasActive = items.some(isNavItemActive);
     return (
-      <div className="mb-0.5">
+      <div>
         <button
           onClick={() => toggleSectionCollapse(title)}
-          className="w-[calc(100%-12px)] mx-1.5 flex items-center gap-2 px-2.5 py-2 rounded-lg text-[10px] font-semibold text-cc-fg/50 uppercase tracking-widest hover:text-cc-fg/70 hover:bg-cc-hover/40 cursor-pointer transition-colors"
+          aria-expanded={!isCollapsed}
+          className={`${navRow} ${hasActive && isCollapsed ? "text-cc-fg" : "text-cc-fg/80"} hover:bg-cc-hover hover:text-cc-fg`}
         >
+          <span className="w-5 h-5 flex items-center justify-center shrink-0 text-cc-muted">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+              <path d="M2 4.5A1.5 1.5 0 013.5 3h3l1.5 1.5h4.5A1.5 1.5 0 0114 6v5.5a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 012 11.5v-7z" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <span className="flex-1 text-left">{title}</span>
           <svg
             viewBox="0 0 16 16"
-            fill="currentColor"
-            className={`w-2.5 h-2.5 transition-transform duration-200 ${isCollapsed ? "" : "rotate-90"}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            className={`w-3.5 h-3.5 text-cc-muted transition-transform duration-150 ${isCollapsed ? "" : "rotate-90"}`}
           >
-            <path d="M6 3l5 5-5 5V3z" />
+            <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          {title}
         </button>
         {!isCollapsed && (
-          <div className="space-y-0.5">
-            {items.map((item) => (
-              <button
-                key={item.hash}
-                onClick={() => navigateTo(item.hash)}
-                className={`w-[calc(100%-12px)] flex items-center gap-2.5 rounded-lg mx-1.5 px-2.5 py-[7px] text-[12px] font-medium transition-all duration-150 cursor-pointer ${
-                  isNavItemActive(item)
-                    ? "bg-cc-primary/10 text-cc-primary"
-                    : "text-cc-fg/70 hover:text-cc-fg hover:bg-cc-hover/60"
-                }`}
-                aria-current={isNavItemActive(item) ? "page" : undefined}
-              >
-                <span className="w-6 h-6 rounded-md bg-cc-hover/50 flex items-center justify-center shrink-0">
-                  {item.icon}
-                </span>
-                {item.label}
-              </button>
-            ))}
+          <div className="ml-4 pl-2.5 border-l border-cc-border my-0.5 space-y-px">
+            {items.map((item) => {
+              const active = isNavItemActive(item);
+              return (
+                <button
+                  key={item.hash}
+                  onClick={() => navigateTo(item.hash)}
+                  className={`${navRow} h-8 text-[13.5px] ${
+                    active ? "bg-cc-active text-cc-fg" : "text-cc-fg/80 hover:bg-cc-hover hover:text-cc-fg"
+                  }`}
+                  aria-current={active ? "page" : undefined}
+                >
+                  <span className="w-5 h-5 flex items-center justify-center shrink-0 text-cc-muted">
+                    {item.icon}
+                  </span>
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
@@ -713,327 +730,313 @@ export function Sidebar() {
   /* ─── Render ───────────────────────────────────────────────────── */
 
   return (
-    <aside className="w-[240px] h-full flex flex-col bg-cc-sidebar" role="navigation">
-      {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="px-3 pt-3 pb-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/logo.svg" alt="" className="w-5 h-5 opacity-80" />
-            <span className="text-[13px] font-semibold text-cc-fg tracking-tight">
-              Campfire
-            </span>
-          </div>
-          <button
-            onClick={handleNewSession}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium bg-cc-primary text-white hover:opacity-90 shadow-sm transition-all duration-200 cursor-pointer"
-            title="New Session"
-          >
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3 h-3">
-              <path d="M8 3v10M3 8h10" />
-            </svg>
-            New
-          </button>
-        </div>
+    <aside className="w-[260px] h-full flex flex-col bg-cc-sidebar border-r border-cc-border/60" role="navigation">
+      {/* ── Header: logo + collapse ─────────────────────────────── */}
+      <div className="flex items-center justify-between pl-3 pr-2 pt-2.5 pb-1">
+        <button
+          onClick={handleNewSession}
+          className="flex items-center gap-2 h-8 px-1.5 rounded-lg hover:bg-cc-hover transition-colors cursor-pointer"
+          title="Home"
+        >
+          <img src="/logo.svg" alt="" className="w-5 h-5" />
+          <span className="text-[14px] font-semibold text-cc-fg tracking-tight">Switchyard</span>
+        </button>
+        <button
+          onClick={() => useStore.getState().setSidebarOpen(false)}
+          aria-label="Close sidebar"
+          className="w-8 h-8 flex items-center justify-center rounded-lg text-cc-muted hover:text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer"
+        >
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-[18px] h-[18px]">
+            <rect x="2.5" y="3.5" width="15" height="13" rx="2.5" />
+            <path d="M8 3.5v13" />
+          </svg>
+        </button>
       </div>
 
-      {/* ── Search ──────────────────────────────────────────────── */}
-      <div className="px-3 pt-1 pb-2" role="search">
-        <div className="relative">
-          <svg
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-cc-muted pointer-events-none"
+      {/* ── Primary actions ─────────────────────────────────────── */}
+      <div className="px-2 pt-1">
+        <button
+          onClick={handleNewSession}
+          className={`${navRow} text-cc-fg hover:bg-cc-hover`}
+          title="New Session"
+        >
+          <span className="w-5 h-5 flex items-center justify-center shrink-0">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-[18px] h-[18px]">
+              <path d="M13.5 3.5l3 3L8 15H5v-3l8.5-8.5z" strokeLinejoin="round" />
+              <path d="M11.5 5.5l3 3" />
+            </svg>
+          </span>
+          New session
+        </button>
+
+        <div role="search">
+          <button
+            onClick={() => {
+              setSearchOpen((v) => !v);
+              if (searchOpen) setSearchQuery("");
+              else requestAnimationFrame(() => searchInputRef.current?.focus());
+            }}
+            className={`${navRow} ${searchOpen ? "text-cc-fg" : "text-cc-fg/80 hover:text-cc-fg"} hover:bg-cc-hover`}
+            aria-expanded={searchOpen}
           >
-            <circle cx="7" cy="7" r="4.5" />
-            <path d="M10.5 10.5L14 14" strokeLinecap="round" />
-          </svg>
-          <input
-            ref={searchInputRef}
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-7 pr-14 py-1.5 text-[11px] rounded-lg border border-transparent bg-cc-hover/50 text-cc-fg placeholder:text-cc-fg/50 focus:outline-none focus:bg-cc-bg focus:border-cc-border focus:ring-1 focus:ring-cc-primary/30 transition-all duration-200"
-            aria-label="Search sessions"
-          />
-          {searchQuery ? (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-cc-muted hover:text-cc-fg transition-all duration-200 cursor-pointer"
-              aria-label="Clear search"
-            >
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
-                <path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" />
+            <span className="w-5 h-5 flex items-center justify-center shrink-0">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-[18px] h-[18px]">
+                <circle cx="9" cy="9" r="5.5" />
+                <path d="M13.5 13.5L17 17" strokeLinecap="round" />
               </svg>
-            </button>
-          ) : (
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-cc-fg/45 font-mono pointer-events-none select-none">
-              Ctrl+K
             </span>
+            <span className="flex-1 text-left">Search sessions</span>
+            <kbd className="text-[11px] text-cc-muted font-sans-ui select-none">⌘K</kbd>
+          </button>
+          {searchOpen && (
+            <div className="relative mt-1 mb-1 px-1">
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    setSearchQuery("");
+                    setSearchOpen(false);
+                  }
+                }}
+                className="w-full h-8 px-3 pr-7 text-[13px] rounded-lg border border-cc-border bg-cc-bg text-cc-fg placeholder:text-cc-muted focus:outline-none focus:border-cc-fg/30 transition-colors"
+                aria-label="Search sessions"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-md text-cc-muted hover:text-cc-fg cursor-pointer"
+                  aria-label="Clear search"
+                >
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+                    <path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
           )}
         </div>
+
+        <div className="my-2 mx-2 h-px bg-cc-border/70" />
+
+        {/* Expandable groups, like ChatGPT's "Projects" */}
+        {renderNavSection("Tools", NAV_TOOLS)}
+        {renderNavSection("Data", NAV_DATA)}
+        {renderNavSection("Config", NAV_CONFIG)}
       </div>
 
-      {/* ── Scrollable area: sessions (top) + nav sections (bottom) ── */}
-      <div className="flex-1 overflow-y-auto flex flex-col">
-        {/* ── Worktree archive confirmation ───────────────────────── */}
+      {/* ── Sessions ────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-2 pt-3 pb-2">
         {confirmArchiveId && (
-          <div className="mx-3 mb-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 shadow-sm">
-            <div className="flex items-start gap-2">
-              <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-amber-500 shrink-0 mt-0.5">
-                <path d="M8.982 1.566a1.13 1.13 0 00-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 01-1.1 0L7.1 5.995A.905.905 0 018 5zm.002 6a1 1 0 110 2 1 1 0 010-2z" />
-              </svg>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-cc-fg leading-snug">
-                  Archiving will <strong>delete the worktree</strong> and any uncommitted changes.
-                </p>
-                <div className="flex gap-2 mt-2">
-                  <button
-                    onClick={cancelArchive}
-                    className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-cc-hover text-cc-muted hover:text-cc-fg transition-all duration-200 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmArchive}
-                    className="px-2.5 py-1 text-[11px] font-medium rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all duration-200 cursor-pointer"
-                  >
-                    Archive
-                  </button>
-                </div>
-              </div>
+          <div className="mx-1 mb-2 p-3 rounded-xl bg-cc-card border border-cc-border shadow-panel">
+            <p className="text-[13px] text-cc-fg leading-snug">
+              Archiving will <strong>delete the worktree</strong> and any uncommitted changes.
+            </p>
+            <div className="flex gap-2 mt-2.5">
+              <button
+                onClick={cancelArchive}
+                className="px-3 h-8 text-[13px] font-medium rounded-full border border-cc-border text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmArchive}
+                className="px-3 h-8 text-[13px] font-medium rounded-full bg-cc-error text-white hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                Archive
+              </button>
             </div>
           </div>
         )}
 
-        {/* ── Sessions section ──────────────────────────────────── */}
-        <div className="px-1.5">
-          <div className="px-1.5 py-2 flex items-center justify-between">
-            <span className="text-[10px] font-semibold text-cc-fg/50 uppercase tracking-widest">
-              Sessions
-            </span>
-            {totalSessionCount > 0 && (
-              <span className="text-[10px] text-cc-fg/45 tabular-nums">
-                {totalSessionCount}
-              </span>
-            )}
+        <div className="px-2 pb-1 flex items-center justify-between">
+          <span className="text-[12px] font-medium text-cc-muted">Sessions</span>
+          {totalSessionCount > 0 && (
+            <span className="text-[12px] text-cc-muted tabular-nums">{totalSessionCount}</span>
+          )}
+        </div>
+
+        {activeSessions.length === 0 && archivedSessions.length === 0 ? (
+          <div className="px-2 py-6">
+            <p className="text-[13px] text-cc-muted leading-relaxed">
+              No sessions yet. Start one with <strong className="font-medium text-cc-fg">New session</strong>.
+            </p>
           </div>
-
-          {activeSessions.length === 0 && archivedSessions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center px-3 py-8 text-center">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-7 h-7 text-cc-fg/35 mb-2">
-                <path d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 01-.923 1.785A5.969 5.969 0 006 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337z" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <p className="text-[11px] text-cc-muted leading-relaxed">
-                No sessions yet.<br />Click <strong>New</strong> to start.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* ── User-defined folders (collapsible) ─────────────── */}
-              {filteredFolderSessions.map(({ folder, sessions: fSessions }) => {
-                const isCollapsed = collapsedFolders.has(folder.id);
-                return (
-                  <div key={folder.id} className="mb-0.5">
-                    <div className="flex items-center group">
-                      <button
-                        onClick={() => toggleFolderCollapse(folder.id)}
-                        className="flex-1 flex items-center gap-1.5 rounded-lg px-2 py-1 text-[10px] font-semibold text-cc-muted uppercase tracking-wider hover:text-cc-fg hover:bg-cc-hover/50 transition-all duration-200 cursor-pointer"
+        ) : (
+          <>
+            {/* ── User-defined folders (collapsible) ─────────────── */}
+            {filteredFolderSessions.map(({ folder, sessions: fSessions }) => {
+              const isCollapsed = collapsedFolders.has(folder.id);
+              return (
+                <div key={folder.id} className="mb-1">
+                  <div className="flex items-center group">
+                    <button
+                      onClick={() => toggleFolderCollapse(folder.id)}
+                      className="flex-1 flex items-center gap-1.5 rounded-lg px-2 h-7 text-[12px] font-medium text-cc-muted hover:text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer"
+                    >
+                      <svg
+                        viewBox="0 0 16 16"
+                        fill="currentColor"
+                        className={`w-2.5 h-2.5 transition-transform duration-150 ${isCollapsed ? "" : "rotate-90"}`}
                       >
-                        <svg
-                          viewBox="0 0 16 16"
-                          fill="currentColor"
-                          className={`w-2.5 h-2.5 transition-transform duration-200 ${isCollapsed ? "" : "rotate-90"}`}
-                        >
-                          <path d="M6 3l5 5-5 5V3z" />
-                        </svg>
-                        <svg
-                          viewBox="0 0 16 16"
-                          fill="currentColor"
-                          className="w-3 h-3 opacity-50"
-                          style={folder.color ? { color: folder.color } : undefined}
-                        >
-                          <path d="M1 3.5A1.5 1.5 0 012.5 2h3.379a1.5 1.5 0 011.06.44l.622.621a.5.5 0 00.353.146H13.5A1.5 1.5 0 0115 4.707V12.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 011 12.5v-9z" />
-                        </svg>
-                        <span className="truncate">{folder.name}</span>
-                        <span className="text-cc-fg/50 ml-auto tabular-nums">
-                          {fSessions.length}
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteFolder(folder.id)}
-                        className="opacity-0 group-hover:opacity-100 px-1 rounded-md text-cc-muted hover:text-cc-error hover:bg-cc-hover/50 transition-all duration-200 cursor-pointer"
-                        title="Delete folder"
-                      >
-                        <svg viewBox="0 0 16 16" className="w-3 h-3">
-                          <path
-                            d="M4 4l8 8M12 4l-8 8"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            fill="none"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                    {!isCollapsed &&
-                      fSessions.map((s) => (
-                        <SessionItem
-                          key={s.id}
-                          session={s}
-                          isActive={s.id === currentSessionId}
-                          sessionName={sessionNames?.get(s.id)}
-                          permCount={pendingPermissions.get(s.id)?.size ?? 0}
-                          isRecentlyRenamed={recentlyRenamed.has(s.id)}
-                          {...sessionItemProps}
-                        />
-                      ))}
+                        <path d="M6 3l5 5-5 5V3z" />
+                      </svg>
+                      <span className="truncate">{folder.name}</span>
+                      <span className="ml-auto tabular-nums">{fSessions.length}</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteFolder(folder.id)}
+                      className="opacity-0 group-hover:opacity-100 px-1 rounded-md text-cc-muted hover:text-cc-error transition-all cursor-pointer"
+                      title="Delete folder"
+                    >
+                      <svg viewBox="0 0 16 16" className="w-3 h-3">
+                        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+                      </svg>
+                    </button>
                   </div>
-                );
-              })}
-
-              {/* New folder inline input */}
-              {showNewFolder && (
-                <div className="flex items-center gap-1 px-2 py-1 mb-1">
-                  <input
-                    type="text"
-                    value={newFolderName}
-                    onChange={(e) => setNewFolderName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleCreateFolder();
-                      if (e.key === "Escape") setShowNewFolder(false);
-                    }}
-                    placeholder="Folder name"
-                    className="flex-1 px-2 py-0.5 text-[11px] rounded-lg border border-cc-border bg-cc-bg text-cc-fg focus:outline-none focus:ring-1 focus:ring-cc-primary/30 transition-all duration-200"
-                    autoFocus
-                  />
-                  <button
-                    onClick={handleCreateFolder}
-                    className="text-[10px] text-cc-primary hover:text-cc-primary-hover cursor-pointer"
-                  >
-                    +
-                  </button>
+                  {!isCollapsed &&
+                    fSessions.map((s) => (
+                      <SessionItem
+                        key={s.id}
+                        session={s}
+                        isActive={s.id === currentSessionId}
+                        sessionName={sessionNames?.get(s.id)}
+                        permCount={pendingPermissions.get(s.id)?.size ?? 0}
+                        isRecentlyRenamed={recentlyRenamed.has(s.id)}
+                        {...sessionItemProps}
+                      />
+                    ))}
                 </div>
-              )}
+              );
+            })}
 
-              {/* New folder toggle */}
-              {folders.length > 0 || showNewFolder ? (
+            {/* New folder inline input */}
+            {showNewFolder && (
+              <div className="flex items-center gap-1 px-2 py-1 mb-1">
+                <input
+                  type="text"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleCreateFolder();
+                    if (e.key === "Escape") setShowNewFolder(false);
+                  }}
+                  placeholder="Folder name"
+                  className="flex-1 h-7 px-2 text-[13px] rounded-lg border border-cc-border bg-cc-bg text-cc-fg focus:outline-none focus:border-cc-fg/30 transition-colors"
+                  autoFocus
+                />
                 <button
-                  onClick={() => setShowNewFolder(!showNewFolder)}
-                  className="w-full flex items-center gap-1.5 px-2 py-1 mb-1 text-[10px] text-cc-fg/50 hover:text-cc-muted transition-all duration-200 cursor-pointer"
+                  onClick={handleCreateFolder}
+                  className="text-[13px] text-cc-fg hover:text-cc-muted cursor-pointer px-1"
                 >
-                  <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
-                    <path d="M8 2a.75.75 0 01.75.75v4.5h4.5a.75.75 0 010 1.5h-4.5v4.5a.75.75 0 01-1.5 0v-4.5h-4.5a.75.75 0 010-1.5h4.5v-4.5A.75.75 0 018 2z" />
-                  </svg>
-                  <span>New folder</span>
+                  +
                 </button>
-              ) : null}
+              </div>
+            )}
 
-              {/* ── Time-grouped sessions (truncated) ──────────────── */}
-              {(shouldTruncate ? truncatedTimeGrouped : timeGrouped).map(({ label, sessions: groupSessions }) => (
-                <div key={label} className="mb-1">
-                  <div className="px-2 pt-3 pb-1">
-                    <span className="text-[10px] font-medium text-cc-fg/45 uppercase tracking-wider">
-                      {label}
-                    </span>
-                  </div>
-                  {groupSessions.map((s) => (
-                    <SessionItem
-                      key={s.id}
-                      session={s}
-                      isActive={s.id === currentSessionId}
-                      sessionName={sessionNames?.get(s.id)}
-                      permCount={pendingPermissions.get(s.id)?.size ?? 0}
-                      isRecentlyRenamed={recentlyRenamed.has(s.id)}
-                      {...sessionItemProps}
-                    />
-                  ))}
+            {(folders.length > 0 || showNewFolder) && (
+              <button
+                onClick={() => setShowNewFolder(!showNewFolder)}
+                className="w-full flex items-center gap-1.5 px-2 h-7 mb-1 text-[12px] text-cc-muted hover:text-cc-fg transition-colors cursor-pointer"
+              >
+                <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
+                  <path d="M8 2a.75.75 0 01.75.75v4.5h4.5a.75.75 0 010 1.5h-4.5v4.5a.75.75 0 01-1.5 0v-4.5h-4.5a.75.75 0 010-1.5h4.5v-4.5A.75.75 0 018 2z" />
+                </svg>
+                <span>New folder</span>
+              </button>
+            )}
+
+            {/* ── Time-grouped sessions (truncated) ──────────────── */}
+            {(shouldTruncate ? truncatedTimeGrouped : timeGrouped).map(({ label, sessions: groupSessions }, gi) => (
+              <div key={label} className={gi === 0 && filteredFolderSessions.length === 0 ? "" : "mt-3"}>
+                <div className="px-2 pb-1">
+                  <span className="text-[12px] font-medium text-cc-muted">{label}</span>
                 </div>
-              ))}
+                {groupSessions.map((s) => (
+                  <SessionItem
+                    key={s.id}
+                    session={s}
+                    isActive={s.id === currentSessionId}
+                    sessionName={sessionNames?.get(s.id)}
+                    permCount={pendingPermissions.get(s.id)?.size ?? 0}
+                    isRecentlyRenamed={recentlyRenamed.has(s.id)}
+                    {...sessionItemProps}
+                  />
+                ))}
+              </div>
+            ))}
 
-              {/* Show more / Show less toggle */}
-              {totalSessionCount > INITIAL_SESSIONS_SHOWN && !searchQuery && (
+            {/* Show more / Show less toggle */}
+            {totalSessionCount > INITIAL_SESSIONS_SHOWN && !searchQuery && (
+              <button
+                onClick={() => setSessionsExpanded(!sessionsExpanded)}
+                className="w-full flex items-center gap-2.5 px-2.5 h-8 mt-1 rounded-lg text-[13px] text-cc-muted hover:text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer"
+              >
+                <svg
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className={`w-3.5 h-3.5 transition-transform duration-150 ${sessionsExpanded ? "rotate-180" : ""}`}
+                >
+                  <path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {sessionsExpanded
+                  ? "Show less"
+                  : `Show ${totalSessionCount - INITIAL_SESSIONS_SHOWN} more`}
+              </button>
+            )}
+
+            {searchQuery && filteredActiveSessions.length === 0 && (
+              <p className="px-2 py-4 text-[13px] text-cc-muted">
+                No sessions matching "{searchQuery}"
+              </p>
+            )}
+
+            {/* ── Archived sessions (collapsible) ────────────────── */}
+            {archivedSessions.length > 0 && (
+              <div className="mt-3">
                 <button
-                  onClick={() => setSessionsExpanded(!sessionsExpanded)}
-                  className="w-full flex items-center justify-center gap-1.5 py-2.5 mt-1 text-[11px] text-cc-fg/55 hover:text-cc-primary transition-colors cursor-pointer"
+                  onClick={() => setShowArchived(!showArchived)}
+                  className="w-full flex items-center gap-1.5 rounded-lg px-2 h-7 text-[12px] font-medium text-cc-muted hover:text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer"
                 >
                   <svg
                     viewBox="0 0 16 16"
                     fill="currentColor"
-                    className={`w-3 h-3 transition-transform duration-200 ${sessionsExpanded ? "rotate-180" : ""}`}
+                    className={`w-2.5 h-2.5 transition-transform duration-150 ${showArchived ? "rotate-90" : ""}`}
                   >
-                    <path d="M8 10.5l-4-4h8l-4 4z" />
+                    <path d="M6 3l5 5-5 5V3z" />
                   </svg>
-                  {sessionsExpanded
-                    ? "Show less"
-                    : `Show ${totalSessionCount - INITIAL_SESSIONS_SHOWN} more`}
+                  Archived
+                  <span className="ml-auto tabular-nums">{archivedSessions.length}</span>
                 </button>
-              )}
-
-              {/* If search yields no results */}
-              {searchQuery && filteredActiveSessions.length === 0 && (
-                <p className="px-3 py-4 text-[11px] text-cc-muted text-center">
-                  No sessions matching "{searchQuery}"
-                </p>
-              )}
-
-              {/* ── Archived sessions (collapsible) ────────────────── */}
-              {archivedSessions.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-cc-border/30">
-                  <button
-                    onClick={() => setShowArchived(!showArchived)}
-                    className="w-full flex items-center gap-1.5 rounded-lg px-2 py-2 text-[10px] font-medium text-cc-fg/50 uppercase tracking-wider hover:text-cc-fg/70 hover:bg-cc-hover/40 transition-all duration-200 cursor-pointer"
-                  >
-                    <svg
-                      viewBox="0 0 16 16"
-                      fill="currentColor"
-                      className={`w-2.5 h-2.5 transition-transform duration-200 ${showArchived ? "rotate-90" : ""}`}
-                    >
-                      <path d="M6 3l5 5-5 5V3z" />
-                    </svg>
-                    Archived
-                    <span className="rounded-full bg-cc-hover text-cc-muted text-[10px] px-1.5 ml-auto">
-                      {archivedSessions.length}
-                    </span>
-                  </button>
-                  {showArchived && (
-                    <div className="space-y-0.5 mt-0.5">
-                      {archivedSessions.map((s) => (
-                        <SessionItem
-                          key={s.id}
-                          session={s}
-                          isActive={currentSessionId === s.id}
-                          isArchived
-                          sessionName={sessionNames.get(s.id)}
-                          permCount={pendingPermissions.get(s.id)?.size ?? 0}
-                          isRecentlyRenamed={recentlyRenamed.has(s.id)}
-                          {...sessionItemProps}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* ── Spacer pushes nav to bottom ─────────────────────── */}
-        <div className="flex-1 min-h-4" />
-
-        {/* ── Nav Sections (bottom-anchored) ────────────────────── */}
-        <div className="pt-2 pb-1">
-          <div className="h-px bg-cc-border/30 mx-3 mb-3" />
-          {renderNavSection("Tools", NAV_TOOLS)}
-          {renderNavSection("Data", NAV_DATA)}
-          {renderNavSection("Config", NAV_CONFIG)}
-        </div>
+                {showArchived && (
+                  <div className="mt-0.5">
+                    {archivedSessions.map((s) => (
+                      <SessionItem
+                        key={s.id}
+                        session={s}
+                        isActive={currentSessionId === s.id}
+                        isArchived
+                        sessionName={sessionNames.get(s.id)}
+                        permCount={pendingPermissions.get(s.id)?.size ?? 0}
+                        isRecentlyRenamed={recentlyRenamed.has(s.id)}
+                        {...sessionItemProps}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
-      {/* ── Settings footer ────────────────────────────────────── */}
-      <div className="px-3 py-2.5 border-t border-cc-border/40">
+      {/* ── Footer: account-style row → Settings ─────────────────── */}
+      <div className="px-2 py-2 border-t border-cc-border/60">
         <button
           onClick={() => {
             if (hash === "#/settings") {
@@ -1042,23 +1045,22 @@ export function Sidebar() {
               navigateTo("#/settings");
             }
           }}
-          className={`w-full flex items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[12px] font-medium transition-all duration-150 cursor-pointer ${
-            hash === "#/settings"
-              ? "bg-cc-primary/10 text-cc-primary"
-              : "text-cc-fg/70 hover:text-cc-fg hover:bg-cc-hover/60"
+          className={`w-full flex items-center gap-2.5 rounded-lg px-2 h-11 text-left transition-colors duration-120 cursor-pointer ${
+            hash === "#/settings" ? "bg-cc-active" : "hover:bg-cc-hover"
           }`}
           aria-current={hash === "#/settings" ? "page" : undefined}
         >
-          <span className="w-6 h-6 rounded-md bg-cc-hover/50 flex items-center justify-center shrink-0">
-            <svg viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
-              <path
-                fillRule="evenodd"
-                d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.53 1.53 0 01-2.29.95c-1.35-.8-2.92.77-2.12 2.12.54.9.07 2.04-.95 2.29-1.56.38-1.56 2.6 0 2.98 1.02.25 1.49 1.39.95 2.29-.8 1.35.77 2.92 2.12 2.12.9-.54 2.04-.07 2.29.95.38 1.56 2.6 1.56 2.98 0 .25-1.02 1.39-1.49 2.29-.95 1.35.8 2.92-.77 2.12-2.12-.54-.9-.07-2.04.95-2.29 1.56-.38 1.56-2.6 0-2.98-1.02-.25-1.49-1.39-.95-2.29.8-1.35-.77-2.92-2.12-2.12-.9.54-2.04.07-2.29-.95zM10 13a3 3 0 100-6 3 3 0 000 6z"
-                clipRule="evenodd"
-              />
-            </svg>
+          <span className="w-7 h-7 rounded-full bg-cc-fg text-cc-bg flex items-center justify-center text-[12px] font-semibold shrink-0">
+            C
           </span>
-          Settings
+          <span className="flex flex-col min-w-0 leading-tight">
+            <span className="text-[13px] font-medium text-cc-fg truncate">Switchyard</span>
+            <span className="text-[12px] text-cc-muted">Settings</span>
+          </span>
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-cc-muted ml-auto shrink-0">
+            <circle cx="10" cy="10" r="2.5" />
+            <path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4" strokeLinecap="round" />
+          </svg>
         </button>
       </div>
     </aside>

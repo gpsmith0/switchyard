@@ -204,7 +204,7 @@ export default function App() {
 
   // Auth gates — placed after all hooks to satisfy Rules of Hooks
   if (!authChecked) {
-    return <div className="h-[100dvh] flex items-center justify-center bg-cc-bg text-cc-fg text-[12px] text-cc-muted">Loading...</div>;
+    return <div className="h-[100dvh] flex items-center justify-center bg-cc-bg text-[13px] text-cc-muted">Loading…</div>;
   }
 
   if (authRequired) {
@@ -216,7 +216,7 @@ export default function App() {
   }
 
   return (
-    <div className="h-[100dvh] flex font-sans-ui bg-cc-bg text-cc-fg antialiased text-[12.5px] leading-normal">
+    <div className="h-[100dvh] flex font-sans-ui bg-cc-bg text-cc-fg antialiased text-[14px] leading-normal">
       {/* Mobile overlay backdrop */}
       {sidebarOpen && !isSpectator && (
         <div
@@ -231,7 +231,7 @@ export default function App() {
           className={`
             fixed md:relative z-40 md:z-auto
             h-full shrink-0 transition-all duration-150 ease-out
-            ${sidebarOpen ? "w-[232px] translate-x-0" : "w-0 -translate-x-full md:w-0 md:-translate-x-full"}
+            ${sidebarOpen ? "w-[260px] translate-x-0" : "w-0 -translate-x-full md:w-0 md:-translate-x-full"}
             overflow-hidden
           `}
         >
@@ -433,7 +433,7 @@ export default function App() {
             className={`
               fixed lg:relative z-40 lg:z-auto right-0 top-0
               h-full shrink-0 transition-all duration-150 ease-out
-              ${taskPanelOpen ? "w-[264px] translate-x-0" : "w-0 translate-x-full lg:w-0 lg:translate-x-full"}
+              ${taskPanelOpen ? "w-[280px] translate-x-0" : "w-0 translate-x-full lg:w-0 lg:translate-x-full"}
               overflow-hidden
             `}
           >

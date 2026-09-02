@@ -27,7 +27,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <img src="/logo.svg" alt="" className="w-8 h-8 mx-auto mb-3 opacity-60" />
-          <h1 className="text-[16px] font-semibold">Campfire</h1>
+          <h1 className="text-[16px] font-semibold">Switchyard</h1>
           <p className="text-[12px] text-cc-muted mt-1">Enter password to continue</p>
         </div>
 
@@ -57,7 +57,7 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
         </form>
 
         <p className="text-[10px] text-cc-muted/40 text-center mt-6">
-          Set via CAMPFIRE_PASSWORD env var or Settings
+          Set via SWITCHYARD_PASSWORD env var or Settings
         </p>
       </div>
     </div>

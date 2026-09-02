@@ -44,7 +44,7 @@ beforeEach(() => {
     setUpdateOverlayActive: mockSetUpdateOverlayActive,
   };
   // Default: browser context, not the desktop shell.
-  delete (window as { campfireDesktop?: unknown }).campfireDesktop;
+  delete (window as { switchyardDesktop?: unknown }).switchyardDesktop;
 });
 
 // ─── Visibility ────────────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ describe("UpdateBanner service mode", () => {
   it("shows install hint in foreground mode", () => {
     storeState.updateInfo = makeUpdateInfo({ isServiceMode: false });
     render(<UpdateBanner />);
-    expect(screen.getByText("the-campfire install")).toBeTruthy();
+    expect(screen.getByText("switchyard install")).toBeTruthy();
   });
 
   it("shows Updating... when update is in progress", () => {
@@ -116,14 +116,14 @@ describe("UpdateBanner service mode", () => {
 });
 
 // ─── Desktop app ───────────────────────────────────────────────────────────
-// Inside the Electron shell (window.campfireDesktop set by the preload), CLI
-// update paths don't apply: `the-campfire install` / Update & Restart update
+// Inside the Electron shell (window.switchyardDesktop set by the preload), CLI
+// update paths don't apply: `switchyard install` / Update & Restart update
 // the npm-installed server, not the app bundle. The banner must instead link
 // to the GitHub releases page where the new DMG lives.
 
 describe("UpdateBanner desktop app", () => {
   beforeEach(() => {
-    (window as { campfireDesktop?: unknown }).campfireDesktop = {
+    (window as { switchyardDesktop?: unknown }).switchyardDesktop = {
       isDesktop: true,
       platform: "darwin",
       version: "0.4.0",
@@ -135,9 +135,9 @@ describe("UpdateBanner desktop app", () => {
     render(<UpdateBanner />);
 
     const link = screen.getByText("Download update") as HTMLAnchorElement;
-    expect(link.getAttribute("href")).toBe("https://github.com/stretchcloud/campfire/releases/latest");
+    expect(link.getAttribute("href")).toBe("https://github.com/gpsmith0/switchyard/releases/latest");
     expect(link.getAttribute("target")).toBe("_blank");
-    expect(screen.queryByText("the-campfire install")).toBeNull();
+    expect(screen.queryByText("switchyard install")).toBeNull();
   });
 
   it("prefers the download link even when the backing server is in service mode", () => {

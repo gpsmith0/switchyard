@@ -83,7 +83,7 @@ describe("CodexAdapter", () => {
     // Check stdin received the initialize request
     const allWritten = stdin.chunks.join("");
     expect(allWritten).toContain('"method":"initialize"');
-    expect(allWritten).toContain("campfire");
+    expect(allWritten).toContain("switchyard");
   });
 
   it("translates agent message streaming to content_block_delta events", async () => {
@@ -794,7 +794,7 @@ describe("CodexAdapter", () => {
       .map((line) => JSON.parse(line) as { method?: string; params?: Record<string, unknown> });
     const startRequest = requests.find((request) => request.method === "thread/start");
 
-    // Without a Campfire override, Codex should fall through to its own
+    // Without a Switchyard override, Codex should fall through to its own
     // configuration and login defaults instead of receiving a stale model slug.
     expect(startRequest).toBeDefined();
     expect(startRequest!.params).not.toHaveProperty("model");

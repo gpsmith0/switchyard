@@ -1,5 +1,5 @@
-// Campfire Service Worker — caching + push notifications
-const CACHE_NAME = "campfire-v4";
+// Switchyard Service Worker — caching + push notifications
+const CACHE_NAME = "switchyard-v4";
 
 // Assets to pre-cache on install (shell resources)
 const PRECACHE_URLS = [
@@ -91,15 +91,15 @@ self.addEventListener("push", (event) => {
   try {
     payload = event.data.json();
   } catch {
-    payload = { title: "Campfire", body: event.data.text() };
+    payload = { title: "Switchyard", body: event.data.text() };
   }
 
-  const title = payload.title || "Campfire";
+  const title = payload.title || "Switchyard";
   const options = {
     body: payload.body || "Permission request pending",
     icon: "/icon-192.png",
     badge: "/icon-192.png",
-    tag: payload.tag || "campfire-notification",
+    tag: payload.tag || "switchyard-notification",
     data: payload.data || {},
     actions: payload.actions || [
       { action: "allow", title: "Allow" },

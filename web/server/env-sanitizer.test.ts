@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { isClaudeSessionMarker, scrubClaudeSessionEnv } from "./env-sanitizer.js";
 
-// Regression coverage for the desktop-app 401 bug: a Campfire server started
+// Regression coverage for the desktop-app 401 bug: a Switchyard server started
 // from inside a Claude Code session inherited the host session's SDK env
 // (CLAUDECODE, CLAUDE_CODE_SESSION_ID, CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH, …).
 // A `claude` CLI spawned with those markers expects host-managed OAuth,
@@ -33,9 +33,9 @@ describe("env-sanitizer", () => {
 
   it("preserves deliberate user configuration and unrelated variables", () => {
     const env: Record<string, string | undefined> = {
-      // Explicit auth override must survive — Campfire settings inject it too.
+      // Explicit auth override must survive — Switchyard settings inject it too.
       CLAUDE_CODE_OAUTH_TOKEN: "sk-ant-oat-user-set",
-      // Feature flag Campfire sets for itself at bootstrap.
+      // Feature flag Switchyard sets for itself at bootstrap.
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: "1",
       // Anthropic vars are user config (keys, proxies), never session markers.
       ANTHROPIC_API_KEY: "sk-ant-user",

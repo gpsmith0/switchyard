@@ -256,7 +256,7 @@ export function registerGalleryRoutes(api: Hono, deps: RouteDeps): void {
     }
     const body = await c.req.json().catch(() => ({}));
     const result = clawhubExport.exportToClawHub(entry, {
-      campfireBaseUrl: body.campfireBaseUrl,
+      switchyardBaseUrl: body.switchyardBaseUrl,
       prompt: body.prompt,
       dryRun: body.dryRun === true,
     });
@@ -271,7 +271,7 @@ export function registerGalleryRoutes(api: Hono, deps: RouteDeps): void {
     const entry = galleryStore.getEntry(id);
     if (!entry) return c.json({ error: "Gallery entry not found" }, 404);
     const markdown = clawhubExport.generateSkillMd(entry, {
-      campfireBaseUrl: c.req.query("baseUrl"),
+      switchyardBaseUrl: c.req.query("baseUrl"),
     });
     return c.json({ markdown });
   });
@@ -317,7 +317,7 @@ export function registerGalleryRoutes(api: Hono, deps: RouteDeps): void {
       return c.json({ error: "Moltbook API key not configured. Add it in Settings." }, 400);
     }
     const body = await c.req.json().catch(() => ({}));
-    const baseUrl = body.campfireBaseUrl || `http://localhost:4567`;
+    const baseUrl = body.switchyardBaseUrl || `http://localhost:4567`;
     const replayUrl = `${baseUrl}/#/replay/session/${entry.sessionId}`;
     const costStr = entry.totalCostUsd > 0 ? `$${entry.totalCostUsd.toFixed(2)}` : "free";
     const durationMin = Math.round(entry.durationMs / 60_000);

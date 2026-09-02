@@ -29,10 +29,10 @@ export function SkillsPage({ embedded }: { embedded?: boolean }) {
   async function handleToggle(plugin: PluginInfo) {
     setToggling(plugin.id);
     try {
-      const result = await api.togglePlugin(plugin.id, !plugin.disabledInCampfire);
+      const result = await api.togglePlugin(plugin.id, !plugin.disabledInSwitchyard);
       setPlugins((prev) =>
         prev.map((p) =>
-          p.id === plugin.id ? { ...p, disabledInCampfire: result.disabled } : p,
+          p.id === plugin.id ? { ...p, disabledInSwitchyard: result.disabled } : p,
         ),
       );
     } catch (e) {
@@ -112,7 +112,7 @@ export function SkillsPage({ embedded }: { embedded?: boolean }) {
             className={`rounded-lg border transition-colors ${
               plugin.blocked
                 ? "border-cc-error/20 bg-cc-error/5"
-                : plugin.disabledInCampfire
+                : plugin.disabledInSwitchyard
                   ? "border-cc-border bg-cc-hover/50 opacity-60"
                   : "border-cc-border bg-cc-card"
             }`}
@@ -156,12 +156,12 @@ export function SkillsPage({ embedded }: { embedded?: boolean }) {
                 onClick={() => handleToggle(plugin)}
                 disabled={toggling === plugin.id || plugin.blocked}
                 className={`shrink-0 px-2.5 py-1 text-[11px] font-medium rounded-md transition-colors cursor-pointer disabled:opacity-50 ${
-                  plugin.disabledInCampfire
+                  plugin.disabledInSwitchyard
                     ? "bg-cc-hover text-cc-muted hover:text-cc-fg"
                     : "bg-cc-primary/15 text-cc-primary hover:bg-cc-primary/25"
                 }`}
               >
-                {toggling === plugin.id ? "..." : plugin.disabledInCampfire ? "Enable" : "Disable"}
+                {toggling === plugin.id ? "..." : plugin.disabledInSwitchyard ? "Enable" : "Disable"}
               </button>
             </div>
 

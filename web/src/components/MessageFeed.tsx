@@ -200,41 +200,50 @@ function getEntryRole(entry: FeedEntry): string | null {
 
 // ─── Components ──────────────────────────────────────────────────────────────
 
+const stepRow =
+  "flex items-center gap-2 -ml-2 pl-2 pr-3 h-8 rounded-lg text-left hover:bg-cc-hover transition-colors duration-120 cursor-pointer max-w-full";
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      className={`w-3 h-3 text-cc-muted transition-transform duration-150 shrink-0 ${open ? "rotate-90" : ""}`}
+    >
+      <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** Codex-style step rows: one line per tool call, consecutive same-tool calls collapse into one row */
 function ToolMessageGroup({ group }: { group: ToolMsgGroup }) {
   const [open, setOpen] = useState(false);
   const iconType = getToolIcon(group.toolName);
   const label = getToolLabel(group.toolName);
   const count = group.items.length;
 
-  // Single item — render inline with card treatment
+  // Single item — one step row
   if (count === 1) {
     const item = group.items[0];
     return (
       <div className="animate-[fadeSlideIn_0.15s_ease-out]">
-        <div className="log-tool">
-          <div className="rounded-lg overflow-hidden border border-cc-border/60 bg-cc-card">
-            <button
-              onClick={() => setOpen(!open)}
-              className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-cc-hover transition-all duration-200 cursor-pointer"
-            >
-              <svg viewBox="0 0 16 16" fill="currentColor" className={`w-2.5 h-2.5 text-cc-muted/50 transition-transform duration-200 shrink-0 ${open ? "rotate-90" : ""}`}>
-                <path d="M6 4l4 4-4 4" />
-              </svg>
-              <ToolIcon type={iconType} />
-              <span className="text-[11px] font-medium text-cc-fg font-mono-code">{label}</span>
-              <span className="text-[11px] text-cc-muted truncate flex-1 font-mono-code">
-                {getPreview(item.name, item.input)}
-              </span>
-            </button>
-            {open && (
-              <div className="px-3 pb-2.5 pt-0 border-t border-cc-border/40 mt-0">
-                <pre className="mt-1.5 text-[11px] text-cc-muted font-mono-code whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">
-                  {JSON.stringify(item.input, null, 2)}
-                </pre>
-              </div>
-            )}
+        <button onClick={() => setOpen(!open)} aria-expanded={open} className={`${stepRow} w-full`}>
+          <Chevron open={open} />
+          <ToolIcon type={iconType} />
+          <span className="text-[13px] font-medium text-cc-fg shrink-0">{label}</span>
+          <span className="text-[13px] text-cc-muted truncate min-w-0 font-mono-code">
+            {getPreview(item.name, item.input)}
+          </span>
+        </button>
+        {open && (
+          <div className="mt-1 ml-5 rounded-xl bg-cc-hover px-4 py-3">
+            <pre className="text-[12px] text-cc-muted font-mono-code whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">
+              {JSON.stringify(item.input, null, 2)}
+            </pre>
           </div>
-        </div>
+        )}
       </div>
     );
   }
@@ -242,37 +251,25 @@ function ToolMessageGroup({ group }: { group: ToolMsgGroup }) {
   // Multi-item group
   return (
     <div className="animate-[fadeSlideIn_0.15s_ease-out]">
-      <div className="log-tool">
-        <div className="rounded-lg overflow-hidden border border-cc-border/60 bg-cc-card">
-          <button
-            onClick={() => setOpen(!open)}
-            className="w-full flex items-center gap-2 px-3 py-1.5 text-left hover:bg-cc-hover transition-all duration-200 cursor-pointer"
-          >
-            <svg viewBox="0 0 16 16" fill="currentColor" className={`w-2.5 h-2.5 text-cc-muted/50 transition-transform duration-200 shrink-0 ${open ? "rotate-90" : ""}`}>
-              <path d="M6 4l4 4-4 4" />
-            </svg>
-            <ToolIcon type={iconType} />
-            <span className="text-[11px] font-medium text-cc-fg font-mono-code">{label}</span>
-            <span className="text-[10px] text-cc-muted/60 font-mono-code tabular-nums">
-              x{count}
-            </span>
-          </button>
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className={stepRow}>
+        <Chevron open={open} />
+        <ToolIcon type={iconType} />
+        <span className="text-[13px] font-medium text-cc-fg">{label}</span>
+        <span className="text-[12px] text-cc-muted tabular-nums">x{count}</span>
+      </button>
 
-          {open && (
-            <div className="px-3 py-1.5">
-              {group.items.map((item, i) => {
-                const preview = getPreview(item.name, item.input);
-                return (
-                  <div key={item.id || i} className={`flex items-center gap-2 py-0.5 text-[11px] text-cc-muted font-mono-code truncate ${i > 0 ? "border-t border-cc-border/40 pt-1" : ""}`}>
-                    <span className="text-cc-muted/30 select-none">-</span>
-                    <span className="truncate">{preview || JSON.stringify(item.input).slice(0, 80)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      {open && (
+        <div className="ml-5 pl-3 border-l border-cc-border mt-1 space-y-0.5">
+          {group.items.map((item, i) => {
+            const preview = getPreview(item.name, item.input);
+            return (
+              <div key={item.id || i} className="text-[12.5px] text-cc-muted font-mono-code truncate py-0.5">
+                {preview || JSON.stringify(item.input).slice(0, 80)}
+              </div>
+            );
+          })}
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -285,7 +282,7 @@ function FeedEntries({ entries, onForkAt, enrichments }: { entries: FeedEntry[];
         const currentRole = getEntryRole(entry);
         const prevRole = prevEntry ? getEntryRole(prevEntry) : null;
         // Different roles get larger gap, same role gets smaller gap
-        const spacingClass = i === 0 ? "" : (currentRole !== prevRole ? "mt-6" : "mt-2");
+        const spacingClass = i === 0 ? "" : (currentRole !== prevRole ? "mt-7" : "mt-1.5");
 
         if (entry.kind === "tool_msg_group") {
           return (
@@ -344,36 +341,24 @@ function SubagentContainer({ group }: { group: SubagentGroup }) {
 
   return (
     <div className="animate-[fadeSlideIn_0.15s_ease-out]">
-      <div className="ml-3 rounded-lg border border-cc-border/60 bg-cc-card/50 border-l-2 border-l-cc-primary/30 pl-3">
-        <button
-          onClick={() => setOpen(!open)}
-          className="w-full flex items-center gap-2 py-2 px-2 text-left cursor-pointer mb-0.5 hover:bg-cc-hover/50 rounded-t-lg transition-all duration-200"
-        >
-          <svg viewBox="0 0 16 16" fill="currentColor" className={`w-2.5 h-2.5 text-cc-muted/50 transition-transform duration-200 shrink-0 ${open ? "rotate-90" : ""}`}>
-            <path d="M6 4l4 4-4 4" />
-          </svg>
-          <span className="text-[11px] font-medium text-cc-fg font-mono-code truncate">{label}</span>
-          {agentType && (
-            <span className="rounded-full bg-cc-hover px-2 py-0.5 text-[9px] text-cc-muted/60 font-mono-code shrink-0">
-              {agentType}
-            </span>
-          )}
-          {!open && lastPreview && (
-            <span className="text-[11px] text-cc-muted/50 truncate ml-1 font-mono-code">
-              {lastPreview}
-            </span>
-          )}
-          <span className="rounded-full bg-cc-hover px-2 py-0.5 text-[10px] text-cc-muted/40 font-mono-code tabular-nums shrink-0 ml-auto">
-            {childCount}
-          </span>
-        </button>
-
-        {open && (
-          <div className="pb-2 px-2">
-            <FeedEntries entries={group.children} />
-          </div>
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className={`${stepRow} w-full`}>
+        <Chevron open={open} />
+        <ToolIcon type="agent" />
+        <span className="text-[13px] font-medium text-cc-fg truncate">{label}</span>
+        {agentType && (
+          <span className="text-[12px] text-cc-muted shrink-0">{agentType}</span>
         )}
-      </div>
+        {!open && lastPreview && (
+          <span className="text-[13px] text-cc-muted truncate min-w-0">{lastPreview}</span>
+        )}
+        <span className="text-[12px] text-cc-muted tabular-nums shrink-0 ml-auto">{childCount}</span>
+      </button>
+
+      {open && (
+        <div className="ml-5 pl-4 border-l border-cc-border mt-1 py-1">
+          <FeedEntries entries={group.children} />
+        </div>
+      )}
     </div>
   );
 }
@@ -489,14 +474,9 @@ export function MessageFeed({ sessionId }: { sessionId: string }) {
 
   if (messages.length === 0 && !streamingText) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center select-none px-6 gap-3">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 text-cc-muted/25">
-          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-        </svg>
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-sm font-medium text-cc-muted">Start a conversation</span>
-          <span className="text-xs text-cc-muted/50">Type a message below to begin</span>
-        </div>
+      <div className="flex-1 flex flex-col items-center justify-center select-none px-6 gap-1.5">
+        <span className="text-[22px] font-medium text-cc-fg tracking-[-0.01em]">Start a conversation</span>
+        <span className="text-[14px] text-cc-muted">Type a message below to begin</span>
       </div>
     );
   }
@@ -506,14 +486,14 @@ export function MessageFeed({ sessionId }: { sessionId: string }) {
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="h-full overflow-y-auto scroll-smooth px-4 sm:px-6 py-4"
+        className="h-full overflow-y-auto scroll-smooth px-4 sm:px-6 pt-4 pb-6"
       >
         <div className="max-w-3xl mx-auto">
           {hasMore && (
             <div className="flex justify-center pb-3">
               <button
                 onClick={handleLoadMore}
-                className="rounded-full border border-cc-border px-3 py-1 text-[11px] text-cc-muted hover:text-cc-fg hover:bg-cc-hover transition-all duration-200 cursor-pointer"
+                className="rounded-full border border-cc-border px-3.5 h-8 text-[13px] text-cc-fg hover:bg-cc-hover transition-colors duration-120 cursor-pointer"
               >
                 + {Math.min(FEED_PAGE_SIZE, hiddenCount)} more ({hiddenCount} hidden)
               </button>
@@ -525,11 +505,11 @@ export function MessageFeed({ sessionId }: { sessionId: string }) {
           {toolProgress && toolProgress.size > 0 && !streamingText && (
             <div className="mt-4 flex items-center gap-2 animate-pulse">
               {Array.from(toolProgress.values()).map((p, i) => (
-                <span key={i} className="inline-flex items-center gap-1.5 rounded-full bg-cc-hover px-2.5 py-0.5 text-[10px] text-cc-muted font-mono-code">
-                  {i > 0 && <span className="text-cc-muted/20">|</span>}
+                <span key={i} className="inline-flex items-center gap-1.5 text-[13px] text-cc-muted">
+                  {i > 0 && <span className="text-cc-muted/40">·</span>}
                   <ToolIcon type={getToolIcon(p.toolName)} />
                   <span>{getToolLabel(p.toolName)}</span>
-                  <span className="text-cc-muted/40 tabular-nums">{p.elapsedSeconds}s</span>
+                  <span className="text-cc-muted/70 tabular-nums">{p.elapsedSeconds}s</span>
                 </span>
               ))}
             </div>
@@ -538,20 +518,18 @@ export function MessageFeed({ sessionId }: { sessionId: string }) {
           {/* Streaming indicator */}
           {streamingText && (
             <div className="mt-4 animate-[fadeSlideIn_0.1s_ease-out]">
-              <div className="bg-cc-card rounded-xl border border-cc-border/60 px-4 py-3">
-                <pre className="font-sans-ui text-[13px] text-cc-fg whitespace-pre-wrap break-words leading-[1.7]">
-                  {streamingText}
-                  <span className="inline-block w-1.5 h-4 ml-0.5 rounded-sm bg-gradient-to-b from-cc-primary/80 to-cc-primary/30 animate-pulse align-middle" />
-                </pre>
-              </div>
+              <pre className="font-sans-ui text-[15px] text-cc-fg whitespace-pre-wrap break-words leading-[1.65]">
+                {streamingText}
+                <span className="inline-block w-2.5 h-2.5 ml-1 rounded-full bg-cc-fg align-middle animate-pulse" />
+              </pre>
               {/* Generation stats footer */}
               {elapsed > 0 && (
-                <div className="mt-1.5 pl-1 flex items-center gap-1.5">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-cc-hover px-2.5 py-0.5 text-[10px] text-cc-muted/60 font-mono-code">
+                <div className="mt-2 flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1.5 text-[12px] text-cc-muted tabular-nums">
                     <span className="tabular-nums">{formatElapsed(elapsed)}</span>
                     {(streamingOutputTokens ?? 0) > 0 && (
                       <>
-                        <span className="text-cc-muted/20">|</span>
+                        <span className="text-cc-muted/40">·</span>
                         <span className="tabular-nums">{formatTokens(streamingOutputTokens!)} tokens</span>
                       </>
                     )}
@@ -563,13 +541,13 @@ export function MessageFeed({ sessionId }: { sessionId: string }) {
 
           {/* Generation stats bar (when running but no streaming text yet) */}
           {!streamingText && sessionStatus === "running" && elapsed > 0 && (
-            <div className="mt-4 pl-1 flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-cc-hover px-2.5 py-0.5 text-[10px] text-cc-muted/60 font-mono-code">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-cc-primary/50 animate-breathing" />
+            <div className="mt-4 flex items-center gap-2">
+              <span className="inline-flex items-center gap-2 text-[13px] text-cc-muted tabular-nums">
+                <span className="inline-block w-2.5 h-2.5 rounded-full bg-cc-fg animate-breathing" />
                 <span className="tabular-nums">{formatElapsed(elapsed)}</span>
                 {(streamingOutputTokens ?? 0) > 0 && (
                   <>
-                    <span className="text-cc-muted/20">|</span>
+                    <span className="text-cc-muted/40">·</span>
                     <span className="tabular-nums">{formatTokens(streamingOutputTokens!)} tokens</span>
                   </>
                 )}

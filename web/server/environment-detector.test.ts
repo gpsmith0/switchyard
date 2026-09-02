@@ -7,7 +7,7 @@ import { detectEnvironment } from "./environment-detector.js";
 describe("detectEnvironment", () => {
   it("detects framework, service, and missing database env from bounded project files", () => {
     // Validates the main session-start scanner path without crawling arbitrary source trees.
-    const cwd = mkdtempSync(join(tmpdir(), "campfire-env-"));
+    const cwd = mkdtempSync(join(tmpdir(), "switchyard-env-"));
     mkdirSync(join(cwd, "prisma"), { recursive: true });
     writeFileSync(join(cwd, "package.json"), JSON.stringify({
       dependencies: {
@@ -31,7 +31,7 @@ describe("detectEnvironment", () => {
 
   it("detects Docker, Fly.io, GitHub Actions, and database env markers", () => {
     // Covers non-package detection rules and nested workflow directory handling.
-    const cwd = mkdtempSync(join(tmpdir(), "campfire-env-"));
+    const cwd = mkdtempSync(join(tmpdir(), "switchyard-env-"));
     mkdirSync(join(cwd, ".github", "workflows"), { recursive: true });
     writeFileSync(join(cwd, "Dockerfile"), "FROM node:22\n");
     writeFileSync(join(cwd, "fly.toml"), "app = \"demo\"\n");

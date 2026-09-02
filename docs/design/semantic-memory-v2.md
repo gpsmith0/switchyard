@@ -3,7 +3,7 @@
 **Status:** Draft for implementation
 **Date:** 2026-07-07
 **Reference implementation studied:** MetaHarness ReasoningBank (github.com/ruvnet/metaharness, MIT)
-**Scope:** Rebuild of Campfire's Layer-1 semantic memory (`web/server/semantic-memory.ts`, `embedding.ts`) and its integration points in `collective-intelligence.ts`, `shared-context.ts`, `ws-bridge.ts`, and `routes/ci-routes.ts`.
+**Scope:** Rebuild of Switchyard's Layer-1 semantic memory (`web/server/semantic-memory.ts`, `embedding.ts`) and its integration points in `collective-intelligence.ts`, `shared-context.ts`, `ws-bridge.ts`, and `routes/ci-routes.ts`.
 
 This document is a spec for an implementer. It does not change any code. Sections marked **[VERIFIED]** are grounded in code or documents actually read; **[INFERRED]** and **[UNVERIFIED]** are labeled as such.
 
@@ -119,7 +119,7 @@ Five *read views* over one underlying store — Working / Repo / Mutation / Cost
 
 ---
 
-## 3. Proposed Campfire v2 design
+## 3. Proposed Switchyard v2 design
 
 Design goals: (a) memories actually reach prompts; (b) old/noisy memories fade unless used; (c) consolidation produces distilled knowledge, not concatenation; (d) everything degrades gracefully when no embedding provider or no OpenRouter key is configured; (e) works identically for all backends (Claude Code, Codex, …) because it lives entirely server-side on the normalized browser-message stream — per the repo rule that features must be backend-compatible.
 
@@ -136,7 +136,7 @@ Add a first-class `namespace` string column to both LanceDB tables, replacing to
 
 Notes:
 - `repoRootHash` = short SHA-256 of the absolute repo root (stable, path-privacy-friendly, safe in LanceDB `where()` strings). Keep the raw `repoRoot` as a separate column for display.
-- Retrieval for a session queries an ordered namespace set: `[session:<id>, repo:<hash>, agent:<backend>, global]`, each with its own recall depth (ADR-161's idea): defaults `4 / 6 / 2 / 3`, configurable in `~/.campfire/settings.json` under `memory.recallDepth`.
+- Retrieval for a session queries an ordered namespace set: `[session:<id>, repo:<hash>, agent:<backend>, global]`, each with its own recall depth (ADR-161's idea): defaults `4 / 6 / 2 / 3`, configurable in `~/.switchyard/settings.json` under `memory.recallDepth`.
 - Decay policy per namespace class lives in settings with the ADR-006 shape (`memory.decay.{class}.halfLifeHours|reinforceMultiplier`), defaults above. `null` half-life = no decay (used for pinned/user-curated memories, below).
 
 ### 3.2 Decay + reinforcement model
@@ -172,7 +172,7 @@ score = simNorm ^ 1.5 × w(t) × confidence
 
 ### 3.4 Consolidation pipeline (LLM-backed distillation)
 
-Replace `synthesize()` with a two-stage pipeline modeled on ADR-006's JUDGE→DISTILL→CONSOLIDATE, sized for Campfire:
+Replace `synthesize()` with a two-stage pipeline modeled on ADR-006's JUDGE→DISTILL→CONSOLIDATE, sized for Switchyard:
 
 **Triggers** (all funnel into one `consolidate(sessionId, reason)` with an in-flight guard):
 1. **Turn boundary** (primary): on `result` message for a session, if ≥ N (default 8) un-consolidated fragments exist — this fixes §1.5's "only on deletion" problem.
@@ -226,13 +226,13 @@ Model routing: use the existing OpenRouter plumbing (`settings-manager.ts` `open
 
 ### 3.5 Migration from current LanceDB tables
 
-Current state: `~/.campfire/memory/lancedb/` with `fragments` (vector dim = whatever provider was configured at first write, default 1536 of zeros) and `consolidated` (no vector column). Migration must be automatic, one-way, and safe to interrupt:
+Current state: `~/.switchyard/memory/lancedb/` with `fragments` (vector dim = whatever provider was configured at first write, default 1536 of zeros) and `consolidated` (no vector column). Migration must be automatic, one-way, and safe to interrupt:
 
-1. **Versioned tables, not in-place ALTER.** On startup, read `~/.campfire/memory/meta.json` (`{ schemaVersion, embeddingProvider, dim }`; absent = v1). If `schemaVersion < 2`, create `fragments_v2` / `consolidated_v2` with the new columns (`namespace`, `repoRootHash`, `lastReinforcedAt`, `accessCount`, `pinned`, `halfLifeHours`, `embeddingStatus`, `synthesisMethod`, `supersededBy`) and copy rows transformed:
+1. **Versioned tables, not in-place ALTER.** On startup, read `~/.switchyard/memory/meta.json` (`{ schemaVersion, embeddingProvider, dim }`; absent = v1). If `schemaVersion < 2`, create `fragments_v2` / `consolidated_v2` with the new columns (`namespace`, `repoRootHash`, `lastReinforcedAt`, `accessCount`, `pinned`, `halfLifeHours`, `embeddingStatus`, `synthesisMethod`, `supersededBy`) and copy rows transformed:
    - `namespace` backfill: `repoRoot` present → `repo:<hash>`; else `session:<sessionId>`; consolidated rows with `repoRoot === ""` → `global`.
    - `lastReinforcedAt = timestamp`, `accessCount = 0`, `pinned = false`.
    - **Zero-vector rows:** detect (all-zero vector) → `embeddingStatus = "pending"`, vector kept as zeros but excluded from ANN by the `where()` clause (§3.3). A lazy re-embed queue (drained at ≤ 2 req/s whenever a real provider is configured) fills them in and flips status to `"ok"`.
-   - Old tables are renamed to `fragments_v1_backup` (LanceDB: keep directory, don't open) and dropped after 30 days or on `campfire memory prune`.
+   - Old tables are renamed to `fragments_v1_backup` (LanceDB: keep directory, don't open) and dropped after 30 days or on `switchyard memory prune`.
 2. **Dimension changes** (fixes §1.6 lock-in): `meta.json` records `(provider, dim)`. If settings change to a different dim, do **not** rewrite the schema live; mark all rows `embeddingStatus = "pending"`, create `fragments_v2_<dim>` as the active table, and re-embed via the same queue. `getEmbeddingDim()`'s "1536 when none" default goes away — with provider `none`, no vector column is populated and `embeddingStatus = "none"`.
 3. Existing REST responses (`GET /sessions/:id/memory`, `/memory/global`) keep their shapes; the `""`-repoRoot bug (§1.8) is fixed by querying `global` + `repo:<hash of session cwd>` namespaces instead.
 
@@ -247,7 +247,7 @@ This is the part that makes everything above matter, and it requires a small `ws
    with `Promise.race` against a 250 ms timeout returning the original message, and try/catch pass-through — the chat flow must never block on memory. (The existing `processBrowserMessage` fire-and-forget in `interceptCIMessage` stays as-is for consumed CI message types; enrichment becomes its own explicit, awaited call because it *transforms* rather than consumes.)
 2. `enrichUserMessage` (new name for the fixed `enrichWithMemory`) queries namespaces `[repo:<hash>, agent:<backend>, global]` — **not** `session:<id>` for the fragment portion, since same-session context is already in the agent's own conversation; that removes §1.4's self-referential filter. Format:
    ```
-   --- Campfire memory (auto-recalled; may be stale) ---
+   --- Switchyard memory (auto-recalled; may be stale) ---
    Knowledge: <consolidated summaries, tag-prefixed>
    Notes: [pattern] ... / [decision] ... (fragment lines, max 5)
    --- end memory ---
@@ -273,8 +273,8 @@ Per CLAUDE.md, all new server code needs colocated Vitest coverage: decay math (
 | **Quantization (int8 / RaBitQ)** | Skip | Justified above ~100k vectors per the ADR itself. We cap namespaces at 5k. |
 | **HNSW via ruvector NAPI** | Skip — keep LanceDB's built-in index | Same ADR says brute force wins below N≈5k anyway; LanceDB already gives us ANN without a new native dependency, and it's the stack we ship today. |
 | **EWC++ / LoRA-style DISTILL** | Replace with LLM distillation (§3.4) | Those techniques consolidate *model weights*; we consolidate *text*. An LLM call with a strict JSON contract is the text-domain equivalent and matches infrastructure we already have (OpenRouter, used by auto-namer). |
-| **Full ReasoningBank trajectory layer (`trajectory.start/step/end/replay`)** | Skip | Campfire already records every raw protocol message to JSONL (`recorder.ts` / `replay.ts`). Building a second trajectory store would duplicate it; if we later want trajectory-level JUDGE, derive it from recordings. |
-| **Witness attestation / Ed25519-signed memory manifests** | Skip | Solves a supply-chain trust problem MetaHarness has (shipping harnesses to third parties). Campfire memory is local, single-user-machine state. |
+| **Full ReasoningBank trajectory layer (`trajectory.start/step/end/replay`)** | Skip | Switchyard already records every raw protocol message to JSONL (`recorder.ts` / `replay.ts`). Building a second trajectory store would duplicate it; if we later want trajectory-level JUDGE, derive it from recordings. |
+| **Witness attestation / Ed25519-signed memory manifests** | Skip | Solves a supply-chain trust problem MetaHarness has (shipping harnesses to third parties). Switchyard memory is local, single-user-machine state. |
 | **Federation / IPFS pattern bundles / `hooks.pretrain`** | Skip (export/import maybe later) | Cross-install sharing is out of scope; a plain `memory export`/`import` JSON command is a cheap future add and needs none of the federation machinery. |
 | **Per-tier evolvable depth genomes (ADR-161)** | Copy the idea, not the mechanism | We take "recall depth per scope is a tunable" as a settings knob; we are not running an evolutionary optimizer over it. |
 

@@ -2,7 +2,7 @@
  * Recording Hub Store — metadata index overlay on existing recordings.
  *
  * Unlike companion (separate ~/.companion/hub/ storage), this extends
- * the existing ~/.campfire/recordings/ with an index.json for metadata,
+ * the existing ~/.switchyard/recordings/ with an index.json for metadata,
  * tags, and summaries. No duplicate file storage.
  */
 
@@ -41,8 +41,8 @@ export interface HubRecordingSummary extends HubRecordingMeta {
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
-const CAMPFIRE_DIR = join(homedir(), ".campfire");
-const RECORDINGS_DIR = process.env.CAMPFIRE_RECORDINGS_DIR || join(CAMPFIRE_DIR, "recordings");
+const SWITCHYARD_DIR = join(homedir(), ".switchyard");
+const RECORDINGS_DIR = process.env.SWITCHYARD_RECORDINGS_DIR || join(SWITCHYARD_DIR, "recordings");
 const INDEX_PATH = join(RECORDINGS_DIR, "hub-index.json");
 
 // ─── Store ──────────────────────────────────────────────────────────────────

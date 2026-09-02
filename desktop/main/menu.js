@@ -1,5 +1,5 @@
 // Native application menu. Standard macOS roles (so copy/paste, zoom and
-// window management behave natively) plus Campfire-specific entries.
+// window management behave natively) plus Switchyard-specific entries.
 "use strict";
 
 const { app, Menu, shell } = require("electron");
@@ -64,19 +64,19 @@ function buildMenu({ getWindow, getOrigin }) {
       role: "help",
       submenu: [
         {
-          label: "Campfire Documentation",
-          click: () => shell.openExternal("https://github.com/stretchcloud/campfire#readme"),
+          label: "Switchyard Documentation",
+          click: () => shell.openExternal("https://github.com/gpsmith0/switchyard#readme"),
         },
         {
           label: "Report an Issue",
-          click: () => shell.openExternal("https://github.com/stretchcloud/campfire/issues"),
+          click: () => shell.openExternal("https://github.com/gpsmith0/switchyard/issues"),
         },
         {
           label: "Server Logs",
           click: () => {
             const os = require("node:os");
             const { join } = require("node:path");
-            shell.showItemInFolder(join(os.homedir(), ".campfire", "logs", "desktop-server.log"));
+            shell.showItemInFolder(join(os.homedir(), ".switchyard", "logs", "desktop-server.log"));
           },
         },
       ],

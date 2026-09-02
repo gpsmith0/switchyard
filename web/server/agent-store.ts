@@ -13,9 +13,9 @@ import type { AgentProfile, AgentProfileCreateInput, AgentExecution } from "./ag
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
-const CAMPFIRE_DIR = join(homedir(), ".campfire");
-const AGENTS_DIR = join(CAMPFIRE_DIR, "agents");
-const RUNS_DIR = join(CAMPFIRE_DIR, "agent-runs");
+const SWITCHYARD_DIR = join(homedir(), ".switchyard");
+const AGENTS_DIR = join(SWITCHYARD_DIR, "agents");
+const RUNS_DIR = join(SWITCHYARD_DIR, "agent-runs");
 
 function ensureDir(dir: string): void {
   mkdirSync(dir, { recursive: true });

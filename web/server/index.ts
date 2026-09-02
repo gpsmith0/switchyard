@@ -51,7 +51,7 @@ import type { SocketData } from "./ws-bridge.js";
 import type { ServerWebSocket } from "bun";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const packageRoot = process.env.__CAMPFIRE_PACKAGE_ROOT || resolve(__dirname, "..");
+const packageRoot = process.env.__SWITCHYARD_PACKAGE_ROOT || resolve(__dirname, "..");
 
 import { DEFAULT_PORT, INTERNAL_DEV_BACKEND_PORT } from "./constants.js";
 
@@ -60,7 +60,7 @@ import { DEFAULT_PORT, INTERNAL_DEV_BACKEND_PORT } from "./constants.js";
 const port = Number(process.env.PORT)
   || (process.env.NODE_ENV === "production"
     ? DEFAULT_PORT
-    : (Number(process.env.__CAMPFIRE_INTERNAL_PORT) || INTERNAL_DEV_BACKEND_PORT));
+    : (Number(process.env.__SWITCHYARD_INTERNAL_PORT) || INTERNAL_DEV_BACKEND_PORT));
 const sessionStore = new SessionStore();
 const wsBridge = new WsBridge();
 const launcher = new CliLauncher(port);
@@ -188,7 +188,7 @@ app.use("/api/*", cors());
 app.route("/api", createRoutes(launcher, wsBridge, sessionStore, worktreeTracker, terminalManager, prPoller, recorder, cronScheduler, webhookManager, adapterRegistry, agentExecutor, protocolMonitor, agentMcpBridge));
 
 function publicOriginForRequest(req: Request): string {
-  const configured = process.env.CAMPFIRE_PUBLIC_URL?.trim();
+  const configured = process.env.SWITCHYARD_PUBLIC_URL?.trim();
   if (configured) return configured.replace(/\/+$/, "");
 
   const url = new URL(req.url);
@@ -214,7 +214,7 @@ if (process.env.NODE_ENV === "production") {
   app.get("/*", (c, next) => {
     if (!isHtmlNavigation(c.req.raw, c.req.path)) return next();
     const html = readFileSync(indexPath, "utf-8")
-      .replaceAll("__CAMPFIRE_ORIGIN__", publicOriginForRequest(c.req.raw));
+      .replaceAll("__SWITCHYARD_ORIGIN__", publicOriginForRequest(c.req.raw));
     return c.html(html);
   });
   app.use("/*", serveStatic({ root: distDir }));

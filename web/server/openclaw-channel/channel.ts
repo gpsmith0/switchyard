@@ -1,15 +1,15 @@
 /**
- * Campfire channel plugin for OpenClaw.
+ * Switchyard channel plugin for OpenClaw.
  *
  * This plugin enables OpenClaw users to interact with their agents
- * through Campfire's rich web UI — with cost tracking, session replay,
+ * through Switchyard's rich web UI — with cost tracking, session replay,
  * permission voting, session gallery, and collaboration features
  * that OpenClaw's native UI doesn't have.
  *
  * Architecture:
- *   Browser (Campfire React UI)
+ *   Browser (Switchyard React UI)
  *       ↕ WebSocket
- *   Campfire Server (Hono/Bun)
+ *   Switchyard Server (Hono/Bun)
  *       ↕ HTTP webhook + outbound API
  *   OpenClaw Gateway
  *       ↕ Agent runtime
@@ -25,7 +25,7 @@ import type {
 
 interface ActiveAccount {
   accountId: string;
-  campfireUrl: string;
+  switchyardUrl: string;
   onMessage: (msg: InboundMessage) => void;
 }
 
@@ -33,12 +33,12 @@ const activeAccounts = new Map<string, ActiveAccount>();
 
 // ─── Channel Plugin implementation ─────────────────────────────────────────
 
-export const campfirePlugin: ChannelPlugin = {
+export const switchyardPlugin: ChannelPlugin = {
   meta: {
-    id: "campfire",
-    label: "Campfire",
+    id: "switchyard",
+    label: "Switchyard",
     icon: "🔥",
-    docsPath: "/channels/campfire",
+    docsPath: "/channels/switchyard",
     blurb: "Rich web UI with cost tracking, session replay, and collaboration",
   },
 
@@ -50,16 +50,16 @@ export const campfirePlugin: ChannelPlugin = {
   config: {
     fields: [
       {
-        key: "campfireUrl",
-        label: "Campfire Server URL",
+        key: "switchyardUrl",
+        label: "Switchyard Server URL",
         type: "url",
         required: true,
         placeholder: "http://localhost:4567",
-        help: "The URL of your running Campfire server",
+        help: "The URL of your running Switchyard server",
       },
       {
-        key: "campfirePort",
-        label: "Campfire Port",
+        key: "switchyardPort",
+        label: "Switchyard Port",
         type: "number",
         required: false,
         placeholder: "4567",
@@ -68,9 +68,9 @@ export const campfirePlugin: ChannelPlugin = {
     ],
 
     validate(values: Record<string, string>): { valid: boolean; error?: string } {
-      const url = values.campfireUrl;
+      const url = values.switchyardUrl;
       if (!url) {
-        return { valid: false, error: "Campfire Server URL is required" };
+        return { valid: false, error: "Switchyard Server URL is required" };
       }
       try {
         new URL(url);
@@ -83,8 +83,8 @@ export const campfirePlugin: ChannelPlugin = {
 
   outbound: {
     /**
-     * Send a text message from the OpenClaw agent to Campfire.
-     * Posts to Campfire's inbound webhook endpoint.
+     * Send a text message from the OpenClaw agent to Switchyard.
+     * Posts to Switchyard's inbound webhook endpoint.
      */
     async sendText(opts: {
       accountId: string;
@@ -98,7 +98,7 @@ export const campfirePlugin: ChannelPlugin = {
       }
 
       try {
-        const res = await fetch(`${account.campfireUrl}/api/openclaw/inbound`, {
+        const res = await fetch(`${account.switchyardUrl}/api/openclaw/inbound`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -127,8 +127,8 @@ export const campfirePlugin: ChannelPlugin = {
 
   gateway: {
     /**
-     * Start an account: register with Campfire for inbound messages.
-     * When a user sends a message in Campfire, Campfire will POST
+     * Start an account: register with Switchyard for inbound messages.
+     * When a user sends a message in Switchyard, Switchyard will POST
      * to the OpenClaw webhook to route it to the agent.
      */
     async startAccount(opts: {
@@ -136,33 +136,33 @@ export const campfirePlugin: ChannelPlugin = {
       config: Record<string, string>;
       onMessage: (msg: InboundMessage) => void;
     }): Promise<void> {
-      const campfireUrl = opts.config.campfireUrl || "http://localhost:4567";
+      const switchyardUrl = opts.config.switchyardUrl || "http://localhost:4567";
 
       activeAccounts.set(opts.accountId, {
         accountId: opts.accountId,
-        campfireUrl,
+        switchyardUrl,
         onMessage: opts.onMessage,
       });
 
-      console.log(`[campfire-channel] Started account ${opts.accountId} → ${campfireUrl}`);
+      console.log(`[switchyard-channel] Started account ${opts.accountId} → ${switchyardUrl}`);
     },
 
     /**
-     * Stop an account: unregister from Campfire.
+     * Stop an account: unregister from Switchyard.
      */
     async stopAccount(accountId: string): Promise<void> {
       activeAccounts.delete(accountId);
-      console.log(`[campfire-channel] Stopped account ${accountId}`);
+      console.log(`[switchyard-channel] Stopped account ${accountId}`);
     },
   },
 };
 
 /**
- * Handle an inbound webhook from Campfire.
- * Called when a user sends a message in the Campfire UI
+ * Handle an inbound webhook from Switchyard.
+ * Called when a user sends a message in the Switchyard UI
  * and it needs to be routed to the OpenClaw agent.
  */
-export function handleCampfireWebhook(body: {
+export function handleSwitchyardWebhook(body: {
   accountId: string;
   senderId: string;
   text: string;

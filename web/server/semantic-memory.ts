@@ -4,7 +4,7 @@
  * Persistent, shared knowledge base anchored to namespaces (design doc
  * docs/design/semantic-memory-v2.md §3.1–§3.5). Backed by LanceDB.
  *
- * Two active tables (names tracked in ~/.campfire/memory/meta.json):
+ * Two active tables (names tracked in ~/.switchyard/memory/meta.json):
  *   - fragments_v2[_<dim>]:    episodic/semantic MemoryFragments with vectors
  *   - consolidated_v2[_<dim>]: distilled ConsolidatedKnowledge per (namespace, tag)
  *
@@ -212,7 +212,7 @@ interface StoreState {
   meta: MemoryMeta;
 }
 
-let _memoryRoot = join(homedir(), ".campfire", "memory");
+let _memoryRoot = join(homedir(), ".switchyard", "memory");
 let _initPromise: Promise<StoreState> | null = null;
 
 async function initState(): Promise<StoreState> {
@@ -1145,7 +1145,7 @@ export interface EnrichmentResult {
   block: string | null;
 }
 
-const ENRICHMENT_HEADER = "--- Campfire memory (auto-recalled; may be stale) ---";
+const ENRICHMENT_HEADER = "--- Switchyard memory (auto-recalled; may be stale) ---";
 const ENRICHMENT_FOOTER = "--- end memory ---";
 const LINE_CLIP_CHARS = 300;
 

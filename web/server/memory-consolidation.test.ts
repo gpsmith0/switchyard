@@ -117,7 +117,7 @@ const EXPECTED_SYSTEM_PROMPT =
 let testDir: string;
 
 beforeEach(() => {
-  testDir = join(tmpdir(), `campfire-test-consolidation-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  testDir = join(tmpdir(), `switchyard-test-consolidation-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(testDir, { recursive: true });
   settingsManager._resetForTest(join(testDir, "settings.json"));
 

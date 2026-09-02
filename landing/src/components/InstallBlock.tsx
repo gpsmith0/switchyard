@@ -1,6 +1,6 @@
 import { CopyButton } from "./CopyButton";
 
-const COMMAND = "bunx the-campfire";
+const COMMAND = "bunx @gpsmith0/switchyard";
 
 export function InstallBlock({ large }: { large?: boolean }) {
   return (

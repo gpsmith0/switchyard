@@ -2,9 +2,9 @@
 // shell (e.g. to hide "open in browser" hints or adjust notification copy).
 const { contextBridge } = require("electron");
 
-const versionArg = process.argv.find((a) => a.startsWith("--campfire-version="));
+const versionArg = process.argv.find((a) => a.startsWith("--switchyard-version="));
 
-contextBridge.exposeInMainWorld("campfireDesktop", {
+contextBridge.exposeInMainWorld("switchyardDesktop", {
   isDesktop: true,
   platform: process.platform,
   version: versionArg ? versionArg.split("=")[1] : "",

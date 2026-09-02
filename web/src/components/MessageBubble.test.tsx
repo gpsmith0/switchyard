@@ -25,24 +25,25 @@ function makeMessage(overrides: Partial<ChatMessage> & { role: ChatMessage["role
 // ─── System messages ─────────────────────────────────────────────────────────
 
 describe("MessageBubble - system messages", () => {
-  it("renders system message as an uppercase divider label", () => {
-    // System messages render as a small uppercase tracking label between two
-    // divider lines (no longer italic text).
+  it("renders system message as a centered pill label", () => {
+    // System messages render as a small centered pill (rounded-full) — the
+    // ChatGPT-style thread uses no divider lines (design.md §6).
     const msg = makeMessage({ role: "system", content: "Session started" });
     const { container } = render(<MessageBubble message={msg} />);
 
-    const labelSpan = container.querySelector("span.uppercase");
+    const labelSpan = container.querySelector("span.rounded-full");
     expect(labelSpan).toBeTruthy();
     expect(labelSpan?.textContent).toBe("Session started");
   });
 
-  it("renders system message with divider lines", () => {
+  it("renders system message without divider lines", () => {
+    // Validates the redesign removed the two h-px divider rules that used to
+    // flank the label; the pill carries the soft hover fill instead.
     const msg = makeMessage({ role: "system", content: "Divider test" });
     const { container } = render(<MessageBubble message={msg} />);
 
-    // There should be 2 divider elements (h-px)
-    const dividers = container.querySelectorAll(".h-px");
-    expect(dividers.length).toBe(2);
+    expect(container.querySelectorAll(".h-px").length).toBe(0);
+    expect(container.querySelector("span.rounded-full")?.className).toContain("bg-cc-hover");
   });
 });
 
@@ -50,12 +51,13 @@ describe("MessageBubble - system messages", () => {
 
 describe("MessageBubble - user messages", () => {
   it("renders user message in a highlighted bubble with content", () => {
-    // User messages render as a full-width rounded card (rounded-xl) with the
-    // content in a <pre>; they are no longer right-aligned via justify-end.
+    // User messages render as a right-aligned gray pill (rounded-3xl, ChatGPT
+    // style) with the content in a <pre>; the wrapper aligns items to the end.
     const msg = makeMessage({ role: "user", content: "Hello Claude" });
     const { container } = render(<MessageBubble message={msg} />);
 
-    const bubble = container.querySelector(".rounded-xl");
+    expect(container.querySelector(".items-end")).toBeTruthy();
+    const bubble = container.querySelector(".rounded-3xl");
     expect(bubble).toBeTruthy();
 
     // Check content renders inside the bubble

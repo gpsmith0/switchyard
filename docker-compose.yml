@@ -1,15 +1,15 @@
 services:
-  campfire:
+  switchyard:
     build: .
     ports:
       - "4567:4567"
     volumes:
       # All persistent data (sessions, settings, agents, recordings, envs, webhooks)
-      - campfire-data:/home/campfire/.campfire
+      - switchyard-data:/home/switchyard/.switchyard
     environment:
       - NODE_ENV=production
       - PORT=4567
     restart: unless-stopped
 
 volumes:
-  campfire-data:
+  switchyard-data:

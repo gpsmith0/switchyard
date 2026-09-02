@@ -92,7 +92,7 @@ export function registerHubRoutes(api: Hono, deps: RouteDeps): void {
     if (!match) return c.json({ error: "Recording file not found" }, 404);
 
     try {
-      const recDir = process.env.CAMPFIRE_RECORDINGS_DIR || `${process.env.HOME || ""}/.campfire/recordings`;
+      const recDir = process.env.SWITCHYARD_RECORDINGS_DIR || `${process.env.HOME || ""}/.switchyard/recordings`;
       const filePath = `${recDir}/${filename}`;
       const meta = hubStore.importRecording(filePath);
       return c.json(meta, 201);

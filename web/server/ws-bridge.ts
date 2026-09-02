@@ -397,7 +397,7 @@ export class WsBridge {
     if (session.backendType !== "claude" && session.backendType !== "codex") return;
     const servers = session.state.detected_environment?.mcpServers;
     if (!servers || Object.keys(servers).length === 0) return;
-    if (process.env.CAMPFIRE_AUTO_INJECT_ENV_MCP === "0") return;
+    if (process.env.SWITCHYARD_AUTO_INJECT_ENV_MCP === "0") return;
 
     // Default-deny: detected_environment is persisted state and reachable
     // from session-create payloads, so only curated, scan-clean servers may

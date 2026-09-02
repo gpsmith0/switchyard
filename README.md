@@ -1,22 +1,22 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/stretchcloud/campfire/main/.github/og-image.png" alt="Campfire — Seven agents. One Campfire." width="100%" />
+  <img src="https://raw.githubusercontent.com/gpsmith0/switchyard/main/.github/og-image.png" alt="Switchyard — Seven agents. One Switchyard." width="100%" />
 </p>
 
-<h1 align="center">Campfire</h1>
+<h1 align="center">Switchyard</h1>
 <p align="center"><strong>The collaborative web platform for AI coding agents.</strong></p>
 <p align="center">A collaborative web platform for AI coding agents. Run Claude Code, Codex, Goose, Aider, OpenHands, OpenClaw, and OpenCode sessions side by side — with real-time collaboration, multi-agent orchestration, permission voting, session replay, scheduled tasks, and 30+ integrations.</p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/the-campfire"><img src="https://img.shields.io/npm/v/the-campfire" alt="npm version" /></a>
-  <a href="https://www.npmjs.com/package/the-campfire"><img src="https://img.shields.io/npm/dt/the-campfire" alt="npm downloads" /></a>
-  <a href="https://github.com/stretchcloud/campfire/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/stretchcloud/campfire/ci.yml?branch=main&label=CI" alt="CI status" /></a>
-  <a href="https://github.com/stretchcloud/campfire/stargazers"><img src="https://img.shields.io/github/stars/stretchcloud/campfire" alt="GitHub stars" /></a>
-  <a href="https://github.com/stretchcloud/campfire/pkgs/container/campfire"><img src="https://img.shields.io/badge/ghcr.io-campfire-2496ED?logo=docker&logoColor=white" alt="ghcr.io image" /></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/stretchcloud/campfire" alt="MIT License" /></a>
+  <a href="https://www.npmjs.com/package/@gpsmith0/switchyard"><img src="https://img.shields.io/npm/v/@gpsmith0/switchyard" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/@gpsmith0/switchyard"><img src="https://img.shields.io/npm/dt/@gpsmith0/switchyard" alt="npm downloads" /></a>
+  <a href="https://github.com/gpsmith0/switchyard/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/gpsmith0/switchyard/ci.yml?branch=main&label=CI" alt="CI status" /></a>
+  <a href="https://github.com/gpsmith0/switchyard/stargazers"><img src="https://img.shields.io/github/stars/gpsmith0/switchyard" alt="GitHub stars" /></a>
+  <a href="https://github.com/gpsmith0/switchyard/pkgs/container/switchyard"><img src="https://img.shields.io/badge/ghcr.io-switchyard-2496ED?logo=docker&logoColor=white" alt="ghcr.io image" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/gpsmith0/switchyard" alt="MIT License" /></a>
 </p>
 
 <p align="center">
-  <a href="https://the-campfire.dev"><strong>the-campfire.dev</strong></a>
+  <a href="https://github.com/gpsmith0/switchyard"><strong>github.com/gpsmith0/switchyard</strong></a>
 </p>
 
 ---
@@ -85,18 +85,18 @@
 
 ## Quick Start
 
-There are four ways to run Campfire: from npm, from source, with Docker, or as a native macOS app.
+There are four ways to run Switchyard: from npm, from source, with Docker, or as a native macOS app.
 
 ### Option 1: npm (fastest)
 
-If you just want to run Campfire without cloning the repo:
+If you just want to run Switchyard without cloning the repo:
 
 ```bash
 # Install Bun if you don't have it
 curl -fsSL https://bun.sh/install | bash
 
-# Run Campfire (downloads and starts automatically)
-bunx the-campfire
+# Run Switchyard (downloads and starts automatically)
+bunx @gpsmith0/switchyard
 ```
 
 Open [http://localhost:4567](http://localhost:4567). That's it.
@@ -104,7 +104,7 @@ Open [http://localhost:4567](http://localhost:4567). That's it.
 To run on a different port:
 
 ```bash
-bunx the-campfire --port 8080
+bunx @gpsmith0/switchyard --port 8080
 ```
 
 ### Option 2: Run from source (native)
@@ -113,8 +113,8 @@ Clone the repository and run directly with Bun:
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/stretchcloud/campfire.git
-cd campfire
+git clone https://github.com/gpsmith0/switchyard.git
+cd switchyard
 
 # 2. Install dependencies
 cd web
@@ -135,21 +135,21 @@ Pull the pre-built image from the GitHub Container Registry (no clone, no build)
 
 ```bash
 docker run -d \
-  --name campfire \
+  --name switchyard \
   -p 4567:4567 \
-  -v campfire-data:/home/campfire/.campfire \
+  -v switchyard-data:/home/switchyard/.switchyard \
   --restart unless-stopped \
-  ghcr.io/stretchcloud/campfire:latest
+  ghcr.io/gpsmith0/switchyard:latest
 ```
 
-Open [http://localhost:4567](http://localhost:4567). Pin a specific version by tag instead of `latest`, e.g. `ghcr.io/stretchcloud/campfire:0.2.1`.
+Open [http://localhost:4567](http://localhost:4567). Pin a specific version by tag instead of `latest`, e.g. `ghcr.io/gpsmith0/switchyard:0.2.1`.
 
 Or build and run from source with Docker Compose (no Bun installation needed):
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/stretchcloud/campfire.git
-cd campfire
+git clone https://github.com/gpsmith0/switchyard.git
+cd switchyard
 
 # 2. Build and start the container
 docker compose up
@@ -164,15 +164,15 @@ To build the Docker image manually without Compose:
 
 ```bash
 # Build the image
-docker build -t campfire:latest .
+docker build -t switchyard:latest .
 
 # Run the container
 docker run -d \
-  --name campfire \
+  --name switchyard \
   -p 4567:4567 \
-  -v campfire-data:/home/campfire/.campfire \
+  -v switchyard-data:/home/switchyard/.switchyard \
   --restart unless-stopped \
-  campfire:latest
+  switchyard:latest
 ```
 
 To stop and remove:
@@ -182,25 +182,25 @@ To stop and remove:
 docker compose down
 
 # Or manual
-docker stop campfire && docker rm campfire
+docker stop switchyard && docker rm switchyard
 ```
 
 See [Docker Deployment](#docker-deployment) for advanced configuration (mounting agent CLIs, reverse proxy, environment variables).
 
 ### Option 4: macOS Desktop App (Apple Silicon)
 
-A native desktop app for Macs with Apple Silicon. It bundles the full Campfire server and the Bun runtime — no Bun install needed, every feature included.
+A native desktop app for Macs with Apple Silicon. It bundles the full Switchyard server and the Bun runtime — no Bun install needed, every feature included.
 
-1. Download `Campfire-<version>-arm64.dmg` from the [latest release](https://github.com/stretchcloud/campfire/releases/latest)
-2. Drag **Campfire** into **Applications**
-3. First launch: right-click the app → **Open** (the build is not notarized with Apple; if macOS still refuses, run `xattr -cr /Applications/Campfire.app` once)
+1. Download `Switchyard-<version>-arm64.dmg` from the [latest release](https://github.com/gpsmith0/switchyard/releases/latest)
+2. Drag **Switchyard** into **Applications**
+3. First launch: right-click the app → **Open** (the build is not notarized with Apple; if macOS still refuses, run `xattr -cr /Applications/Switchyard.app` once)
 
-The app stores its data in the same `~/.campfire` directory as the CLI, so sessions, recordings, and settings are shared. If a Campfire server is already running on port 4567 (for example the `the-campfire` background service), the app attaches to it instead of starting a second one. Agent CLIs (`claude`, `codex`, …) still need to be installed on your machine.
+The app stores its data in the same `~/.switchyard` directory as the CLI, so sessions, recordings, and settings are shared. If a Switchyard server is already running on port 4567 (for example the `switchyard` background service), the app attaches to it instead of starting a second one. Agent CLIs (`claude`, `codex`, …) still need to be installed on your machine.
 
 To build the DMG from source:
 
 ```bash
-make dmg    # stages the backend, then packages desktop/dist/Campfire-<version>-arm64.dmg
+make dmg    # stages the backend, then packages desktop/dist/Switchyard-<version>-arm64.dmg
 ```
 
 ### Requirements
@@ -389,7 +389,7 @@ Scrub through completed sessions at 1x / 2x / 4x / 8x speed. Every tool call, pe
 
 **Recording format:**
 
-Recordings are stored as JSONL (newline-delimited JSON) files in `~/.campfire/recordings/`. Each line captures the exact raw message as it was sent or received:
+Recordings are stored as JSONL (newline-delimited JSON) files in `~/.switchyard/recordings/`. Each line captures the exact raw message as it was sent or received:
 
 ```json
 {"ts": 1771153996875, "dir": "in", "raw": "{\"type\":\"system\",...}", "ch": "cli"}
@@ -414,7 +414,7 @@ curl -X POST http://localhost:4567/api/sessions/:id/recording/start
 curl -X POST http://localhost:4567/api/sessions/:id/recording/stop
 ```
 
-Recording is enabled by default. Disable globally with `CAMPFIRE_RECORD=0`. Files auto-rotate when total lines exceed 100,000 (configurable with `CAMPFIRE_RECORDINGS_MAX_LINES`).
+Recording is enabled by default. Disable globally with `SWITCHYARD_RECORD=0`. Files auto-rotate when total lines exceed 100,000 (configurable with `SWITCHYARD_RECORDINGS_MAX_LINES`).
 
 ---
 
@@ -458,7 +458,7 @@ curl -X POST http://localhost:4567/api/sessions/:id/fork \
 
 ### Session Gallery
 
-Publish your best sessions to a gallery that anyone on your Campfire instance can browse. Gallery entries include session metadata, cost, duration, and a direct link to replay.
+Publish your best sessions to a gallery that anyone on your Switchyard instance can browse. Gallery entries include session metadata, cost, duration, and a direct link to replay.
 
 **How to publish:**
 
@@ -578,7 +578,7 @@ curl -X PUT http://localhost:4567/api/prompts/:id \
 curl -X DELETE http://localhost:4567/api/prompts/:id
 ```
 
-Prompts are stored at `~/.campfire/prompts.json`.
+Prompts are stored at `~/.switchyard/prompts.json`.
 
 ---
 
@@ -602,7 +602,7 @@ Connect your Linear workspace to manage issues end-to-end: browse and search iss
 
 **Project-repo mapping:**
 
-When you first use Linear in a git repository, Campfire prompts you to link the repo to a Linear team. Once linked, issue searches are automatically filtered to that team. Mappings are stored in `~/.campfire/linear-projects.json`.
+When you first use Linear in a git repository, Switchyard prompts you to link the repo to a Linear team. Once linked, issue searches are automatically filtered to that team. Mappings are stored in `~/.switchyard/linear-projects.json`.
 
 **Issue-session workflow:**
 
@@ -660,9 +660,9 @@ Linear API responses are cached with a 60-second TTL to reduce API calls. Concur
 
 | File | Contents |
 |------|----------|
-| `~/.campfire/settings.json` | Linear API key (never exposed via GET) |
-| `~/.campfire/linear-projects.json` | Repo → team/project mappings |
-| `~/.campfire/linear-session-issues.json` | Session → issue links |
+| `~/.switchyard/settings.json` | Linear API key (never exposed via GET) |
+| `~/.switchyard/linear-projects.json` | Repo → team/project mappings |
+| `~/.switchyard/linear-session-issues.json` | Session → issue links |
 
 ---
 
@@ -670,7 +670,7 @@ Linear API responses are cached with a 60-second TTL to reduce API calls. Concur
 
 Receive HTTP POST notifications when events happen in your sessions. Configure webhooks with event filters, HMAC-SHA256 signing, and automatic retries.
 
-**Inbound (OpenClaw):** Campfire also accepts inbound calls — `POST /api/webhooks/openclaw` (token-guarded) spawns an OpenClaw session from an external trigger, and `POST /api/openclaw/inbound` delivers agent messages from the OpenClaw channel plugin into an existing session.
+**Inbound (OpenClaw):** Switchyard also accepts inbound calls — `POST /api/webhooks/openclaw` (token-guarded) spawns an OpenClaw session from an external trigger, and `POST /api/openclaw/inbound` delivers agent messages from the OpenClaw channel plugin into an existing session.
 
 **How to set up a webhook:**
 
@@ -712,10 +712,10 @@ Receive HTTP POST notifications when events happen in your sessions. Configure w
 
 **HMAC-SHA256 signing:**
 
-If you provide a `secret`, every delivery includes an `X-Campfire-Signature` header:
+If you provide a `secret`, every delivery includes an `X-Switchyard-Signature` header:
 
 ```
-X-Campfire-Signature: sha256=<hex-encoded-hmac>
+X-Switchyard-Signature: sha256=<hex-encoded-hmac>
 ```
 
 Verify the signature on your server by computing `HMAC-SHA256(secret, request_body)` and comparing.
@@ -842,20 +842,20 @@ curl http://localhost:4567/api/cron/jobs/:id/executions
 
 ### Adapter Registry
 
-Install community agent adapters from npm to add new backends to Campfire. Adapters are npm packages with a `campfireAdapter` field in their `package.json`.
+Install community agent adapters from npm to add new backends to Switchyard. Adapters are npm packages with a `switchyardAdapter` field in their `package.json`.
 
-> **Related:** you can also run [MetaHarness](https://github.com/ruvnet/metaharness)-generated agent harnesses inside Campfire sessions — their MCP servers attach at runtime and their tool calls go through Campfire's permission-voting UI. See [docs/integrations/metaharness.md](docs/integrations/metaharness.md).
+> **Related:** you can also run [MetaHarness](https://github.com/ruvnet/metaharness)-generated agent harnesses inside Switchyard sessions — their MCP servers attach at runtime and their tool calls go through Switchyard's permission-voting UI. See [docs/integrations/metaharness.md](docs/integrations/metaharness.md).
 
 **Installing an adapter:**
 
 ```bash
 # Via CLI
-the-campfire install-adapter @campfire/example-adapter
+switchyard install-adapter @switchyard/example-adapter
 
 # Via API
 curl -X POST http://localhost:4567/api/adapters/install \
   -H "Content-Type: application/json" \
-  -d '{"npmPackage": "@campfire/example-adapter"}'
+  -d '{"npmPackage": "@switchyard/example-adapter"}'
 ```
 
 Once installed, the adapter appears as a new backend option when creating sessions.
@@ -873,7 +873,7 @@ Each adapter's `package.json` must include:
 
 ```json
 {
-  "campfireAdapter": {
+  "switchyardAdapter": {
     "name": "my-agent",
     "displayName": "My Agent",
     "binaryName": "my-agent-cli",
@@ -916,7 +916,7 @@ Every session tracks API costs in real time. The cost is displayed in the top ba
 
 **Shareable cost cards:**
 
-When a session completes, a cost card is generated as a downloadable PNG image containing the session name, cost, duration, turns, model, and backend type — with Campfire branding. Share these cards to show off your results.
+When a session completes, a cost card is generated as a downloadable PNG image containing the session name, cost, duration, turns, model, and backend type — with Switchyard branding. Share these cards to show off your results.
 
 **Cost information in the UI:**
 
@@ -954,7 +954,7 @@ When creating a session, select an environment profile from the dropdown. All va
 }
 ```
 
-Profiles are stored as individual JSON files in `~/.campfire/envs/`.
+Profiles are stored as individual JSON files in `~/.switchyard/envs/`.
 
 ```bash
 # List profiles
@@ -984,7 +984,7 @@ curl -X DELETE http://localhost:4567/api/envs/staging
 
 ### Git Integration
 
-Campfire tracks git state for every session and provides tools for branch and worktree management.
+Switchyard tracks git state for every session and provides tools for branch and worktree management.
 
 **What's tracked per session:**
 
@@ -1008,7 +1008,7 @@ When creating a session with "Use worktree" enabled:
 
 **GitHub PR status:**
 
-If the `gh` CLI is installed and authenticated, Campfire polls for PR metadata on the session's branch:
+If the `gh` CLI is installed and authenticated, Switchyard polls for PR metadata on the session's branch:
 
 - PR title, number, state (open/closed/merged)
 - Draft status
@@ -1044,7 +1044,7 @@ curl -X POST http://localhost:4567/api/git/fetch \
 
 ### Embedded Terminal
 
-A full PTY terminal is available alongside your sessions. Use it for git operations, running tests, or any other command-line tasks without leaving Campfire.
+A full PTY terminal is available alongside your sessions. Use it for git operations, running tests, or any other command-line tasks without leaving Switchyard.
 
 **How to use:**
 
@@ -1075,9 +1075,9 @@ The server automatically records all raw protocol messages to JSONL files. This 
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CAMPFIRE_RECORD` | `1` | Set to `0` or `false` to disable |
-| `CAMPFIRE_RECORDINGS_DIR` | `~/.campfire/recordings` | Output directory |
-| `CAMPFIRE_RECORDINGS_MAX_LINES` | `100000` | Auto-rotation threshold |
+| `SWITCHYARD_RECORD` | `1` | Set to `0` or `false` to disable |
+| `SWITCHYARD_RECORDINGS_DIR` | `~/.switchyard/recordings` | Output directory |
+| `SWITCHYARD_RECORDINGS_MAX_LINES` | `100000` | Auto-rotation threshold |
 
 **File format:**
 
@@ -1099,7 +1099,7 @@ Optionally sandbox sessions inside Docker containers for isolation. When enabled
 **How it works:**
 
 1. When creating a session, click the **Container** toggle in the toolbar
-2. Choose a Docker image (default: `campfire-dev:latest`) in the text field that appears
+2. Choose a Docker image (default: `switchyard-dev:latest`) in the text field that appears
 3. Click **Create** — a progress overlay appears showing each step
 4. The session runs inside the container with authentication automatically seeded
 
@@ -1119,7 +1119,7 @@ If any step fails, the overlay shows an error with **Retry** and **Cancel** butt
 
 **Authentication seeding:**
 
-Campfire automatically copies authentication credentials into containers so agents can authenticate without manual setup:
+Switchyard automatically copies authentication credentials into containers so agents can authenticate without manual setup:
 
 - **Claude Code sessions**: `~/.claude/` is copied to `/root/.claude/` inside the container
 - **Codex sessions**: `~/.codex/` is copied to `/root/.codex/` inside the container
@@ -1130,7 +1130,7 @@ Images are checked locally before pulling. Recently pulled images are cached for
 
 **Git info inside containers:**
 
-Campfire resolves git information (branch, ahead/behind, worktree status) from inside the container via `docker exec`, so sidebar session metadata stays accurate even for containerized sessions.
+Switchyard resolves git information (branch, ahead/behind, worktree status) from inside the container via `docker exec`, so sidebar session metadata stays accurate even for containerized sessions.
 
 **SSE creation endpoint:**
 
@@ -1144,12 +1144,12 @@ curl -N -X POST http://localhost:4567/api/sessions/create-with-progress \
     "backend": "claude",
     "model": "claude-sonnet-4-5-20250929",
     "cwd": "/home/user/project",
-    "container": {"image": "campfire-dev:latest"}
+    "container": {"image": "switchyard-dev:latest"}
   }'
 # event: step
-# data: {"step":"checking_image","message":"Checking image campfire-dev:latest..."}
+# data: {"step":"checking_image","message":"Checking image switchyard-dev:latest..."}
 # event: step
-# data: {"step":"pulling_image","message":"Pulling campfire-dev:latest...","percent":45}
+# data: {"step":"pulling_image","message":"Pulling switchyard-dev:latest...","percent":45}
 # event: done
 # data: {"sessionId":"abc-123","session":{...}}
 ```
@@ -1157,7 +1157,7 @@ curl -N -X POST http://localhost:4567/api/sessions/create-with-progress \
 **Requirements:**
 
 - Docker must be installed and running on the host
-- The Docker socket must be accessible to the Campfire process
+- The Docker socket must be accessible to the Switchyard process
 
 ```bash
 # Check Docker availability
@@ -1172,11 +1172,11 @@ curl http://localhost:4567/api/containers/images
 
 ### PWA & Mobile
 
-Campfire is a Progressive Web App (PWA) — installable on mobile devices with push notifications for permission requests.
+Switchyard is a Progressive Web App (PWA) — installable on mobile devices with push notifications for permission requests.
 
 **To install on mobile:**
 
-1. Open Campfire in your mobile browser
+1. Open Switchyard in your mobile browser
 2. Tap "Add to Home Screen" (or the browser's install prompt)
 3. The app launches in standalone mode with its own window
 
@@ -1211,7 +1211,7 @@ Manual renames always take precedence. You can rename any session by clicking it
 
 ### Collective Intelligence
 
-When multiple agent sessions are running simultaneously, Campfire's Collective Intelligence layer lets them share knowledge, coordinate decisions, and route tasks to the best-suited agent — without changing how agents communicate with each other.
+When multiple agent sessions are running simultaneously, Switchyard's Collective Intelligence layer lets them share knowledge, coordinate decisions, and route tasks to the best-suited agent — without changing how agents communicate with each other.
 
 It operates as a non-blocking observer: no agent message is ever delayed by it, and no existing behavior changes if the feature is unused.
 
@@ -1254,14 +1254,14 @@ Without an embedding provider, memory still works — recall falls back to a rec
 
 **Storage:**
 
-All CI data is stored locally under `~/.campfire/memory/` — no external service required. Schema is versioned via `meta.json` and migrated automatically from earlier versions.
+All CI data is stored locally under `~/.switchyard/memory/` — no external service required. Schema is versioned via `meta.json` and migrated automatically from earlier versions.
 
 | Table | Purpose |
 |-------|---------|
 | `fragments_v2` | Episodic memory fragments (namespace-scoped, with embeddings when available) |
 | `consolidated_v2` | Distilled knowledge synthesized from fragments |
 
-Capability data is stored as JSON in `~/.campfire/capabilities/` and learning history is appended to `~/.campfire/capability-learning.jsonl`.
+Capability data is stored as JSON in `~/.switchyard/capabilities/` and learning history is appended to `~/.switchyard/capability-learning.jsonl`.
 
 **Quick setup:**
 
@@ -1322,7 +1322,7 @@ Powered by the `GET /api/fs/list-entries` endpoint which filters out `.git`, `no
 
 ### Mermaid Diagram Rendering
 
-When an assistant returns a fenced code block with the `mermaid` language tag, Campfire renders it as an interactive SVG diagram instead of raw text. Supports all Mermaid diagram types: flowcharts, sequence diagrams, class diagrams, state diagrams, ER diagrams, Gantt charts, and more.
+When an assistant returns a fenced code block with the `mermaid` language tag, Switchyard renders it as an interactive SVG diagram instead of raw text. Supports all Mermaid diagram types: flowcharts, sequence diagrams, class diagrams, state diagrams, ER diagrams, Gantt charts, and more.
 
 - Toggle between **diagram** and **source code** views
 - Error handling with automatic fallback to source display
@@ -1358,19 +1358,19 @@ A multi-stage automation engine for chaining sequential AI sessions into workflo
 | `GET` | `/api/orchestrator/runs/:id` | Get run status and details |
 | `POST` | `/api/orchestrator/runs/:id/cancel` | Cancel a running pipeline |
 
-Pipeline and run data is persisted to `~/.campfire/orchestrator/`.
+Pipeline and run data is persisted to `~/.switchyard/orchestrator/`.
 
 ### Multi-Agent Orchestration
 
-Campfire can now coordinate agents as a group instead of only running independent sessions. The orchestration layer lets lead agents delegate one-turn subtasks to other backends, runs parallel "agent races" in isolated worktrees, and detects project environment integrations before a session starts.
+Switchyard can now coordinate agents as a group instead of only running independent sessions. The orchestration layer lets lead agents delegate one-turn subtasks to other backends, runs parallel "agent races" in isolated worktrees, and detects project environment integrations before a session starts.
 
 **Agent-to-agent delegation:**
 
-- Lead Claude Code and Codex sessions can receive an internal `campfire_agents` MCP server.
+- Lead Claude Code and Codex sessions can receive an internal `switchyard_agents` MCP server.
 - The MCP server exposes `ask_codex`, `ask_goose`, `ask_aider`, `ask_openhands`, and `ask_claude` tools, excluding the lead session's own backend.
 - Each `ask_*` tool launches a temporary sub-session in the same working directory, injects the subtask prompt, waits for the result, collects changed files and cost, then returns the result to the lead agent.
 - Sub-agent progress is streamed back to the parent session through `sub_agent_update` events and appears in the session activity UI.
-- Set `CAMPFIRE_ENABLE_AGENT_MCP=0` to disable automatic agent MCP injection.
+- Set `SWITCHYARD_ENABLE_AGENT_MCP=0` to disable automatic agent MCP injection.
 
 **Agent races:**
 
@@ -1378,19 +1378,19 @@ Open **Agent Races** at `#/races` from the sidebar to run the same prompt across
 
 1. Choose a repository root and task prompt.
 2. Select at least two backends. The UI currently offers Claude, Codex, Goose, Aider, and OpenHands; the REST API also accepts OpenClaw and OpenCode.
-3. Campfire creates one git worktree and branch per backend, launches a session in each worktree, and sends the same prompt to every agent.
+3. Switchyard creates one git worktree and branch per backend, launches a session in each worktree, and sends the same prompt to every agent.
 4. The comparison view shows status, wall-clock time, cost, changed file count, line changes, output summary, and a loadable diff for each entry.
 5. Click **Merge** on the winning entry to merge its race branch into the repository root and clean up the other race worktrees.
 
 **Cost cascade mode:** check **"Cost cascade — run backends in order, stop at first success"** to run the selected backends *sequentially* in the order you listed them (put the cheapest first) instead of in parallel. The race stops at the first entry that completes with a non-empty change set; failures, timeouts, and empty patches escalate to the next backend, and never-started entries are marked `skipped`. Pass `cascade: true` in the REST payload for the same behavior.
 
-Race results are saved to `~/.campfire/races/` so completed comparisons remain available after a server restart.
+Race results are saved to `~/.switchyard/races/` so completed comparisons remain available after a server restart.
 
 **Environment detection:**
 
-Every launched session scans its working directory for project signals such as Supabase, Stripe, Vercel/Next.js, Prisma, Docker, Fly.io, GitHub Actions, and database configuration. Detected rules appear in the TaskPanel environment card with required environment variables marked as configured or missing. For Claude and Codex sessions, detected MCP servers are injected automatically unless `CAMPFIRE_AUTO_INJECT_ENV_MCP=0` is set.
+Every launched session scans its working directory for project signals such as Supabase, Stripe, Vercel/Next.js, Prisma, Docker, Fly.io, GitHub Actions, and database configuration. Detected rules appear in the TaskPanel environment card with required environment variables marked as configured or missing. For Claude and Codex sessions, detected MCP servers are injected automatically unless `SWITCHYARD_AUTO_INJECT_ENV_MCP=0` is set.
 
-**MCP injection policy:** auto-injected servers are governed by a default-deny policy (`web/server/mcp-policy.ts`) — only servers that exactly match Campfire's curated environment-rules catalog and pass a static scan (shell metacharacters, inline-eval flags, plaintext `http://` URLs to non-local hosts) are admitted; everything else is blocked and logged. Servers you add explicitly through the MCP panel are never blocked, but the same scan runs in warn-only mode for visibility. Set `CAMPFIRE_MCP_AUTO_INJECT_POLICY=permissive` to restore scan-free auto-injection (findings are still logged).
+**MCP injection policy:** auto-injected servers are governed by a default-deny policy (`web/server/mcp-policy.ts`) — only servers that exactly match Switchyard's curated environment-rules catalog and pass a static scan (shell metacharacters, inline-eval flags, plaintext `http://` URLs to non-local hosts) are admitted; everything else is blocked and logged. Servers you add explicitly through the MCP panel are never blocked, but the same scan runs in warn-only mode for visibility. Set `SWITCHYARD_MCP_AUTO_INJECT_POLICY=permissive` to restore scan-free auto-injection (findings are still logged).
 
 **REST API:**
 
@@ -1435,20 +1435,20 @@ A progress bar at the top shows overall completion percentage.
 
 ### Authentication
 
-Token-based authentication to protect your Campfire instance. When enabled, all API routes and WebSocket connections require a valid session token.
+Token-based authentication to protect your Switchyard instance. When enabled, all API routes and WebSocket connections require a valid session token.
 
 **Setup:**
 
 ```bash
 # Set a password via environment variable
-CAMPFIRE_PASSWORD=your-secret bunx the-campfire
+SWITCHYARD_PASSWORD=your-secret bunx @gpsmith0/switchyard
 
 # Or configure through the UI on first visit
 ```
 
 **Features:**
 - Password-based login with salted scrypt hashing (legacy unsalted SHA-256 hashes are migrated automatically on the next successful login)
-- 7-day rotating session tokens stored in `~/.campfire/auth.json`
+- 7-day rotating session tokens stored in `~/.switchyard/auth.json`
 - Auth middleware protects all `/api/*` routes
 - WebSocket connections validated on upgrade
 - Environment variable override for headless/CI deployments
@@ -1483,7 +1483,7 @@ Browse and manage Claude Code plugins and skills from a dedicated UI page at `#/
 - Lists all installed plugins from `~/.claude/plugins/installed_plugins.json`
 - Expandable cards showing each plugin's skills, commands, install path, version, and author
 - View SKILL.md content for any skill by clicking its name
-- Enable/disable plugins in Campfire without uninstalling them (stored in `~/.campfire/skills-config.json`)
+- Enable/disable plugins in Switchyard without uninstalling them (stored in `~/.switchyard/skills-config.json`)
 - Blocked plugin detection from `~/.claude/plugins/blocklist.json`
 
 **API endpoints:**
@@ -1491,7 +1491,7 @@ Browse and manage Claude Code plugins and skills from a dedicated UI page at `#/
 - `GET /api/skills/:id` — Get a single plugin's details
 - `GET /api/skills/:id/skill/:name` — Read a skill's SKILL.md content
 - `GET /api/skills/:id/command/:name` — Read a command's content
-- `POST /api/skills/:id/toggle` — Enable/disable a plugin in Campfire
+- `POST /api/skills/:id/toggle` — Enable/disable a plugin in Switchyard
 
 ---
 
@@ -1514,7 +1514,7 @@ Organize sessions into named, color-coded folders in the sidebar.
 - Remove sessions from folders
 - Delete empty folders
 
-**Storage:** Folder data persists in `~/.campfire/session-folders.json`.
+**Storage:** Folder data persists in `~/.switchyard/session-folders.json`.
 
 **API endpoints:**
 - `GET /api/folders` — List all folders
@@ -1584,7 +1584,7 @@ Persistent agent profiles with automated triggers. Navigate to **Config > Agents
 
 **Safety:** Auto-disables after 5 consecutive failures. Overlap prevention skips execution if previous run is still alive.
 
-**Import/Export:** Agents can be exported as JSON and imported on another Campfire instance.
+**Import/Export:** Agents can be exported as JSON and imported on another Switchyard instance.
 
 ### Provider Settings
 
@@ -1626,20 +1626,20 @@ A non-blocking floating toast (bottom-left) that shows real-time progress when a
 
 A 5-step first-run experience shown on first launch. Navigate through:
 
-1. **Welcome** — explains what Campfire is
+1. **Welcome** — explains what Switchyard is
 2. **Providers** — dual-path auth for Claude (subscription via `claude auth login` OR API key) and Codex (ChatGPT login via `codex login` OR API key). Auto-detects existing auth.
 3. **Workspace** — pick a default working directory
 4. **Tour** — key features overview
 5. **Launch** — sends user to create their first session
 
-Skip at any point. Tracked via `onboardingCompleted` in `~/.campfire/settings.json`. Reset with:
+Skip at any point. Tracked via `onboardingCompleted` in `~/.switchyard/settings.json`. Reset with:
 ```bash
 curl -X PUT http://localhost:4567/api/settings -H 'Content-Type: application/json' -d '{"onboardingCompleted": false}'
 ```
 
 ### Monaco Code Editor
 
-VS Code's editor engine integrated into Campfire for code editing. Lazy-loaded — only downloaded when an editor opens.
+VS Code's editor engine integrated into Switchyard for code editing. Lazy-loaded — only downloaded when an editor opens.
 
 **Where it's used:**
 - **CLAUDE.md Editor** — edit project instructions with Markdown syntax highlighting
@@ -1648,7 +1648,7 @@ VS Code's editor engine integrated into Campfire for code editing. Lazy-loaded �
 - **Agent prompt editor** — write agent prompts with line numbers
 - **Cron prompt editor** — same for scheduled tasks
 
-**Features:** IntelliSense (TS/JS/CSS/JSON), minimap, find/replace (Ctrl+H), multi-cursor, code folding, bracket pair colorization, command palette (Ctrl+Shift+P), custom Campfire themes (light + dark).
+**Features:** IntelliSense (TS/JS/CSS/JSON), minimap, find/replace (Ctrl+H), multi-cursor, code folding, bracket pair colorization, command palette (Ctrl+Shift+P), custom Switchyard themes (light + dark).
 
 ### Files Panel
 
@@ -1697,7 +1697,7 @@ Real-time WebSocket message flow dashboard. Navigate to **Tools > Monitor** (`#/
 
 Browse all available slash commands and skills. Navigate to **Config > Commands** (`#/commands`).
 
-**Dynamic command list** — fetched from the CLI itself (not hardcoded). If no sessions are connected, Campfire spins up a temporary session to discover available commands, caches the result, and kills the session.
+**Dynamic command list** — fetched from the CLI itself (not hardcoded). If no sessions are connected, Switchyard spins up a temporary session to discover available commands, caches the result, and kills the session.
 
 **Three sections:**
 - **Built-in Commands** — all CLI slash commands (e.g., `/help`, `/compact`, `/cost`, `/memory`)
@@ -1714,8 +1714,8 @@ Auto-relaunches crashed CLI sessions with exponential backoff. Ensures autonomou
 
 | Setting | Default | Environment Variable |
 |---------|---------|---------------------|
-| Base delay | 3 seconds | `CAMPFIRE_KEEPALIVE_DELAY_MS` |
-| Max attempts | 3 | `CAMPFIRE_KEEPALIVE_MAX_ATTEMPTS` |
+| Base delay | 3 seconds | `SWITCHYARD_KEEPALIVE_DELAY_MS` |
+| Max attempts | 3 | `SWITCHYARD_KEEPALIVE_MAX_ATTEMPTS` |
 
 **Backoff schedule:** 3s → 6s → 12s. Resets on successful relaunch.
 
@@ -1740,8 +1740,8 @@ Auto-relaunches crashed CLI sessions with exponential backoff. Ensures autonomou
 
 | Setting | Default | Environment Variable |
 |---------|---------|---------------------|
-| Window | 60 seconds | `CAMPFIRE_RATE_LIMIT_WINDOW_MS` |
-| Max requests | 120 per window | `CAMPFIRE_RATE_LIMIT_MAX` |
+| Window | 60 seconds | `SWITCHYARD_RATE_LIMIT_WINDOW_MS` |
+| Max requests | 120 per window | `SWITCHYARD_RATE_LIMIT_MAX` |
 
 Rate limit headers included in every API response: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`. Returns `429 Too Many Requests` with `Retry-After` header when exceeded.
 
@@ -1767,7 +1767,7 @@ When authentication is enabled, all WebSocket upgrade endpoints are protected �
 
 ```bash
 # Option 1: Set password via environment variable
-CAMPFIRE_PASSWORD=mypassword bunx the-campfire
+SWITCHYARD_PASSWORD=mypassword bunx @gpsmith0/switchyard
 
 # Option 2: Set password via API
 curl -X POST http://localhost:4567/api/auth/setup \
@@ -1795,7 +1795,7 @@ The frontend stores this token in `localStorage` and automatically includes it i
 
 ```
 Browser (React 19)
-  <-> WebSocket <-> Campfire Server (Bun + Hono)
+  <-> WebSocket <-> Switchyard Server (Bun + Hono)
                       |-- /ws/browser/:id   (browser connections)
                       |-- /ws/cli/:id       (agent CLI connections)
                       \-- /ws/terminal/:id  (embedded PTY)
@@ -1831,22 +1831,22 @@ All state is file-based — no database required:
 
 | Data | Location | Format |
 |------|----------|--------|
-| Sessions | `~/.campfire/sessions/` | JSON per session |
-| Recordings | `~/.campfire/recordings/` | JSONL per session |
-| Environments | `~/.campfire/envs/` | JSON per profile |
-| Cron jobs | `~/.campfire/cron/` | JSON per job |
-| Gallery entries | `~/.campfire/gallery/` | JSON per entry |
-| Agent races | `~/.campfire/races/` | JSON per race |
-| Webhooks | `~/.campfire/webhooks/` | JSON per webhook |
-| Adapters | `~/.campfire/adapters/` | npm packages |
-| Settings | `~/.campfire/settings.json` | Single JSON file |
-| Prompts | `~/.campfire/prompts.json` | Single JSON array |
-| Session names | `~/.campfire/session-names.json` | Single JSON file |
-| Linear project mappings | `~/.campfire/linear-projects.json` | Single JSON file |
-| Linear session issues | `~/.campfire/linear-session-issues.json` | Single JSON file |
-| **CI Memory** | `~/.campfire/memory/lancedb/` | LanceDB vector tables |
-| **CI Capabilities** | `~/.campfire/capabilities/` | JSON per session |
-| **CI Learning log** | `~/.campfire/capability-learning.jsonl` | JSONL append-only |
+| Sessions | `~/.switchyard/sessions/` | JSON per session |
+| Recordings | `~/.switchyard/recordings/` | JSONL per session |
+| Environments | `~/.switchyard/envs/` | JSON per profile |
+| Cron jobs | `~/.switchyard/cron/` | JSON per job |
+| Gallery entries | `~/.switchyard/gallery/` | JSON per entry |
+| Agent races | `~/.switchyard/races/` | JSON per race |
+| Webhooks | `~/.switchyard/webhooks/` | JSON per webhook |
+| Adapters | `~/.switchyard/adapters/` | npm packages |
+| Settings | `~/.switchyard/settings.json` | Single JSON file |
+| Prompts | `~/.switchyard/prompts.json` | Single JSON array |
+| Session names | `~/.switchyard/session-names.json` | Single JSON file |
+| Linear project mappings | `~/.switchyard/linear-projects.json` | Single JSON file |
+| Linear session issues | `~/.switchyard/linear-session-issues.json` | Single JSON file |
+| **CI Memory** | `~/.switchyard/memory/lancedb/` | LanceDB vector tables |
+| **CI Capabilities** | `~/.switchyard/capabilities/` | JSON per session |
+| **CI Learning log** | `~/.switchyard/capability-learning.jsonl` | JSONL append-only |
 
 ---
 
@@ -1860,10 +1860,10 @@ The included `Dockerfile` uses a multi-stage build:
 
 ```bash
 # Build the image
-docker build -t campfire:latest .
+docker build -t switchyard:latest .
 
 # Verify it works
-docker run --rm -p 4567:4567 campfire:latest
+docker run --rm -p 4567:4567 switchyard:latest
 ```
 
 ### Using Docker Compose
@@ -1895,20 +1895,20 @@ The included `docker-compose.yml` provides a ready-to-run configuration:
 
 ```yaml
 services:
-  campfire:
+  switchyard:
     build: .
     ports:
       - "4567:4567"
     volumes:
-      - campfire-data:/home/campfire/.campfire
+      - switchyard-data:/home/switchyard/.switchyard
     environment:
       - NODE_ENV=production
       - PORT=4567
     restart: unless-stopped
 
 volumes:
-  campfire-data:
-  campfire-data:
+  switchyard-data:
+  switchyard-data:
 ```
 
 ### Environment Variables
@@ -1917,16 +1917,16 @@ volumes:
 |----------|---------|-------------|
 | `PORT` | `4567` | Server port |
 | `NODE_ENV` | `production` | Environment mode |
-| `CAMPFIRE_RECORD` | `1` | Enable protocol recording (`0` to disable) |
-| `CAMPFIRE_RECORDINGS_DIR` | `~/.campfire/recordings` | Recording output directory |
-| `CAMPFIRE_RECORDINGS_MAX_LINES` | `100000` | Auto-rotation threshold |
-| `CAMPFIRE_SESSION_DIR` | `~/.campfire/sessions` | Override session persistence directory |
+| `SWITCHYARD_RECORD` | `1` | Enable protocol recording (`0` to disable) |
+| `SWITCHYARD_RECORDINGS_DIR` | `~/.switchyard/recordings` | Recording output directory |
+| `SWITCHYARD_RECORDINGS_MAX_LINES` | `100000` | Auto-rotation threshold |
+| `SWITCHYARD_SESSION_DIR` | `~/.switchyard/sessions` | Override session persistence directory |
 
 ### Volumes
 
 | Path | Purpose |
 |------|---------|
-| `/home/campfire/.campfire` | All persistent data (sessions, settings, envs, agents, recordings, webhooks, gallery) |
+| `/home/switchyard/.switchyard` | All persistent data (sessions, settings, envs, agents, recordings, webhooks, gallery) |
 
 ### Running with Agent CLIs
 
@@ -1936,12 +1936,12 @@ The Docker image includes Bun but **not** the agent CLIs themselves. To use agen
 
 ```yaml
 services:
-  campfire:
+  switchyard:
     build: .
     ports:
       - "4567:4567"
     volumes:
-      - campfire-data:/home/campfire/.campfire
+      - switchyard-data:/home/switchyard/.switchyard
       # Mount agent CLIs from host
       - /usr/local/bin/claude:/usr/local/bin/claude:ro
       - /usr/local/bin/codex:/usr/local/bin/codex:ro
@@ -1949,7 +1949,7 @@ services:
       # Writable — Claude Code updates its own config at runtime. Prefer
       # copying a snapshot (docker cp) if you don't want the container
       # touching your host ~/.claude.
-      - ~/.claude:/home/campfire/.claude
+      - ~/.claude:/home/switchyard/.claude
     environment:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
 ```
@@ -1957,7 +1957,7 @@ services:
 **Option 2: Extend the Dockerfile**
 
 ```dockerfile
-FROM campfire:latest
+FROM switchyard:latest
 
 # Install Claude Code
 RUN bun install -g @anthropic-ai/claude-code
@@ -1974,14 +1974,14 @@ RUN bun install -g @openai/codex
 
 ```yaml
 services:
-  campfire:
+  switchyard:
     build: .
     network_mode: host
     volumes:
-      - campfire-data:/home/campfire/.campfire
+      - switchyard-data:/home/switchyard/.switchyard
 ```
 
-This lets Campfire spawn agent processes on the host directly.
+This lets Switchyard spawn agent processes on the host directly.
 
 ### Production Deployment
 
@@ -1991,7 +1991,7 @@ For production deployments behind a reverse proxy:
 # nginx.conf
 server {
     listen 80;
-    server_name campfire.example.com;
+    server_name switchyard.example.com;
 
     location / {
         proxy_pass http://localhost:4567;
@@ -2018,7 +2018,7 @@ curl -f http://localhost:4567/api/sessions || exit 1
 ## CLI Reference
 
 ```
-the-campfire [command] [options]
+switchyard [command] [options]
 
 Commands:
   (none)                        Start server in foreground (default)
@@ -2042,16 +2042,16 @@ Options:
 
 ```bash
 # Start on a custom port
-the-campfire --port 8080
+switchyard --port 8080
 
 # Install as a background service
-the-campfire install
-the-campfire start
-the-campfire status
+switchyard install
+switchyard start
+switchyard status
 
 # Manage adapters
-the-campfire install-adapter @campfire/my-agent
-the-campfire uninstall-adapter my-agent
+switchyard install-adapter @switchyard/my-agent
+switchyard uninstall-adapter my-agent
 ```
 
 ---
@@ -2124,7 +2124,7 @@ All endpoints are under `/api`.
 | `GET` | `/api/skills/:id` | Get a single plugin |
 | `GET` | `/api/skills/:id/skill/:name` | Read a skill's SKILL.md content |
 | `GET` | `/api/skills/:id/command/:name` | Read a command's content |
-| `POST` | `/api/skills/:id/toggle` | Enable/disable a plugin in Campfire |
+| `POST` | `/api/skills/:id/toggle` | Enable/disable a plugin in Switchyard |
 
 ### Session Folders
 

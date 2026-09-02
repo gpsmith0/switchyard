@@ -882,8 +882,32 @@ export function Playground() {
           </div>
         </Section>
 
+        {/* ─── Thread layout (ChatGPT / Codex desktop style) ───────────── */}
+        <Section title="Thread Layout" description="How a whole exchange reads in the ChatGPT-style column (design.md §2, §6): user pill on the right, plain assistant text, Codex-style step rows, hover action row, system pill">
+          <div className="max-w-3xl border border-cc-border rounded-2xl bg-cc-bg px-6 py-5">
+            <MessageBubble message={MSG_USER} onFork={() => {}} />
+            <div className="mt-7">
+              <MessageBubble message={MSG_ASSISTANT_TOOLS} onFork={() => {}} />
+            </div>
+            <div className="mt-1.5">
+              <PlaygroundToolGroup toolName="Read" items={[
+                { id: "tl-1", name: "Read", input: { file_path: "/Users/stan/Dev/project/src/api.ts" } },
+                { id: "tl-2", name: "Read", input: { file_path: "/Users/stan/Dev/project/src/routes.ts" } },
+                { id: "tl-3", name: "Read", input: { file_path: "/Users/stan/Dev/project/src/types.ts" } },
+              ]} />
+            </div>
+            <div className="mt-7">
+              <MessageBubble message={MSG_ASSISTANT} onFork={() => {}} />
+            </div>
+            <div className="mt-7">
+              <MessageBubble message={MSG_SYSTEM} />
+            </div>
+            <p className="mt-6 text-[12px] text-cc-muted">Hover a message to reveal the copy / fork row underneath it.</p>
+          </div>
+        </Section>
+
         {/* ─── Messages ──────────────────────────────── */}
-        <Section title="Messages" description="Chat message bubbles for all roles">
+        <Section title="Messages" description="Individual message states — user pill, assistant markdown, tool steps, thinking, system pill">
           <div className="space-y-4 max-w-3xl">
             <Card label="User message">
               <MessageBubble message={MSG_USER} />
@@ -1453,7 +1477,7 @@ export function Playground() {
                   <svg className="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
                   <h3 className="text-lg font-semibold">Container Launch Failed</h3>
                 </div>
-                <p className="mb-4 text-sm text-neutral-600 dark:text-neutral-400">Failed to pull image campfire-dev:latest — connection timed out</p>
+                <p className="mb-4 text-sm text-neutral-600 dark:text-neutral-400">Failed to pull image switchyard-dev:latest — connection timed out</p>
                 <div className="flex gap-2">
                   <button className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Retry</button>
                   <button className="flex-1 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-800">Cancel</button>
@@ -1806,7 +1830,7 @@ export function Playground() {
                     <span className="font-mono-code">my-agent</span>
                     <span>3 models</span>
                     <span>by @community</span>
-                    <span className="font-mono-code">@campfire/my-agent</span>
+                    <span className="font-mono-code">@switchyard/my-agent</span>
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {["GPT-4o", "GPT-4o-mini", "o1-preview"].map((m) => (
@@ -1852,6 +1876,18 @@ function Card({ label, children }: { label: string; children: React.ReactNode })
 
 interface ToolItem { id: string; name: string; input: Record<string, unknown> }
 
+const playgroundStepRow =
+  "flex items-center gap-2 -ml-2 pl-2 pr-3 h-8 rounded-lg text-left hover:bg-cc-hover transition-colors duration-120 cursor-pointer max-w-full";
+
+function PlaygroundChevron({ open }: { open: boolean }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className={`w-3 h-3 text-cc-muted transition-transform duration-150 shrink-0 ${open ? "rotate-90" : ""}`}>
+      <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** Codex-style step row(s) — same markup as MessageFeed's ToolMessageGroup */
 function PlaygroundToolGroup({ toolName, items }: { toolName: string; items: ToolItem[] }) {
   const [open, setOpen] = useState(false);
   const iconType = getToolIcon(toolName);
@@ -1861,73 +1897,46 @@ function PlaygroundToolGroup({ toolName, items }: { toolName: string; items: Too
   if (count === 1) {
     const item = items[0];
     return (
-      <div className="flex items-start gap-3">
-        <div className="w-6 h-6 rounded-full bg-cc-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-          <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 text-cc-primary"><circle cx="8" cy="8" r="3" /></svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="border border-cc-border rounded-lg overflow-hidden bg-cc-card">
-            <button
-              onClick={() => setOpen(!open)}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-cc-hover transition-colors cursor-pointer"
-            >
-              <svg viewBox="0 0 16 16" fill="currentColor" className={`w-3 h-3 text-cc-muted transition-transform shrink-0 ${open ? "rotate-90" : ""}`}>
-                <path d="M6 4l4 4-4 4" />
-              </svg>
-              <ToolIcon type={iconType} />
-              <span className="text-xs font-medium text-cc-fg">{label}</span>
-              <span className="text-xs text-cc-muted truncate flex-1 font-mono-code">
-                {getPreview(item.name, item.input)}
-              </span>
-            </button>
-            {open && (
-              <div className="px-3 pb-3 pt-0 border-t border-cc-border mt-0">
-                <pre className="mt-2 text-[11px] text-cc-muted font-mono-code whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">
-                  {JSON.stringify(item.input, null, 2)}
-                </pre>
-              </div>
-            )}
+      <div>
+        <button onClick={() => setOpen(!open)} aria-expanded={open} className={`${playgroundStepRow} w-full`}>
+          <PlaygroundChevron open={open} />
+          <ToolIcon type={iconType} />
+          <span className="text-[13px] font-medium text-cc-fg shrink-0">{label}</span>
+          <span className="text-[13px] text-cc-muted truncate min-w-0 font-mono-code">
+            {getPreview(item.name, item.input)}
+          </span>
+        </button>
+        {open && (
+          <div className="mt-1 ml-5 rounded-xl bg-cc-hover px-4 py-3">
+            <pre className="text-[12px] text-cc-muted font-mono-code whitespace-pre-wrap leading-relaxed max-h-60 overflow-y-auto">
+              {JSON.stringify(item.input, null, 2)}
+            </pre>
           </div>
-        </div>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="flex items-start gap-3">
-      <div className="w-6 h-6 rounded-full bg-cc-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-        <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 text-cc-primary"><circle cx="8" cy="8" r="3" /></svg>
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="border border-cc-border rounded-lg overflow-hidden bg-cc-card">
-          <button
-            onClick={() => setOpen(!open)}
-            className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-cc-hover transition-colors cursor-pointer"
-          >
-            <svg viewBox="0 0 16 16" fill="currentColor" className={`w-3 h-3 text-cc-muted transition-transform shrink-0 ${open ? "rotate-90" : ""}`}>
-              <path d="M6 4l4 4-4 4" />
-            </svg>
-            <ToolIcon type={iconType} />
-            <span className="text-xs font-medium text-cc-fg">{label}</span>
-            <span className="text-[10px] text-cc-muted bg-cc-hover rounded-full px-1.5 py-0.5 tabular-nums font-medium">
-              {count}
-            </span>
-          </button>
-          {open && (
-            <div className="border-t border-cc-border px-3 py-1.5">
-              {items.map((item, i) => {
-                const preview = getPreview(item.name, item.input);
-                return (
-                  <div key={item.id || i} className="flex items-center gap-2 py-1 text-xs text-cc-muted font-mono-code truncate">
-                    <span className="w-1 h-1 rounded-full bg-cc-muted/40 shrink-0" />
-                    <span className="truncate">{preview || JSON.stringify(item.input).slice(0, 80)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+    <div>
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className={playgroundStepRow}>
+        <PlaygroundChevron open={open} />
+        <ToolIcon type={iconType} />
+        <span className="text-[13px] font-medium text-cc-fg">{label}</span>
+        <span className="text-[12px] text-cc-muted tabular-nums">x{count}</span>
+      </button>
+      {open && (
+        <div className="ml-5 pl-3 border-l border-cc-border mt-1 space-y-0.5">
+          {items.map((item, i) => {
+            const preview = getPreview(item.name, item.input);
+            return (
+              <div key={item.id || i} className="text-[12.5px] text-cc-muted font-mono-code truncate py-0.5">
+                {preview || JSON.stringify(item.input).slice(0, 80)}
+              </div>
+            );
+          })}
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -1938,30 +1947,16 @@ function PlaygroundSubagentGroup({ description, agentType, items }: { descriptio
   const [open, setOpen] = useState(true);
 
   return (
-    <div className="ml-9 border-l-2 border-cc-border pl-4">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 py-1.5 text-left cursor-pointer mb-1"
-      >
-        <svg viewBox="0 0 16 16" fill="currentColor" className={`w-3 h-3 text-cc-muted transition-transform shrink-0 ${open ? "rotate-90" : ""}`}>
-          <path d="M6 4l4 4-4 4" />
-        </svg>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5 text-cc-primary shrink-0">
-          <circle cx="8" cy="8" r="5" />
-          <path d="M8 5v3l2 1" strokeLinecap="round" />
-        </svg>
-        <span className="text-xs font-medium text-cc-fg truncate">{description}</span>
-        {agentType && (
-          <span className="text-[10px] text-cc-muted bg-cc-hover rounded-full px-1.5 py-0.5 shrink-0">
-            {agentType}
-          </span>
-        )}
-        <span className="text-[10px] text-cc-muted bg-cc-hover rounded-full px-1.5 py-0.5 tabular-nums shrink-0 ml-auto">
-          {items.length}
-        </span>
+    <div>
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className={`${playgroundStepRow} w-full`}>
+        <PlaygroundChevron open={open} />
+        <ToolIcon type="agent" />
+        <span className="text-[13px] font-medium text-cc-fg truncate">{description}</span>
+        {agentType && <span className="text-[12px] text-cc-muted shrink-0">{agentType}</span>}
+        <span className="text-[12px] text-cc-muted tabular-nums shrink-0 ml-auto">{items.length}</span>
       </button>
       {open && (
-        <div className="space-y-3 pb-2">
+        <div className="ml-5 pl-4 border-l border-cc-border mt-1 py-1">
           <PlaygroundToolGroup toolName={items[0]?.name || "Grep"} items={items} />
         </div>
       )}

@@ -10,7 +10,7 @@
  *   session-create payloads are untrusted inputs)
  * - the scan flags shell metacharacters, inline-eval flags, and plaintext
  *   http URLs to non-local hosts
- * - CAMPFIRE_MCP_AUTO_INJECT_POLICY=permissive admits everything but keeps
+ * - SWITCHYARD_MCP_AUTO_INJECT_POLICY=permissive admits everything but keeps
  *   findings visible (downgraded to warns)
  */
 import { afterEach, describe, expect, it } from "vitest";
@@ -19,7 +19,7 @@ import { ENVIRONMENT_RULES } from "./environment-rules.js";
 import type { McpServerConfig } from "./session-types.js";
 
 afterEach(() => {
-  delete process.env.CAMPFIRE_MCP_AUTO_INJECT_POLICY;
+  delete process.env.SWITCHYARD_MCP_AUTO_INJECT_POLICY;
 });
 
 describe("evaluateAutoInjection — default-deny", () => {
@@ -55,7 +55,7 @@ describe("evaluateAutoInjection — default-deny", () => {
   });
 
   it("permissive escape hatch admits unknown servers but keeps findings as warns", () => {
-    process.env.CAMPFIRE_MCP_AUTO_INJECT_POLICY = "permissive";
+    process.env.SWITCHYARD_MCP_AUTO_INJECT_POLICY = "permissive";
     const verdict = evaluateAutoInjection({
       custom: { type: "stdio", command: "npx", args: ["-y", "my-team-mcp; rm -rf /"] },
     });

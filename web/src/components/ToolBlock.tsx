@@ -45,6 +45,11 @@ export function getToolLabel(name: string): string {
   return name;
 }
 
+/**
+ * ToolBlock — a single Codex-style step row (design.md §6 Tool steps):
+ * chevron · icon · label · muted preview. No border, no card; the expanded
+ * detail sits in a soft `cc-hover` box beneath the row.
+ */
 export function ToolBlock({
   name,
   input,
@@ -61,29 +66,32 @@ export function ToolBlock({
   const preview = getPreview(name, input);
 
   return (
-    <div className={`rounded-lg border border-cc-border/60 bg-cc-card shadow-sm transition-all duration-200 ${open ? "" : "hover:bg-cc-hover/50"}`}>
+    <div data-tool-use-id={toolUseId}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-3 py-1.5 text-left rounded-lg transition-all duration-200 cursor-pointer"
+        aria-expanded={open}
+        className="w-full flex items-center gap-2 -ml-2 pl-2 pr-3 h-8 rounded-lg text-left hover:bg-cc-hover transition-colors duration-120 cursor-pointer"
       >
         <svg
           viewBox="0 0 16 16"
-          fill="currentColor"
-          className={`w-4 h-4 text-cc-muted/60 transition-transform duration-200 shrink-0 ${open ? "rotate-90" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          className={`w-3 h-3 text-cc-muted transition-transform duration-150 shrink-0 ${open ? "rotate-90" : ""}`}
         >
-          <path d="M6 4l4 4-4 4" />
+          <path d="M6 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <ToolIcon type={iconType} />
-        <span className="text-[12px] font-medium text-cc-fg font-mono-code">{label}</span>
+        <span className="text-[13px] font-medium text-cc-fg shrink-0">{label}</span>
         {preview && (
-          <span className="text-[11px] text-cc-muted/80 font-mono-code truncate flex-1">
+          <span className="text-[13px] text-cc-muted font-mono-code truncate min-w-0">
             {preview}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="border-t border-cc-border/40 px-4 py-3 bg-cc-bg/50 rounded-b-lg">
+        <div data-tool-detail className="mt-1 ml-5 rounded-xl bg-cc-hover px-4 py-3">
           <ToolDetail name={name} input={input} />
         </div>
       )}
@@ -421,7 +429,7 @@ export function getPreview(name: string, input: Record<string, unknown>): string
 // ─── Icons ──────────────────────────────────────────────────────────────────
 
 export function ToolIcon({ type }: { type: string }) {
-  const cls = "w-4 h-4 text-cc-muted/60 shrink-0";
+  const cls = "w-4 h-4 text-cc-muted shrink-0";
 
   if (type === "terminal") {
     return (

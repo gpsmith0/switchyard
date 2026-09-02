@@ -188,7 +188,7 @@ export function AdapterManager({ embedded = false }: Props) {
           value={installPackage}
           onChange={(e) => setInstallPackage(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleInstall()}
-          placeholder="@campfire/example-adapter"
+          placeholder="@switchyard/example-adapter"
           className="flex-1 px-3 py-2 text-sm font-mono-code bg-cc-input-bg border border-cc-border rounded-lg text-cc-fg placeholder:text-cc-muted focus:outline-none focus:border-cc-primary/50"
         />
         <button
@@ -204,7 +204,7 @@ export function AdapterManager({ embedded = false }: Props) {
         </button>
       </div>
       <div className="text-[10px] text-cc-muted">
-        Adapters must declare a "campfireAdapter" field in their package.json
+        Adapters must declare a "switchyardAdapter" field in their package.json
       </div>
     </div>
   );

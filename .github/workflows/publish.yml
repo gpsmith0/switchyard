@@ -39,9 +39,9 @@ jobs:
         id: check
         run: |
           VERSION=$(jq -r .version web/package.json)
-          if npm view "the-campfire@${VERSION}" version >/dev/null 2>&1; then
+          if npm view "@gpsmith0/switchyard@${VERSION}" version >/dev/null 2>&1; then
             echo "published=true" >> "$GITHUB_OUTPUT"
-            echo "the-campfire@${VERSION} already on npm — skipping publish"
+            echo "@gpsmith0/switchyard@${VERSION} already on npm — skipping publish"
           else
             echo "published=false" >> "$GITHUB_OUTPUT"
           fi

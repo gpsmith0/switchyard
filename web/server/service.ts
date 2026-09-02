@@ -13,10 +13,10 @@ import { getServicePath } from "./path-resolver.js";
 
 // ─── Shared Constants ───────────────────────────────────────────────────────────
 
-const CAMPFIRE_DIR = join(homedir(), ".campfire");
-const LOG_DIR = join(CAMPFIRE_DIR, "logs");
-const STDOUT_LOG = join(LOG_DIR, "campfire.log");
-const STDERR_LOG = join(LOG_DIR, "campfire.error.log");
+const SWITCHYARD_DIR = join(homedir(), ".switchyard");
+const LOG_DIR = join(SWITCHYARD_DIR, "logs");
+const STDOUT_LOG = join(LOG_DIR, "switchyard.log");
+const STDERR_LOG = join(LOG_DIR, "switchyard.error.log");
 
 // ─── System binary paths (absolute to satisfy S4036 PATH safety) ───────────────
 
@@ -27,8 +27,8 @@ const BIN_LOGINCTL = "/usr/bin/loginctl";
 
 // ─── macOS (launchd) Constants ──────────────────────────────────────────────────
 
-const LABEL = "sh.campfire.app";
-const OLD_LABEL = "co.thevibecompany.campfire";
+const LABEL = "sh.switchyard.app";
+const OLD_LABEL = "co.thevibecompany.switchyard";
 const PLIST_DIR = join(homedir(), "Library", "LaunchAgents");
 const PLIST_PATH = join(PLIST_DIR, `${LABEL}.plist`);
 const OLD_PLIST_PATH = join(PLIST_DIR, `${OLD_LABEL}.plist`);
@@ -36,7 +36,7 @@ const OLD_PLIST_PATH = join(PLIST_DIR, `${OLD_LABEL}.plist`);
 // ─── Linux (systemd) Constants ──────────────────────────────────────────────────
 
 const SYSTEMD_DIR = join(homedir(), ".config", "systemd", "user");
-const UNIT_NAME = "the-campfire.service";
+const UNIT_NAME = "switchyard.service";
 const UNIT_PATH = join(SYSTEMD_DIR, UNIT_NAME);
 
 // ─── Platform check ─────────────────────────────────────────────────────────────
@@ -136,7 +136,7 @@ export function generateSystemdUnit(opts: UnitOptions): string {
   const home = homedir();
 
   return `[Unit]
-Description=Campfire - Web UI for Claude Code
+Description=Switchyard - Web UI for Claude Code
 After=network.target
 
 [Service]
@@ -162,19 +162,19 @@ WantedBy=default.target
 
 function resolveBinPath(): string {
   try {
-    const binPath = execFileSync(BIN_WHICH, ["the-campfire"], { encoding: "utf-8" }).trim();
+    const binPath = execFileSync(BIN_WHICH, ["switchyard"], { encoding: "utf-8" }).trim();
     if (binPath) return binPath;
   } catch {
     // not found globally
   }
 
-  console.error("the-campfire must be installed globally for service mode.");
+  console.error("switchyard must be installed globally for service mode.");
   console.error("");
-  console.error("  bun install -g the-campfire");
+  console.error("  bun install -g @gpsmith0/switchyard");
   console.error("");
   console.error("Then retry:");
   console.error("");
-  console.error("  the-campfire install");
+  console.error("  switchyard install");
   process.exit(1);
 }
 
@@ -199,7 +199,7 @@ function removePlist(plistPath: string): void {
 function migrateLegacyInstallIfNeeded(): void {
   if (!existsSync(OLD_PLIST_PATH)) return;
 
-  console.log("Found legacy The Vibe Campfire service. Migrating...");
+  console.log("Found legacy The Vibe Switchyard service. Migrating...");
   unloadLaunchdService(OLD_PLIST_PATH);
   removePlist(OLD_PLIST_PATH);
 }
@@ -247,8 +247,8 @@ async function installDarwin(opts?: { port?: number }): Promise<void> {
   migrateLegacyInstallIfNeeded();
 
   if (existsSync(PLIST_PATH)) {
-    console.error("Campfire is already installed as a service.");
-    console.error("Run 'the-campfire uninstall' first to reinstall.");
+    console.error("Switchyard is already installed as a service.");
+    console.error("Run 'switchyard uninstall' first to reinstall.");
     process.exit(1);
   }
 
@@ -275,20 +275,20 @@ async function installDarwin(opts?: { port?: number }): Promise<void> {
     process.exit(1);
   }
 
-  console.log("Campfire has been installed as a background service.");
+  console.log("Switchyard has been installed as a background service.");
   console.log("");
   console.log(`  URL:    http://localhost:${port}`);
   console.log(`  Logs:   ${LOG_DIR}`);
   console.log(`  Plist:  ${PLIST_PATH}`);
   console.log("");
   console.log("The service will start automatically on login.");
-  console.log("Use 'the-campfire status' to check if it's running.");
+  console.log("Use 'switchyard status' to check if it's running.");
 }
 
 async function installLinux(opts?: { port?: number }): Promise<void> {
   if (isSystemdUnitInstalled()) {
-    console.error("Campfire is already installed as a service.");
-    console.error("Run 'the-campfire uninstall' first to reinstall.");
+    console.error("Switchyard is already installed as a service.");
+    console.error("Run 'switchyard uninstall' first to reinstall.");
     process.exit(1);
   }
 
@@ -326,14 +326,14 @@ async function installLinux(opts?: { port?: number }): Promise<void> {
     console.warn("  sudo loginctl enable-linger $(whoami)");
   }
 
-  console.log("Campfire has been installed as a background service.");
+  console.log("Switchyard has been installed as a background service.");
   console.log("");
   console.log(`  URL:    http://localhost:${port}`);
   console.log(`  Logs:   ${LOG_DIR}`);
   console.log(`  Unit:   ${UNIT_PATH}`);
   console.log("");
   console.log("The service will start automatically on login.");
-  console.log("Use 'the-campfire status' to check if it's running.");
+  console.log("Use 'switchyard status' to check if it's running.");
 }
 
 // ─── Uninstall ──────────────────────────────────────────────────────────────────
@@ -350,20 +350,20 @@ export async function uninstall(): Promise<void> {
 async function uninstallDarwin(): Promise<void> {
   const installedService = getInstalledLaunchdService();
   if (!installedService) {
-    console.log("Campfire is not installed as a service.");
+    console.log("Switchyard is not installed as a service.");
     return;
   }
 
   unloadLaunchdService(installedService.plistPath);
   removePlist(installedService.plistPath);
 
-  console.log("Campfire service has been removed.");
+  console.log("Switchyard service has been removed.");
   console.log(`Logs are preserved at ${LOG_DIR}`);
 }
 
 async function uninstallLinux(): Promise<void> {
   if (!isSystemdUnitInstalled()) {
-    console.log("Campfire is not installed as a service.");
+    console.log("Switchyard is not installed as a service.");
     return;
   }
 
@@ -385,7 +385,7 @@ async function uninstallLinux(): Promise<void> {
     // Best-effort reload
   }
 
-  console.log("Campfire service has been removed.");
+  console.log("Switchyard service has been removed.");
   console.log(`Logs are preserved at ${LOG_DIR}`);
 }
 
@@ -403,8 +403,8 @@ export async function start(): Promise<void> {
 async function startDarwin(): Promise<void> {
   const installedService = getInstalledLaunchdService();
   if (!installedService) {
-    console.log("Campfire is not installed as a service.");
-    console.log("Run 'the-campfire install' first.");
+    console.log("Switchyard is not installed as a service.");
+    console.log("Run 'switchyard install' first.");
     return;
   }
 
@@ -430,7 +430,7 @@ async function startDarwin(): Promise<void> {
     }
   }
 
-  console.log("Campfire service has been started.");
+  console.log("Switchyard service has been started.");
 }
 
 async function startLinux(): Promise<void> {
@@ -453,7 +453,7 @@ async function startLinux(): Promise<void> {
     process.exit(1);
   }
 
-  console.log("Campfire service has been started.");
+  console.log("Switchyard service has been started.");
 }
 
 export async function stop(): Promise<void> {
@@ -468,7 +468,7 @@ export async function stop(): Promise<void> {
 async function stopDarwin(): Promise<void> {
   const installedService = getInstalledLaunchdService();
   if (!installedService) {
-    console.log("Campfire is not installed as a service.");
+    console.log("Switchyard is not installed as a service.");
     return;
   }
 
@@ -485,13 +485,13 @@ async function stopDarwin(): Promise<void> {
     unloadLaunchdService(installedService.plistPath);
   }
 
-  console.log("Campfire service has been stopped.");
-  console.log("Run 'the-campfire restart' to start it again.");
+  console.log("Switchyard service has been stopped.");
+  console.log("Run 'switchyard restart' to start it again.");
 }
 
 async function stopLinux(): Promise<void> {
   if (!isSystemdUnitInstalled()) {
-    console.log("Campfire is not installed as a service.");
+    console.log("Switchyard is not installed as a service.");
     return;
   }
 
@@ -503,8 +503,8 @@ async function stopLinux(): Promise<void> {
     process.exit(1);
   }
 
-  console.log("Campfire service has been stopped.");
-  console.log("Run 'the-campfire restart' to start it again.");
+  console.log("Switchyard service has been stopped.");
+  console.log("Run 'switchyard restart' to start it again.");
 }
 
 export async function restart(): Promise<void> {
@@ -519,7 +519,7 @@ export async function restart(): Promise<void> {
 async function restartDarwin(): Promise<void> {
   const installedService = getInstalledLaunchdService();
   if (!installedService) {
-    console.log("Campfire is not installed as a service.");
+    console.log("Switchyard is not installed as a service.");
     return;
   }
 
@@ -542,12 +542,12 @@ async function restartDarwin(): Promise<void> {
     }
   }
 
-  console.log("Campfire service has been restarted.");
+  console.log("Switchyard service has been restarted.");
 }
 
 async function restartLinux(): Promise<void> {
   if (!isSystemdUnitInstalled()) {
-    console.log("Campfire is not installed as a service.");
+    console.log("Switchyard is not installed as a service.");
     return;
   }
 
@@ -562,7 +562,7 @@ async function restartLinux(): Promise<void> {
     process.exit(1);
   }
 
-  console.log("Campfire service has been restarted.");
+  console.log("Switchyard service has been restarted.");
 }
 
 // ─── Status ─────────────────────────────────────────────────────────────────────

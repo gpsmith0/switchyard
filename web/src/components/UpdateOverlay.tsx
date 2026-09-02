@@ -95,7 +95,7 @@ export function UpdateOverlay({ active }: Readonly<{ active: boolean }>) {
         {!ready && <div className="absolute inset-0 -m-4 rounded-full bg-cc-primary/10 animate-pulse" />}
         <img
           src="/logo.svg"
-          alt="Campfire"
+          alt="Switchyard"
           className={`relative z-10 h-20 w-20 transition-transform duration-500 ${ready ? "" : "scale-110"}`}
         />
         {!ready && (

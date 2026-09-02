@@ -49,11 +49,11 @@ function httpGet(url, timeoutMs = 2000) {
 }
 
 /**
- * Probe whether a Campfire server is answering at the given port.
+ * Probe whether a Switchyard server is answering at the given port.
  * `/api/backends` returns a JSON array of known agent backends — a shape no
  * other local service plausibly serves at that path.
  */
-async function probeCampfire(port, timeoutMs = 2000) {
+async function probeSwitchyard(port, timeoutMs = 2000) {
   const res = await httpGet(`http://127.0.0.1:${port}/api/backends`, timeoutMs);
   if (!res || res.status !== 200) return false;
   try {
@@ -65,17 +65,17 @@ async function probeCampfire(port, timeoutMs = 2000) {
 }
 
 /**
- * Poll until a Campfire server answers on `port` or `deadlineMs` elapses.
+ * Poll until a Switchyard server answers on `port` or `deadlineMs` elapses.
  * `isAlive` lets the caller abort early (e.g. the sidecar process died).
  */
-async function waitForCampfire(port, deadlineMs = 30000, isAlive = () => true, intervalMs = 250) {
+async function waitForSwitchyard(port, deadlineMs = 30000, isAlive = () => true, intervalMs = 250) {
   const deadline = Date.now() + deadlineMs;
   while (Date.now() < deadline) {
     if (!isAlive()) return false;
-    if (await probeCampfire(port, 1500)) return true;
+    if (await probeSwitchyard(port, 1500)) return true;
     await new Promise((r) => setTimeout(r, intervalMs));
   }
   return false;
 }
 
-module.exports = { isPortFree, findFreePort, httpGet, probeCampfire, waitForCampfire };
+module.exports = { isPortFree, findFreePort, httpGet, probeSwitchyard, waitForSwitchyard };

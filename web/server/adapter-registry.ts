@@ -1,8 +1,8 @@
 /**
  * AdapterRegistry — manages third-party agent adapters installed via npm.
  *
- * Adapters are stored in ~/.campfire/adapters/{name}/ and discovered by
- * scanning for package.json files with a "campfireAdapter" field.
+ * Adapters are stored in ~/.switchyard/adapters/{name}/ and discovered by
+ * scanning for package.json files with a "switchyardAdapter" field.
  *
  * Follows the same file-based persistence pattern as cron-store.ts.
  */
@@ -33,7 +33,7 @@ class AdapterRegistry {
   private installed: Map<string, InstalledAdapter>;
 
   constructor() {
-    this.adaptersDir = join(homedir(), ".campfire", "adapters");
+    this.adaptersDir = join(homedir(), ".switchyard", "adapters");
     mkdirSync(this.adaptersDir, { recursive: true });
     this.installed = new Map();
     this.scan();
@@ -42,9 +42,9 @@ class AdapterRegistry {
   // ─── Scan ────────────────────────────────────────────────────────────────
 
   /**
-   * Scan ~/.campfire/adapters/ for installed adapter packages.
+   * Scan ~/.switchyard/adapters/ for installed adapter packages.
    * Each subdirectory is expected to contain a package.json with a
-   * "campfireAdapter" field. Invalid directories are silently skipped.
+   * "switchyardAdapter" field. Invalid directories are silently skipped.
    */
   scan(): InstalledAdapter[] {
     this.installed.clear();
@@ -98,7 +98,7 @@ class AdapterRegistry {
 
   /**
    * Validate a single adapter directory by reading its package.json and
-   * checking for a well-formed "campfireAdapter" field.
+   * checking for a well-formed "switchyardAdapter" field.
    *
    * Returns the validated AdapterMetadata or null if invalid.
    */
@@ -113,7 +113,7 @@ class AdapterRegistry {
       return null;
     }
 
-    const raw = pkg.campfireAdapter;
+    const raw = pkg.switchyardAdapter;
     if (!raw || typeof raw !== "object") return null;
 
     const adapter = raw as Record<string, unknown>;
@@ -150,10 +150,10 @@ class AdapterRegistry {
   // ─── Install ─────────────────────────────────────────────────────────────
 
   /**
-   * Install an adapter from npm into ~/.campfire/adapters/{name}/.
+   * Install an adapter from npm into ~/.switchyard/adapters/{name}/.
    *
    * Uses `bun add` in a temporary directory, validates the downloaded package
-   * has a campfireAdapter field, then moves it into the adapters directory.
+   * has a switchyardAdapter field, then moves it into the adapters directory.
    */
   async install(npmPackage: string): Promise<InstalledAdapter> {
     // Sanitize package name to prevent shell injection
@@ -200,11 +200,11 @@ class AdapterRegistry {
         throw new Error(`Package "${npmPackage}" was installed but not found in node_modules`);
       }
 
-      // Validate the package has campfireAdapter metadata
+      // Validate the package has switchyardAdapter metadata
       const metadata = this.validate(pkgDir);
       if (!metadata) {
         throw new Error(
-          `Package "${npmPackage}" does not contain a valid "campfireAdapter" field in its package.json`,
+          `Package "${npmPackage}" does not contain a valid "switchyardAdapter" field in its package.json`,
         );
       }
 
@@ -246,7 +246,7 @@ class AdapterRegistry {
 
   /**
    * Uninstall an adapter by name, removing its directory from
-   * ~/.campfire/adapters/.
+   * ~/.switchyard/adapters/.
    */
   uninstall(name: string): boolean {
     const dir = join(this.adaptersDir, name);

@@ -6,7 +6,7 @@
  * - login() accepts the correct password and rejects wrong ones
  * - legacy unsalted SHA-256 hashes (pre-migration auth.json) still authenticate
  *   and are transparently upgraded to scrypt on first successful login
- * - CAMPFIRE_PASSWORD env var takes priority over the saved config
+ * - SWITCHYARD_PASSWORD env var takes priority over the saved config
  * - session tokens verify while fresh and expire after 7 days
  */
 import { mkdtempSync, rmSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
@@ -27,18 +27,18 @@ let tempHome: string;
 beforeEach(() => {
   tempHome = mkdtempSync(join(tmpdir(), "auth-test-"));
   mockHomedir.value = tempHome;
-  delete process.env.CAMPFIRE_PASSWORD;
+  delete process.env.SWITCHYARD_PASSWORD;
   vi.resetModules();
 });
 
 afterEach(() => {
-  delete process.env.CAMPFIRE_PASSWORD;
+  delete process.env.SWITCHYARD_PASSWORD;
   vi.useRealTimers();
   rmSync(tempHome, { recursive: true, force: true });
 });
 
 function authFilePath(): string {
-  return join(tempHome, ".campfire", "auth.json");
+  return join(tempHome, ".switchyard", "auth.json");
 }
 
 function readAuthConfig(): { passwordHash: string; sessions: { token: string; createdAt: number }[]; enabled: boolean } {
@@ -88,7 +88,7 @@ describe("password hashing", () => {
 describe("legacy SHA-256 hash migration", () => {
   it("authenticates against a legacy unsalted hash and upgrades it to scrypt", async () => {
     // Simulate a pre-migration auth.json written by the old sha256-only code.
-    mkdirSync(join(tempHome, ".campfire"), { recursive: true });
+    mkdirSync(join(tempHome, ".switchyard"), { recursive: true });
     writeFileSync(authFilePath(), JSON.stringify({
       passwordHash: sha256("legacy-password-99"),
       sessions: [],
@@ -109,7 +109,7 @@ describe("legacy SHA-256 hash migration", () => {
   });
 
   it("does not upgrade the hash on a failed login attempt", async () => {
-    mkdirSync(join(tempHome, ".campfire"), { recursive: true });
+    mkdirSync(join(tempHome, ".switchyard"), { recursive: true });
     const legacyHash = sha256("legacy-password-99");
     writeFileSync(authFilePath(), JSON.stringify({
       passwordHash: legacyHash,
@@ -123,9 +123,9 @@ describe("legacy SHA-256 hash migration", () => {
   });
 });
 
-describe("CAMPFIRE_PASSWORD env var", () => {
+describe("SWITCHYARD_PASSWORD env var", () => {
   it("takes priority over the saved config", async () => {
-    process.env.CAMPFIRE_PASSWORD = "env-secret";
+    process.env.SWITCHYARD_PASSWORD = "env-secret";
     const auth = await loadAuth();
 
     expect(auth.isAuthEnabled()).toBe(true);

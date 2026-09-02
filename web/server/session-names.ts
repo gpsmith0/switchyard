@@ -9,7 +9,7 @@ import { homedir } from "node:os";
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
-const DEFAULT_PATH = join(homedir(), ".campfire", "session-names.json");
+const DEFAULT_PATH = join(homedir(), ".switchyard", "session-names.json");
 
 // ─── Store ──────────────────────────────────────────────────────────────────
 

@@ -73,7 +73,7 @@ export function registerWebhookRoutes(api: Hono, deps: RouteDeps): void {
 
   // ─── OpenClaw Inbound Webhook ───────────────────────────────────
   api.post("/webhooks/openclaw", async (c) => {
-    const expectedToken = process.env.CAMPFIRE_OPENCLAW_TOKEN;
+    const expectedToken = process.env.SWITCHYARD_OPENCLAW_TOKEN;
     if (expectedToken) {
       const authHeader = c.req.header("Authorization") || "";
       const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";

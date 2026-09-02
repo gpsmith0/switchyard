@@ -11,10 +11,10 @@ interface JsonRpcRequest {
 
 type FramingMode = "content-length" | "ndjson";
 
-const url = process.env.CAMPFIRE_AGENT_MCP_URL || "http://127.0.0.1:4567/api/internal/agent-mcp";
-const token = process.env.CAMPFIRE_AGENT_MCP_TOKEN || "";
-const parentSessionId = process.env.CAMPFIRE_PARENT_SESSION_ID || "";
-const backends = (process.env.CAMPFIRE_AGENT_MCP_BACKENDS || "")
+const url = process.env.SWITCHYARD_AGENT_MCP_URL || "http://127.0.0.1:4567/api/internal/agent-mcp";
+const token = process.env.SWITCHYARD_AGENT_MCP_TOKEN || "";
+const parentSessionId = process.env.SWITCHYARD_PARENT_SESSION_ID || "";
+const backends = (process.env.SWITCHYARD_AGENT_MCP_BACKENDS || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean) as Array<AgentToolDefinition["backendType"]>;
@@ -85,7 +85,7 @@ async function handle(req: JsonRpcRequest): Promise<void> {
       respond(req.id, {
         protocolVersion: "2024-11-05",
         capabilities: { tools: {} },
-        serverInfo: { name: "campfire-agents", version: "1.0.0" },
+        serverInfo: { name: "switchyard-agents", version: "1.0.0" },
       });
       return;
     case "notifications/initialized":
@@ -115,7 +115,7 @@ function parseJsonRequest(body: string): void {
   try {
     void handle(JSON.parse(body) as JsonRpcRequest);
   } catch (err) {
-    process.stderr.write(`campfire-agents MCP parse error: ${err}\n`);
+    process.stderr.write(`switchyard-agents MCP parse error: ${err}\n`);
   }
 }
 

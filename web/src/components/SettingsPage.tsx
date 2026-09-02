@@ -95,7 +95,7 @@ function GeneralTab({ telemetryEnabled, setTelemetryEnabled }: Readonly<{
 }>) {
   return (
     <>
-      <SettingsCard title="Telemetry" description="Help improve Campfire with anonymous usage data">
+      <SettingsCard title="Telemetry" description="Help improve Switchyard with anonymous usage data">
         <SettingsRow
           label="Usage analytics and crash reports"
           description="Anonymous product analytics via PostHog. Browser Do Not Track is respected automatically."
@@ -246,7 +246,7 @@ function ProvidersTab({ claudeOAuthToken, setClaudeOAuthToken, claudeConfigured,
         <p className="text-[11px] text-cc-muted leading-relaxed">
           Provider tokens are automatically injected into new sessions for the matching backend.
           If an environment profile already sets the same variable, the profile value takes precedence.
-          Tokens are stored in <code className="font-mono-code text-[10px] bg-cc-hover px-1 rounded">~/.campfire/settings.json</code>.
+          Tokens are stored in <code className="font-mono-code text-[10px] bg-cc-hover px-1 rounded">~/.switchyard/settings.json</code>.
         </p>
       </div>
     </div>
@@ -554,7 +554,7 @@ function MemoryTab({ initial }: Readonly<{ initial: MemorySettings }>) {
       <div className="rounded-lg border border-cc-border/40 bg-cc-hover/30 px-4 py-3">
         <p className="text-[11px] text-cc-muted leading-relaxed">
           Pinned memories never decay regardless of half-life. Defaults: Global 90d, Repository 30d,
-          Session 7d, Agent 60d. Settings are stored in <code className="font-mono-code text-[10px] bg-cc-hover px-1 rounded">~/.campfire/settings.json</code>.
+          Session 7d, Agent 60d. Settings are stored in <code className="font-mono-code text-[10px] bg-cc-hover px-1 rounded">~/.switchyard/settings.json</code>.
         </p>
       </div>
     </div>
@@ -571,7 +571,7 @@ function SecurityTab({ authEnabled, setAuthEnabled, authPassword, setAuthPasswor
 }>) {
   return (
     <div className="space-y-5">
-      <SettingsCard title="Authentication" description="Protect your Campfire instance with a password. When enabled, all API and WebSocket connections require a valid session token.">
+      <SettingsCard title="Authentication" description="Protect your Switchyard instance with a password. When enabled, all API and WebSocket connections require a valid session token.">
         {/* Status indicator */}
         <div className="flex items-center gap-3 mb-4 pb-4 border-b border-cc-border/30">
           <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${authEnabled ? "bg-cc-success/10" : "bg-cc-hover"}`}>
@@ -637,7 +637,7 @@ function NotificationsTab({ notificationSound, toggleNotificationSound, notifica
   notificationApiAvailable: boolean;
 }>) {
   return (
-    <SettingsCard title="Notification Preferences" description="Control how Campfire alerts you">
+    <SettingsCard title="Notification Preferences" description="Control how Switchyard alerts you">
       <SettingsRow
         label="Sound"
         description="Play a notification sound when a permission request arrives"
@@ -700,7 +700,7 @@ function UpdatesTab({ updateInfo, updateError, updateStatus, checkingUpdates, up
   onCheckUpdates: () => void; onTriggerUpdate: () => void;
 }>) {
   return (
-    <SettingsCard title="Software Updates" description="Keep Campfire up to date">
+    <SettingsCard title="Software Updates" description="Keep Switchyard up to date">
       <div className="space-y-4">
         {/* Version info */}
         <div className="flex items-center gap-3 py-2">
@@ -768,7 +768,7 @@ function UpdatesTab({ updateInfo, updateError, updateStatus, checkingUpdates, up
             </button>
           ) : (
             <p className="text-[11px] text-cc-fg/55 self-center">
-              Run <code className="font-mono-code bg-cc-code-bg px-1.5 py-0.5 rounded text-cc-code-fg text-[10px]">the-campfire install</code> to enable one-click updates
+              Run <code className="font-mono-code bg-cc-code-bg px-1.5 py-0.5 rounded text-cc-code-fg text-[10px]">switchyard install</code> to enable one-click updates
             </p>
           )}
         </div>

@@ -40,16 +40,16 @@ afterEach(() => {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function adaptersDir(): string {
-  return join(tempDir, ".campfire", "adapters");
+  return join(tempDir, ".switchyard", "adapters");
 }
 
 /**
  * Create a mock adapter directory with a package.json containing
- * the given campfireAdapter metadata.
+ * the given switchyardAdapter metadata.
  */
 function createMockAdapter(
   name: string,
-  campfireAdapter: Record<string, unknown>,
+  switchyardAdapter: Record<string, unknown>,
   pkgOverrides: Record<string, unknown> = {},
 ): string {
   const dir = join(adaptersDir(), name);
@@ -57,9 +57,9 @@ function createMockAdapter(
   writeFileSync(
     join(dir, "package.json"),
     JSON.stringify({
-      name: `campfire-adapter-${name}`,
+      name: `switchyard-adapter-${name}`,
       version: "1.0.0",
-      campfireAdapter,
+      switchyardAdapter,
       ...pkgOverrides,
     }),
     "utf-8",
@@ -80,7 +80,7 @@ function writeMockMetadataJson(
     join(dir, "metadata.json"),
     JSON.stringify({
       installedAt: meta.installedAt ?? Date.now(),
-      npmPackage: meta.npmPackage ?? `campfire-adapter-${name}`,
+      npmPackage: meta.npmPackage ?? `switchyard-adapter-${name}`,
     }),
     "utf-8",
   );
@@ -90,7 +90,7 @@ function writeMockMetadataJson(
 // scan()
 // =============================================================================
 describe("scan", () => {
-  it("discovers adapters with valid campfireAdapter metadata", () => {
+  it("discovers adapters with valid switchyardAdapter metadata", () => {
     // Place a mock adapter in the adapters directory
     createMockAdapter("test-agent", {
       name: "test-agent",
@@ -130,7 +130,7 @@ describe("scan", () => {
     expect(registry.listInstalled()).toHaveLength(0);
   });
 
-  it("skips packages without campfireAdapter field", () => {
+  it("skips packages without switchyardAdapter field", () => {
     const dir = join(adaptersDir(), "plain-pkg");
     mkdirSync(dir, { recursive: true });
     writeFileSync(
@@ -217,7 +217,7 @@ describe("validate", () => {
     expect(registry.validate(dir)).toBeNull();
   });
 
-  it("returns null when campfireAdapter field is missing", () => {
+  it("returns null when switchyardAdapter field is missing", () => {
     const dir = join(adaptersDir(), "no-field");
     mkdirSync(dir, { recursive: true });
     writeFileSync(
@@ -230,7 +230,7 @@ describe("validate", () => {
     expect(registry.validate(dir)).toBeNull();
   });
 
-  it("returns null when campfireAdapter.name is missing", () => {
+  it("returns null when switchyardAdapter.name is missing", () => {
     const dir = createMockAdapter("no-name", {
       displayName: "No Name",
     });
@@ -239,7 +239,7 @@ describe("validate", () => {
     expect(registry.validate(dir)).toBeNull();
   });
 
-  it("returns null when campfireAdapter.displayName is missing", () => {
+  it("returns null when switchyardAdapter.displayName is missing", () => {
     const dir = createMockAdapter("no-display", {
       name: "no-display",
     });
@@ -248,7 +248,7 @@ describe("validate", () => {
     expect(registry.validate(dir)).toBeNull();
   });
 
-  it("returns null when campfireAdapter.name is empty string", () => {
+  it("returns null when switchyardAdapter.name is empty string", () => {
     const dir = createMockAdapter("empty-name", {
       name: "",
       displayName: "Empty Name",
@@ -297,7 +297,7 @@ describe("validate", () => {
     expect(meta!.protocol).toBe("stdio");
   });
 
-  it("falls back to package.json version when campfireAdapter.version is missing", () => {
+  it("falls back to package.json version when switchyardAdapter.version is missing", () => {
     const dir = createMockAdapter(
       "fallback-version",
       { name: "fallback-version", displayName: "Fallback Version" },
@@ -318,7 +318,7 @@ describe("validate", () => {
       join(dir, "package.json"),
       JSON.stringify({
         name: "no-version-pkg",
-        campfireAdapter: { name: "no-version", displayName: "No Version" },
+        switchyardAdapter: { name: "no-version", displayName: "No Version" },
       }),
       "utf-8",
     );
@@ -514,7 +514,7 @@ describe("install input validation", () => {
     // NOT fail at the sanitization step. We catch the install error.
     const registry = new AdapterRegistry();
     try {
-      await registry.install("@campfire/test-adapter");
+      await registry.install("@switchyard/test-adapter");
     } catch (e: unknown) {
       // Should fail during bun add, not during sanitization
       expect((e as Error).message).not.toContain("Invalid npm package name");

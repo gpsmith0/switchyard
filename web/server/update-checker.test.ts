@@ -79,7 +79,7 @@ describe("checkForUpdate", () => {
     await checker.checkForUpdate();
 
     expect(mockFetch).toHaveBeenCalledWith(
-      "https://registry.npmjs.org/the-campfire/latest",
+      "https://registry.npmjs.org/@gpsmith0%2Fswitchyard/latest",
       expect.objectContaining({
         headers: { Accept: "application/json" },
       }),

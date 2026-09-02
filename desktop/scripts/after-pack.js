@@ -36,7 +36,7 @@ exports.default = async function afterPack(context) {
     "--force",
     "--deep",
     "--sign", "-",
-    "--identifier", "sh.campfire.desktop",
+    "--identifier", "sh.switchyard.desktop",
     appPath,
   ], { stdio: "inherit" });
   execFileSync("codesign", ["--verify", "--deep", "--strict", appPath], { stdio: "inherit" });

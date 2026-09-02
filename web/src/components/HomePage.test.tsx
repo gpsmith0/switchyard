@@ -86,7 +86,7 @@ describe("HomePage Codex model selection", () => {
     fireEvent.click(screen.getByText("Options"));
 
     // Codex owns model selection through its own config/login defaults, so the
-    // launch form must not present stale Campfire-maintained GPT model choices.
+    // launch form must not present stale Switchyard-maintained GPT model choices.
     expect(screen.getByText("Codex default")).toBeInTheDocument();
     expect(screen.queryByLabelText("Model")).toBeNull();
   });

@@ -57,9 +57,9 @@ export class WebhookManager {
     let body: string;
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      "User-Agent": "Campfire-Webhook/1.0",
-      "X-Campfire-Event": payload.event,
-      "X-Campfire-Delivery": `${webhook.id}-${Date.now()}`,
+      "User-Agent": "Switchyard-Webhook/1.0",
+      "X-Switchyard-Event": payload.event,
+      "X-Switchyard-Delivery": `${webhook.id}-${Date.now()}`,
     };
 
     if (format === "slack") {
@@ -80,7 +80,7 @@ export class WebhookManager {
 
     // HMAC-SHA256 signing if secret is configured (not used for openclaw format which uses Bearer)
     if (webhook.secret && format !== "openclaw") {
-      headers["X-Campfire-Signature"] = this.sign(body, webhook.secret);
+      headers["X-Switchyard-Signature"] = this.sign(body, webhook.secret);
     }
 
     try {
@@ -170,7 +170,7 @@ export class WebhookManager {
     const model = (data.model as string) || "";
 
     return {
-      text: `Campfire: ${label} — session ${sessionId.slice(0, 8)}`,
+      text: `Switchyard: ${label} — session ${sessionId.slice(0, 8)}`,
       blocks: [
         {
           type: "section",
@@ -190,7 +190,7 @@ export class WebhookManager {
 
   /**
    * Format a webhook payload as an OpenClaw /hooks/agent request.
-   * This allows Campfire events to trigger OpenClaw agent runs.
+   * This allows Switchyard events to trigger OpenClaw agent runs.
    */
   static formatOpenClawPayload(
     event: WebhookEvent,
@@ -219,8 +219,8 @@ export class WebhookManager {
     const turns = typeof data.numTurns === "number" ? ` | Turns: ${data.numTurns}` : "";
 
     return {
-      message: `[Campfire] ${label} — session ${sessionId.slice(0, 8)}${backend}${model}${cost}${turns}`,
-      name: "Campfire",
+      message: `[Switchyard] ${label} — session ${sessionId.slice(0, 8)}${backend}${model}${cost}${turns}`,
+      name: "Switchyard",
       wakeMode: "now",
       deliver: true,
     };

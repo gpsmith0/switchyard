@@ -68,7 +68,7 @@ let memory: typeof import("./semantic-memory.js");
 
 beforeEach(async () => {
   // Fresh memory root + settings file for each test
-  testDir = join(tmpdir(), `campfire-test-memory-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  testDir = join(tmpdir(), `switchyard-test-memory-${Date.now()}-${Math.random().toString(36).slice(2)}`);
   mkdirSync(testDir, { recursive: true });
   settingsManager._resetForTest(join(testDir, "settings.json"));
 
@@ -788,7 +788,7 @@ describe("queryForEnrichment", () => {
 
     expect(result.block).toBe(
       [
-        "--- Campfire memory (auto-recalled; may be stale) ---",
+        "--- Switchyard memory (auto-recalled; may be stale) ---",
         "Knowledge:",
         "- [auth] Auth uses JWT with RS256",
         "Notes:",

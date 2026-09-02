@@ -13,8 +13,8 @@ import { ALL_WEBHOOK_EVENTS } from "./webhook-types.js";
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
-const CAMPFIRE_DIR = join(homedir(), ".campfire");
-const WEBHOOKS_DIR = join(CAMPFIRE_DIR, "webhooks");
+const SWITCHYARD_DIR = join(homedir(), ".switchyard");
+const WEBHOOKS_DIR = join(SWITCHYARD_DIR, "webhooks");
 
 function ensureDir(): void {
   mkdirSync(WEBHOOKS_DIR, { recursive: true });

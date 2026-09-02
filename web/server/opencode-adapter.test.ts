@@ -1,6 +1,6 @@
 /**
  * Tests for the OpenCodeAdapter — validates that OpenCode ACP JSON-RPC messages
- * are correctly translated to the Campfire's BrowserIncomingMessage types.
+ * are correctly translated to the Switchyard's BrowserIncomingMessage types.
  *
  * OpenCode differences from Goose:
  * - Notification method: "session/update" (not "session/notification")
@@ -192,7 +192,7 @@ describe("OpenCodeAdapter", () => {
     expect(initReq?.jsonrpc).toBe("2.0");
     // OpenCode uses numeric protocolVersion (not "v1" like Goose)
     expect((initReq?.params as any)?.protocolVersion).toBe(1);
-    expect((initReq?.params as any)?.clientInfo?.name).toBe("campfire");
+    expect((initReq?.params as any)?.clientInfo?.name).toBe("switchyard");
     // OpenCode clientCapabilities include fs and terminal
     expect((initReq?.params as any)?.clientCapabilities?.fs?.readTextFile).toBe(true);
     expect((initReq?.params as any)?.clientCapabilities?.terminal).toBe(true);
@@ -424,7 +424,7 @@ describe("OpenCodeAdapter", () => {
     expect(responseMsg).toBeTruthy();
   });
 
-  it("maps OpenCode tool names to Campfire-compatible names", async () => {
+  it("maps OpenCode tool names to Switchyard-compatible names", async () => {
     // Validates the tool name mapping for OpenCode's tool naming conventions
     const { proc, messages } = await createInitializedAdapter();
     messages.length = 0;

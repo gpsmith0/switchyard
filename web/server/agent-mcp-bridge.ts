@@ -14,11 +14,11 @@ export interface AgentMcpBridgeOptions {
 type PermissionResponseMessage = Extract<BrowserOutgoingMessage, { type: "permission_response" }>;
 type PermissionResponder = (msg: PermissionResponseMessage) => void;
 
-function backendFromCampfireMcpTool(toolName: string): BackendType | null {
+function backendFromSwitchyardMcpTool(toolName: string): BackendType | null {
   const parts = toolName.split(":");
   if (parts.length !== 3 || parts[0] !== "mcp") return null;
   const [, serverName, mcpToolName] = parts;
-  if (serverName !== "campfire_agents" && serverName !== "campfire-agents") return null;
+  if (serverName !== "switchyard_agents" && serverName !== "switchyard-agents") return null;
   return backendFromAskTool(mcpToolName);
 }
 
@@ -34,7 +34,7 @@ export class AgentMcpBridge {
   ) {
     this.token = options.token ?? randomUUID();
     this.backends = options.backends ?? ["codex", "goose", "aider", "openhands", "claude"];
-    process.env.CAMPFIRE_INTERNAL_AGENT_MCP_TOKEN = this.token;
+    process.env.SWITCHYARD_INTERNAL_AGENT_MCP_TOKEN = this.token;
   }
 
   onSessionReady(sessionId: string, backendType: BackendType, cwd: string): void {
@@ -42,7 +42,7 @@ export class AgentMcpBridge {
     const session = this.wsBridge.getSession(sessionId);
     if (session?.state.parent_session_id || session?.state.orchestration_role === "subagent" || session?.state.orchestration_role === "race_entry") return;
     if (!this.supportsRuntimeMcp(backendType)) return;
-    if (process.env.CAMPFIRE_ENABLE_AGENT_MCP === "0") return;
+    if (process.env.SWITCHYARD_ENABLE_AGENT_MCP === "0") return;
 
     const config = createAgentMcpServerConfig({
       port: this.options.port,
@@ -52,7 +52,7 @@ export class AgentMcpBridge {
       backends: this.backends.filter((backend) => backend !== backendType),
     });
     this.injectedSessions.add(sessionId);
-    this.wsBridge.setMcpServers(sessionId, { campfire_agents: config });
+    this.wsBridge.setMcpServers(sessionId, { switchyard_agents: config });
   }
 
   handlePermissionRequest(sessionId: string, msg: CLIControlRequestMessage): boolean {
@@ -78,7 +78,7 @@ export class AgentMcpBridge {
   }
 
   handleAdapterPermissionRequest(_sessionId: string, request: PermissionRequest, respond: PermissionResponder): boolean {
-    const backend = backendFromCampfireMcpTool(request.tool_name);
+    const backend = backendFromSwitchyardMcpTool(request.tool_name);
     if (!backend) return false;
 
     respond({

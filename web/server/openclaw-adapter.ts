@@ -2,7 +2,7 @@
  * OpenClaw ACP (Agent Client Protocol) Adapter
  *
  * Translates between the OpenClaw ACP JSON-RPC protocol (stdin/stdout)
- * and Campfire's BrowserIncomingMessage/BrowserOutgoingMessage types.
+ * and Switchyard's BrowserIncomingMessage/BrowserOutgoingMessage types.
  *
  * OpenClaw uses the same ACP standard as Goose (`@agentclientprotocol/sdk`),
  * so this adapter follows the identical JSON-RPC 2.0 over stdio pattern.
@@ -219,7 +219,7 @@ class JsonRpcTransport {
 export class OpenClawAdapter implements AgentAdapter {
   private transport: JsonRpcTransport;
   private proc: Subprocess;
-  private sessionId: string; // Campfire session ID
+  private sessionId: string; // Switchyard session ID
   private options: OpenClawAdapterOptions;
 
   private browserMessageCb: ((msg: BrowserIncomingMessage) => void) | null = null;
@@ -380,8 +380,8 @@ export class OpenClawAdapter implements AgentAdapter {
         protocolVersion: "v1",
         clientCapabilities: {},
         clientInfo: {
-          name: "campfire",
-          title: "Campfire",
+          name: "switchyard",
+          title: "Switchyard",
           version: "1.0.0",
         },
       }) as Record<string, unknown>;
@@ -888,10 +888,10 @@ export class OpenClawAdapter implements AgentAdapter {
   }
 
   /**
-   * Map OpenClaw tool names to Campfire-compatible tool names.
+   * Map OpenClaw tool names to Switchyard-compatible tool names.
    * Unlike Goose (which uses developer__bash, developer__text_editor, etc.),
    * OpenClaw skills use plain names that mostly pass through unchanged.
-   * Only map known OpenClaw skill tool names to standard Campfire names.
+   * Only map known OpenClaw skill tool names to standard Switchyard names.
    */
   private mapToolName(openclawToolName: string): string {
     const toolMap: Record<string, string> = {

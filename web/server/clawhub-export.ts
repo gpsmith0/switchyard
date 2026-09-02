@@ -55,16 +55,16 @@ function formatDuration(ms: number): string {
 /**
  * Generate SKILL.md content from a gallery entry.
  * This creates a ClawHub-compatible skill definition that
- * links back to Campfire for replay and details.
+ * links back to Switchyard for replay and details.
  */
 export function generateSkillMd(
   entry: GalleryEntry,
   options?: {
-    campfireBaseUrl?: string;
+    switchyardBaseUrl?: string;
     prompt?: string;
   },
 ): string {
-  const baseUrl = options?.campfireBaseUrl || "http://localhost:4567";
+  const baseUrl = options?.switchyardBaseUrl || "http://localhost:4567";
   const cost = `$${entry.totalCostUsd.toFixed(2)}`;
   const duration = formatDuration(entry.durationMs);
   const replayUrl = `${baseUrl}/#/replay/session/${entry.sessionId}`;
@@ -128,7 +128,7 @@ export function generateSkillMd(
 
   // Footer
   lines.push("---");
-  lines.push("*Exported from [Campfire](https://github.com/your-org/campfire)*");
+  lines.push("*Exported from [Switchyard](https://github.com/your-org/switchyard)*");
   lines.push("");
 
   return lines.join("\n");
@@ -143,12 +143,12 @@ export function generateSkillMd(
 export function exportToClawHub(
   entry: GalleryEntry,
   options?: {
-    campfireBaseUrl?: string;
+    switchyardBaseUrl?: string;
     prompt?: string;
     dryRun?: boolean;
   },
 ): { success: boolean; skillDir: string; output?: string; error?: string } {
-  const skillDir = join(tmpdir(), `campfire-clawhub-${entry.id}`);
+  const skillDir = join(tmpdir(), `switchyard-clawhub-${entry.id}`);
   mkdirSync(skillDir, { recursive: true });
 
   const skillMd = generateSkillMd(entry, options);

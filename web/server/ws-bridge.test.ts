@@ -1130,7 +1130,7 @@ describe("Browser message routing", () => {
     expect(session.pendingPermissions.has("perm-1")).toBe(false);
   });
 
-  it("auto-allows Campfire agent MCP permission requests from adapters without broadcasting generic approval UI", () => {
+  it("auto-allows Switchyard agent MCP permission requests from adapters without broadcasting generic approval UI", () => {
     let emitFromAdapter: ((msg: any) => void) | undefined;
     const adapter = {
       sendBrowserMessage: vi.fn(() => true),
@@ -1163,7 +1163,7 @@ describe("Browser message routing", () => {
       type: "permission_request",
       request: {
         request_id: "perm-agent-1",
-        tool_name: "mcp:campfire_agents:ask_claude",
+        tool_name: "mcp:switchyard_agents:ask_claude",
         input: { prompt: "Review the diff" },
         tool_use_id: "mcp-tool-1",
         timestamp: Date.now(),
@@ -3530,7 +3530,7 @@ describe("Memory enrichment (user_message hook)", () => {
     const items = [
       { id: "k1", kind: "knowledge", namespace: "global", summary: "Use bun for scripts", tag: "tooling", weight: 1 },
     ];
-    const block = "--- Campfire memory (auto-recalled; may be stale) ---\nKnowledge:\n- [tooling] Use bun for scripts\n--- end memory ---";
+    const block = "--- Switchyard memory (auto-recalled; may be stale) ---\nKnowledge:\n- [tooling] Use bun for scripts\n--- end memory ---";
     const ci = makeFakeCi(async () => ({ items, block }));
     bridge.setCollectiveIntelligence(ci as any);
 
@@ -3677,7 +3677,7 @@ describe("Memory enrichment (user_message hook)", () => {
     adapter.sendBrowserMessage.mockClear();
     browser.send.mockClear();
 
-    const block = "--- Campfire memory (auto-recalled; may be stale) ---\nNotes:\n- [decision] use codex profiles\n--- end memory ---";
+    const block = "--- Switchyard memory (auto-recalled; may be stale) ---\nNotes:\n- [decision] use codex profiles\n--- end memory ---";
     const items = [{ id: "f1", kind: "fragment", namespace: "repo:abc", summary: "use codex profiles", weight: 0.9 }];
     const ci = makeFakeCi(async () => ({ items, block }));
     bridge.setCollectiveIntelligence(ci as any);

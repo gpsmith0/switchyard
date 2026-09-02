@@ -1,6 +1,6 @@
-# Campfire Desktop (macOS, Apple Silicon)
+# Switchyard Desktop (macOS, Apple Silicon)
 
-A native Electron shell around the Campfire server. The app is deliberately
+A native Electron shell around the Switchyard server. The app is deliberately
 thin: the main process boots the **same Bun + Hono backend** the npm/Docker
 distributions run (bundled under `Contents/Resources/backend` together with a
 Bun runtime at `Contents/Resources/bun/bun`), then points a `BrowserWindow` at
@@ -10,14 +10,14 @@ so the desktop and web builds can never diverge.
 
 ## Behavior
 
-- **Reuse-first**: if a Campfire server already answers on port 4567 (the
-  `the-campfire` background service, `bunx the-campfire`, or the dev server),
+- **Reuse-first**: if a Switchyard server already answers on port 4567 (the
+  `switchyard` background service, `bunx @gpsmith0/switchyard`, or the dev server),
   the app attaches to it instead of spawning a second server against the same
-  `~/.campfire` state. Otherwise it spawns the bundled sidecar on the first
+  `~/.switchyard` state. Otherwise it spawns the bundled sidecar on the first
   free port from 4567 upward.
 - **Shared state**: sessions, recordings, settings, and memory live in
-  `~/.campfire`, shared with the CLI/web flavors.
-- **Sidecar logs**: `~/.campfire/logs/desktop-server.log`.
+  `~/.switchyard`, shared with the CLI/web flavors.
+- **Sidecar logs**: `~/.switchyard/logs/desktop-server.log`.
 - **Lifecycle**: closing the window keeps the app (and server) alive per macOS
   convention; Cmd+Q stops the sidecar. Agent CLI processes persist and are
   resumed on the next launch, same as a server restart.
@@ -28,26 +28,26 @@ so the desktop and web builds can never diverge.
 
 ```bash
 # From the repo root
-make dmg          # stage + package desktop/dist/Campfire-<version>-arm64.dmg
+make dmg          # stage + package desktop/dist/Switchyard-<version>-arm64.dmg
 
 # Or step by step
 ./desktop/scripts/stage.sh   # build frontend, stage backend + node_modules + bun into desktop/vendor/
 cd desktop
 bun install
 bun run smoke                # boots the app headless: spawns sidecar, loads UI, exits 0/1
-bun run dist                 # electron-builder → dist/Campfire-<version>-arm64.dmg
+bun run dist                 # electron-builder → dist/Switchyard-<version>-arm64.dmg
 ```
 
 `bun test test/` runs the unit tests for the boot-time networking helpers
-(free-port scan, Campfire probe, readiness wait). They need no Electron
+(free-port scan, Switchyard probe, readiness wait). They need no Electron
 install.
 
 ## Updating
 
 The bundled server's update checker compares its version against npm; when a
 newer release exists, the in-app banner shows a **Download update** link to
-the GitHub releases page. Updating = download the new DMG, drag Campfire into
-Applications to replace the old copy. All state lives in `~/.campfire`, so
+the GitHub releases page. Updating = download the new DMG, drag Switchyard into
+Applications to replace the old copy. All state lives in `~/.switchyard`, so
 sessions, settings, and memory survive the swap. True in-app auto-update
 (electron-updater / Squirrel.Mac) requires Apple code signing, so it is
 deferred until a signing identity exists.
@@ -59,7 +59,7 @@ Apple Developer account, $0. Downloaded copies carry the quarantine attribute,
 so the first launch needs right-click → **Open**, or:
 
 ```bash
-xattr -cr /Applications/Campfire.app
+xattr -cr /Applications/Switchyard.app
 ```
 
 To move to real signing + notarization later: set `mac.identity` in

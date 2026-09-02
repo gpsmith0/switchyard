@@ -4,20 +4,20 @@ import type { editor } from "monaco-editor";
 import { useStore } from "../store.js";
 
 /**
- * CodeEditor — a shared Monaco Editor wrapper with Campfire theme integration.
+ * CodeEditor — a shared Monaco Editor wrapper with Switchyard theme integration.
  *
  * Provides VS Code-quality editing with syntax highlighting, IntelliSense,
  * minimap, find/replace, code folding, and multi-cursor. Auto-switches
- * between light/dark Campfire themes.
+ * between light/dark Switchyard themes.
  *
  * Usage:
  *   <CodeEditor value={code} onChange={setCode} language="markdown" />
  *   <CodeEditor value={code} readOnly language="typescript" />
  */
 
-// ─── Campfire Monaco Themes ─────────────────────────────────────────────────
+// ─── Switchyard Monaco Themes ─────────────────────────────────────────────────
 
-const CAMPFIRE_LIGHT: editor.IStandaloneThemeData = {
+const SWITCHYARD_LIGHT: editor.IStandaloneThemeData = {
   base: "vs",
   inherit: true,
   rules: [
@@ -50,7 +50,7 @@ const CAMPFIRE_LIGHT: editor.IStandaloneThemeData = {
   },
 };
 
-const CAMPFIRE_DARK: editor.IStandaloneThemeData = {
+const SWITCHYARD_DARK: editor.IStandaloneThemeData = {
   base: "vs-dark",
   inherit: true,
   rules: [
@@ -87,8 +87,8 @@ let themesRegistered = false;
 
 function registerThemes(monaco: Monaco) {
   if (themesRegistered) return;
-  monaco.editor.defineTheme("campfire-light", CAMPFIRE_LIGHT);
-  monaco.editor.defineTheme("campfire-dark", CAMPFIRE_DARK);
+  monaco.editor.defineTheme("switchyard-light", SWITCHYARD_LIGHT);
+  monaco.editor.defineTheme("switchyard-dark", SWITCHYARD_DARK);
   themesRegistered = true;
 }
 
@@ -162,7 +162,7 @@ export function CodeEditor({
 
   const handleMount: OnMount = useCallback((ed, monaco) => {
     registerThemes(monaco);
-    monaco.editor.setTheme(darkMode ? "campfire-dark" : "campfire-light");
+    monaco.editor.setTheme(darkMode ? "switchyard-dark" : "switchyard-light");
     editorRef.current = ed;
 
     // Configure editor for better UX
@@ -192,7 +192,7 @@ export function CodeEditor({
     if (onChange && val !== undefined) onChange(val);
   }, [onChange]);
 
-  const theme = darkMode ? "campfire-dark" : "campfire-light";
+  const theme = darkMode ? "switchyard-dark" : "switchyard-light";
 
   return (
     <div className={`rounded-xl border border-cc-border overflow-hidden ${className}`}>

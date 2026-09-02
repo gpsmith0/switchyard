@@ -110,11 +110,11 @@ export function CostCard({
     // Watermark
     ctx.fillStyle = "#3b3d57";
     ctx.font = "11px system-ui, -apple-system, sans-serif";
-    ctx.fillText("Campfire", w - 80, h - 20);
+    ctx.fillText("Switchyard", w - 80, h - 20);
 
     // Download
     const link = document.createElement("a");
-    link.download = `campfire-${sessionName.replace(/\s+/g, "-").toLowerCase()}.png`;
+    link.download = `switchyard-${sessionName.replace(/\s+/g, "-").toLowerCase()}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
   }, [sessionName, cost, turns, durationMs, model, backend, linesAdded, linesRemoved]);
@@ -157,7 +157,7 @@ export function CostCard({
           </div>
         </div>
         <div className="text-right">
-          <span className="text-[9px] text-[#3b3d57]">Campfire</span>
+          <span className="text-[9px] text-[#3b3d57]">Switchyard</span>
         </div>
       </div>
 

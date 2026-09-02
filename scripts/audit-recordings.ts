@@ -2,7 +2,7 @@
 /**
  * Audit script for raw protocol recordings.
  *
- * Analyzes JSONL files in ~/.campfire/recordings/ and reports:
+ * Analyzes JSONL files in ~/.switchyard/recordings/ and reports:
  * - Message types seen per backend (claude / codex)
  * - Tool input/result field coverage
  * - Gaps between protocol data and what the UI renders
@@ -81,7 +81,7 @@ interface ToolInfo {
 
 // ─── Load recordings ───────────────────────────────────────────────────────
 
-const recordingsDir = process.env.CAMPFIRE_RECORDINGS_DIR || join(homedir(), ".campfire", "recordings");
+const recordingsDir = process.env.SWITCHYARD_RECORDINGS_DIR || join(homedir(), ".switchyard", "recordings");
 
 let files: string[];
 try {

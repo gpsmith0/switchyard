@@ -1,7 +1,7 @@
 /**
  * Scrub Claude Code host-session runtime markers from an environment.
  *
- * When the Campfire server is started from inside a Claude Code session (an
+ * When the Switchyard server is started from inside a Claude Code session (an
  * agent-run terminal, `open`-ing the desktop app from such a shell, a dev
  * server launched by an agent), it inherits that session's SDK environment:
  * CLAUDECODE=1, CLAUDE_CODE_SESSION_ID, CLAUDE_CODE_SDK_HAS_OAUTH_REFRESH,
@@ -15,8 +15,8 @@
  * backend CLI, adapter, or terminal is spawned. Deliberate user configuration
  * is preserved:
  *   - CLAUDE_CODE_OAUTH_TOKEN            explicit auth override (also injected
- *                                        from Campfire settings)
- *   - CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS  feature flag Campfire itself sets
+ *                                        from Switchyard settings)
+ *   - CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS  feature flag Switchyard itself sets
  */
 
 const ALLOWLIST = new Set([

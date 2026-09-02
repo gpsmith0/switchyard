@@ -105,7 +105,7 @@ describe("TopBar", () => {
     render(<TopBar />);
 
     expect(screen.getByText("completed")).toBeInTheDocument();
-    expect(screen.queryByText("reconnect")).not.toBeInTheDocument();
+    expect(screen.queryByText("Reconnect")).not.toBeInTheDocument();
   });
 
   it("uses sticky terminal state when subagent SDK metadata is incomplete", () => {
@@ -121,7 +121,7 @@ describe("TopBar", () => {
     render(<TopBar />);
 
     expect(screen.getByText("completed")).toBeInTheDocument();
-    expect(screen.queryByText("reconnect")).not.toBeInTheDocument();
+    expect(screen.queryByText("Reconnect")).not.toBeInTheDocument();
   });
 
   it("keeps reconnect available for normal disconnected sessions", () => {
@@ -132,6 +132,6 @@ describe("TopBar", () => {
 
     render(<TopBar />);
 
-    expect(screen.getByText("reconnect")).toBeInTheDocument();
+    expect(screen.getByText("Reconnect")).toBeInTheDocument();
   });
 });

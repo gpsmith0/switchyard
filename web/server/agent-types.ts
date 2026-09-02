@@ -33,7 +33,7 @@ export interface AgentProfile {
   };
 
   // ── Environment ──
-  /** Reference to ~/.campfire/envs/ profile */
+  /** Reference to ~/.switchyard/envs/ profile */
   envSlug?: string;
   /** Inline environment variable overrides */
   env?: Record<string, string>;

@@ -3,14 +3,14 @@ import { useStore } from "../store.js";
 import { api } from "../api.js";
 
 /**
- * The desktop app's preload exposes window.campfireDesktop. In-app updates
- * (`the-campfire install` / Update & Restart) only apply to the npm-installed
+ * The desktop app's preload exposes window.switchyardDesktop. In-app updates
+ * (`switchyard install` / Update & Restart) only apply to the npm-installed
  * server, so a desktop user updates by downloading the new DMG — the banner
  * links to the releases page instead. True in-app auto-update on macOS would
  * require Apple code signing.
  */
 function isDesktopApp(): boolean {
-  return Boolean((window as { campfireDesktop?: { isDesktop?: boolean } }).campfireDesktop?.isDesktop);
+  return Boolean((window as { switchyardDesktop?: { isDesktop?: boolean } }).switchyardDesktop?.isDesktop);
 }
 
 export function UpdateBanner() {
@@ -53,7 +53,7 @@ export function UpdateBanner() {
 
       {isDesktopApp() ? (
         <a
-          href="https://github.com/stretchcloud/campfire/releases/latest"
+          href="https://github.com/gpsmith0/switchyard/releases/latest"
           target="_blank"
           rel="noreferrer"
           className="text-xs font-medium px-2.5 py-0.5 rounded-md bg-cc-primary hover:bg-cc-primary-hover text-white transition-colors"
@@ -72,7 +72,7 @@ export function UpdateBanner() {
         <span className="text-xs text-cc-muted">
           Run{" "}
           <code className="font-mono-code bg-cc-code-bg px-1 py-0.5 rounded text-cc-code-fg">
-            the-campfire install
+            switchyard install
           </code>{" "}
           for auto-updates
         </span>

@@ -43,7 +43,7 @@ async function moltbookFetch(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
-      "User-Agent": "campfire/1.0",
+      "User-Agent": "switchyard/1.0",
       ...options.headers,
     },
     signal: AbortSignal.timeout(15_000),
@@ -132,11 +132,11 @@ export async function registerMoltbookAgent(opts: {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "User-Agent": "campfire/1.0",
+        "User-Agent": "switchyard/1.0",
       },
       body: JSON.stringify({
         name: opts.name,
-        description: opts.description || "AI coding agent via Campfire",
+        description: opts.description || "AI coding agent via Switchyard",
       }),
       signal: AbortSignal.timeout(15_000),
     });

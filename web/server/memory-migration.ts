@@ -2,7 +2,7 @@
  * Semantic memory schema v2 — meta.json versioning, namespaces, and the
  * v1 → v2 / dimension-change migrations (design doc §3.1 and §3.5).
  *
- * Layout under the memory root (default ~/.campfire/memory/):
+ * Layout under the memory root (default ~/.switchyard/memory/):
  *   meta.json   — { schemaVersion, embeddingProvider, dim, active table names }
  *   lancedb/    — LanceDB database directory (tables: fragments_v2, consolidated_v2,
  *                 fragments_v2_<dim> after a dimension change, plus retained v1

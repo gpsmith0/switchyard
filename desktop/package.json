@@ -1,14 +1,14 @@
 {
-  "name": "campfire-desktop",
+  "name": "switchyard-desktop",
   "version": "0.4.2",
   "private": true,
-  "description": "Campfire desktop app — native macOS shell around the Campfire server",
+  "description": "Switchyard desktop app — native macOS shell around the Switchyard server",
   "license": "MIT",
   "main": "main/index.js",
   "scripts": {
     "stage": "bash scripts/stage.sh",
     "start": "electron .",
-    "smoke": "CAMPFIRE_SMOKE=1 electron .",
+    "smoke": "SWITCHYARD_SMOKE=1 electron .",
     "test": "bun test test/",
     "dist": "electron-builder --mac dmg --arm64 --publish never"
   },

@@ -21,7 +21,7 @@ export interface WorktreeMapping {
 
 // ─── Paths ──────────────────────────────────────────────────────────────────
 
-const TRACKER_PATH = join(homedir(), ".campfire", "worktrees.json");
+const TRACKER_PATH = join(homedir(), ".switchyard", "worktrees.json");
 
 // ─── Tracker ────────────────────────────────────────────────────────────────
 

@@ -8,9 +8,9 @@ After generating or modifying code, verify it by calling `run_advanced_code_anal
 
 ## What This Is
 
-Campfire — a collaborative web platform for AI coding agents (Claude Code, Codex, Goose, Aider, OpenHands, OpenClaw, OpenCode). It provides a browser-based interface for running multiple agent sessions with streaming, tool call visibility, and permission control.
+Switchyard — a collaborative web platform for AI coding agents (Claude Code, Codex, Goose, Aider, OpenHands, OpenClaw, OpenCode). It provides a browser-based interface for running multiple agent sessions with streaming, tool call visibility, and permission control.
 
-Claude Code runs over a long-lived **stdio stream-json transport** by default (`claude -p --input-format stream-json --output-format stream-json --permission-prompt-tool stdio`), wrapped in `claude-stdio-adapter.ts`. The legacy reverse-engineered `--sdk-url` WebSocket transport is still available behind `CAMPFIRE_CLAUDE_TRANSPORT=sdk-url`. All other backends run through stdio adapters (JSON-RPC or stdout parsing).
+Claude Code runs over a long-lived **stdio stream-json transport** by default (`claude -p --input-format stream-json --output-format stream-json --permission-prompt-tool stdio`), wrapped in `claude-stdio-adapter.ts`. The legacy reverse-engineered `--sdk-url` WebSocket transport is still available behind `SWITCHYARD_CLAUDE_TRANSPORT=sdk-url`. All other backends run through stdio adapters (JSON-RPC or stdout parsing).
 
 ## Development Commands
 
@@ -28,10 +28,10 @@ cd web && bun run typecheck
 cd web && bun run build && bun run start
 
 # macOS desktop app (Electron shell, Apple Silicon DMG)
-make dmg                # stage backend + package desktop/dist/Campfire-<version>-arm64.dmg
+make dmg                # stage backend + package desktop/dist/Switchyard-<version>-arm64.dmg
 cd desktop && bun test  # desktop helper tests (no Electron needed)
 
-# Landing page (campfire.sh) — idempotent: starts if down, no-op if up
+# Landing page (switchyard.sh) — idempotent: starts if down, no-op if up
 # IMPORTANT: Always use this script to run the landing page. Never cd into landing/ and run bun/vite manually.
 ./scripts/landing-start.sh          # start
 ./scripts/landing-start.sh --stop   # stop
@@ -53,6 +53,10 @@ cd web && bun run test:watch
 - **Never remove or delete existing tests.** If a test is failing, fix the code or the test. If you believe a test should be removed, you must first explain to the user why and get explicit approval before removing it.
 - When creating test, make sure to document what the test is validating, and any important context or edge cases in comments within the test code.
 
+## Visual design
+
+The UI follows the ChatGPT / Codex desktop app look. `design.md` at the repo root is the source of truth for tokens (`cc-*` in `web/src/index.css`), layout, typography, and component rules. Read it before touching UI, reuse the tokens, and never add raw hex values in components.
+
 ## Component Playground
 
 All UI components used in the message/chat flow **must** be represented in the Playground page (`web/src/components/Playground.tsx`, accessible at `#/playground`). When adding or modifying a message-related component (e.g. `MessageBubble`, `ToolBlock`, `PermissionBanner`, `Composer`, streaming indicators, tool groups, subagent groups), update the Playground to include a mock of the new or changed state.
@@ -71,7 +75,7 @@ Browser (React) ←→ WebSocket ←→ Hono Server (Bun) ←→ AgentAdapter (s
 3. An `AgentAdapter` translates the backend's stdio protocol into normalized browser messages
 4. Server bridges messages between the adapter and browser WebSockets (`ws-bridge.ts`)
 5. Tool calls arrive as `control_request` (subtype `can_use_tool`) — browser renders approval UI, server relays `control_response` back
-6. Legacy path: with `CAMPFIRE_CLAUDE_TRANSPORT=sdk-url`, Claude instead connects back over `/ws/cli/:id` (`--sdk-url` WebSocket, NDJSON)
+6. Legacy path: with `SWITCHYARD_CLAUDE_TRANSPORT=sdk-url`, Claude instead connects back over `/ws/cli/:id` (`--sdk-url` WebSocket, NDJSON)
 
 ### All code lives under `web/`
 
@@ -79,10 +83,10 @@ Browser (React) ←→ WebSocket ←→ Hono Server (Bun) ←→ AgentAdapter (s
   - `index.ts` — Server bootstrap, Bun.serve with dual WebSocket upgrade (CLI vs browser)
   - `ws-bridge.ts` — Core message router. Maintains per-session state (CLI socket, browser sockets, message history, pending permissions). Parses NDJSON from CLI, translates to typed JSON for browsers.
   - `cli-launcher.ts` — Spawns/kills/relaunches Claude Code CLI processes. Handles `--resume` for session recovery. Persists session state across server restarts.
-  - `session-store.ts` — JSON file persistence to `~/.campfire/sessions/`. Debounced writes.
+  - `session-store.ts` — JSON file persistence to `~/.switchyard/sessions/`. Debounced writes.
   - `session-types.ts` — All TypeScript types for CLI messages (NDJSON), browser messages, session state, permissions.
   - `routes.ts` — backwards-compat shim; the REST API lives in `routes/*.ts` (session CRUD, filesystem browsing, environments, git, cron, gallery, webhooks, agents, races, orchestrator, …).
-  - `env-manager.ts` — CRUD for environment profiles stored in `~/.campfire/envs/`.
+  - `env-manager.ts` — CRUD for environment profiles stored in `~/.switchyard/envs/`.
 
 - **`web/src/`** — React 19 frontend
   - `store.ts` — Zustand store. All state keyed by session ID (messages, streaming text, permissions, tasks, connection status).
@@ -92,27 +96,27 @@ Browser (React) ←→ WebSocket ←→ Hono Server (Bun) ←→ AgentAdapter (s
   - `App.tsx` — Root layout with sidebar, chat view, task panel. Hash routing (`#/playground`).
   - `components/` — UI: `ChatView`, `MessageFeed`, `MessageBubble`, `ToolBlock`, `Composer`, `Sidebar`, `TopBar`, `HomePage`, `TaskPanel`, `PermissionBanner`, `EnvManager`, `Playground`.
 
-- **`web/bin/cli.ts`** — CLI entry point (`bunx the-campfire`). Sets `__CAMPFIRE_PACKAGE_ROOT` and imports the server.
+- **`web/bin/cli.ts`** — CLI entry point (`bunx @gpsmith0/switchyard`). Sets `__SWITCHYARD_PACKAGE_ROOT` and imports the server.
 
 ### WebSocket Protocol
 
 The Claude CLI uses NDJSON (newline-delimited JSON) over stdio (or the legacy `--sdk-url` WebSocket). Key message types from CLI: `system` (init/status), `assistant`, `result`, `stream_event`, `control_request`, `tool_progress`, `tool_use_summary`, `keep_alive`. Messages to CLI: `user`, `control_response`, `control_request` (for interrupt/set_model/set_permission_mode).
 
-Protocol references: pinned upstream schema snapshots live in `web/server/protocol/{claude,codex}-upstream/` (guarded by the `*-protocol-contract.test.ts` and `*-protocol-drift.test.ts` suites), Codex message mapping is documented in `web/CODEX_MAPPING.md`, and raw wire recordings in `~/.campfire/recordings/` capture real traffic.
+Protocol references: pinned upstream schema snapshots live in `web/server/protocol/{claude,codex}-upstream/` (guarded by the `*-protocol-contract.test.ts` and `*-protocol-drift.test.ts` suites), Codex message mapping is documented in `web/CODEX_MAPPING.md`, and raw wire recordings in `~/.switchyard/recordings/` capture real traffic.
 
 ### Session Lifecycle
 
-Sessions persist to disk (`~/.campfire/sessions/`) and survive server restarts. On restart, live CLI processes are detected by PID and given a grace period to reconnect their WebSocket. If they don't, they're killed and relaunched with `--resume` using the CLI's internal session ID.
+Sessions persist to disk (`~/.switchyard/sessions/`) and survive server restarts. On restart, live CLI processes are detected by PID and given a grace period to reconnect their WebSocket. If they don't, they're killed and relaunched with `--resume` using the CLI's internal session ID.
 
 ### Raw Protocol Recordings
 
 The server automatically records **all raw protocol messages** (both Claude Code NDJSON and Codex JSON-RPC) to JSONL files. This is useful for debugging, understanding the protocol, and building replay-based tests.
 
-- **Location**: `~/.campfire/recordings/` (override with `CAMPFIRE_RECORDINGS_DIR`)
+- **Location**: `~/.switchyard/recordings/` (override with `SWITCHYARD_RECORDINGS_DIR`)
 - **Format**: JSONL — one JSON object per line. First line is a header with session metadata, subsequent lines are raw message entries.
 - **File naming**: `{sessionId}_{backendType}_{ISO-timestamp}_{randomSuffix}.jsonl`
-- **Disable**: set `CAMPFIRE_RECORD=0` or `CAMPFIRE_RECORD=false`
-- **Rotation**: automatic cleanup when total lines exceed 100k (configurable via `CAMPFIRE_RECORDINGS_MAX_LINES`)
+- **Disable**: set `SWITCHYARD_RECORD=0` or `SWITCHYARD_RECORD=false`
+- **Rotation**: automatic cleanup when total lines exceed 100k (configurable via `SWITCHYARD_RECORDINGS_MAX_LINES`)
 
 Each entry captures:
 ```json
@@ -188,7 +192,7 @@ gh pr edit --body-file /tmp/pr_body.md
 ## Codebase Understanding (Updated 2026-02-16)
 
 ### **High-Level Purpose**
-Campfire (published as `the-campfire` on npm) is a collaborative web platform for AI coding agents. It provides a unified browser interface for multiple agent backends (Claude Code, Codex, Goose, Aider, OpenHands) with real-time collaboration, permission voting, session replay, webhooks, scheduled tasks, and a session gallery.
+Switchyard (published as `switchyard` on npm) is a collaborative web platform for AI coding agents. It provides a unified browser interface for multiple agent backends (Claude Code, Codex, Goose, Aider, OpenHands) with real-time collaboration, permission voting, session replay, webhooks, scheduled tasks, and a session gallery.
 
 The core innovation is a **protocol bridge** that normalizes different agent protocols (NDJSON WebSocket, JSON-RPC stdio, stdout parsing) into a single browser message format, making the frontend completely backend-agnostic.
 
@@ -246,7 +250,7 @@ Browser (React 19) ←→ WebSocket ←→ Hono Server (Bun) ←→ Agent Backen
 - Creates git worktrees for branch isolation
 
 **`session-store.ts`** - Disk Persistence
-- Debounced JSON writes to `~/.campfire/sessions/` (150ms delay to batch rapid changes)
+- Debounced JSON writes to `~/.switchyard/sessions/` (150ms delay to batch rapid changes)
 - Persists per session: state, message history, pending permissions, event buffer, processed client message IDs
 - Sessions survive server restarts
 - `launcher.json` stores launcher state separately
@@ -290,28 +294,28 @@ Each adapter:
 - Handles backend-specific permission flows and translates to standard `PermissionRequest`
 
 **`adapter-registry.ts`** - Community Adapters
-- Installs adapters from npm packages with `campfireAdapter` field in `package.json`
-- Stored in `~/.campfire/adapters/`
+- Installs adapters from npm packages with `switchyardAdapter` field in `package.json`
+- Stored in `~/.switchyard/adapters/`
 - Adapters appear as new backend options in session creation UI
 
 #### **Supporting Services**
 
 **Recording & Replay:**
-- **`recorder.ts`**: Captures raw protocol messages (both directions) to JSONL files in `~/.campfire/recordings/`
+- **`recorder.ts`**: Captures raw protocol messages (both directions) to JSONL files in `~/.switchyard/recordings/`
 - Format: `{"ts": <timestamp>, "dir": "in"|"out", "raw": "<original string>", "ch": "cli"|"browser"}`
 - Auto-rotation when total lines exceed 100k
 - **`replay.ts`**: Load & filter utilities for replay UI at 1x/2x/4x/8x speed
 
 **Automation:**
-- **`cron-scheduler.ts` + `cron-store.ts`**: Persistent scheduled jobs (recurring or one-shot) stored in `~/.campfire/cron/`
+- **`cron-scheduler.ts` + `cron-store.ts`**: Persistent scheduled jobs (recurring or one-shot) stored in `~/.switchyard/cron/`
 - Jobs create sessions, inject prompts, track execution history, auto-disable after repeated failures
 - Cron expression examples: `0 2 * * *` (daily 2am), `*/30 * * * *` (every 30 min)
 
 **Webhooks:**
 - **`webhook-manager.ts`**: HTTP POST notifications for session events (created, completed, failed, permission requested/resolved, turn completed, cost threshold)
-- HMAC-SHA256 signing with `X-Campfire-Signature` header
+- HMAC-SHA256 signing with `X-Switchyard-Signature` header
 - Retry logic: 3 attempts with exponential backoff (1s, 5s, 15s)
-- Stored in `~/.campfire/webhooks/`
+- Stored in `~/.switchyard/webhooks/`
 
 **Git Integration:**
 - **`git-utils.ts` + `worktree-tracker.ts`**: Resolve repo info, manage worktrees, track ahead/behind counts
@@ -320,9 +324,9 @@ Each adapter:
 **Other Services:**
 - **`terminal-manager.ts`**: Embedded PTY terminal via `/ws/terminal/:id`
 - **`container-manager.ts`**: Docker sandboxing for sessions
-- **`gallery-store.ts`**: Session gallery with voting, featured status, stored in `~/.campfire/gallery/`
-- **`env-manager.ts`**: Environment profiles (named sets of env vars) in `~/.campfire/envs/`
-- **`settings-manager.ts`**: Global settings (OpenRouter API key for auto-naming) in `~/.campfire/settings.json`
+- **`gallery-store.ts`**: Session gallery with voting, featured status, stored in `~/.switchyard/gallery/`
+- **`env-manager.ts`**: Environment profiles (named sets of env vars) in `~/.switchyard/envs/`
+- **`settings-manager.ts`**: Global settings (OpenRouter API key for auto-naming) in `~/.switchyard/settings.json`
 - **`auto-namer.ts` + `session-names.ts`**: Auto-generate session titles via OpenRouter after first turn
 - **`update-checker.ts` + `service.ts`**: Check npm for updates, track service mode (launchd/systemd)
 - **`usage-limits.ts`**: Track account usage limits per backend
@@ -445,7 +449,7 @@ Active tab toggles between "chat" and "diff" views
 6. **Session Gallery**: Publish sessions with tags, voting, featured status, filter/sort by cost/duration/votes
 7. **Webhooks**: HTTP POST notifications with HMAC-SHA256 signing, retry logic, session filters
 8. **Scheduled Tasks (Cron)**: Recurring or one-shot autonomous sessions, execution history, auto-disable on repeated failures
-9. **Adapter Registry**: Install community adapters from npm (packages with `campfireAdapter` field)
+9. **Adapter Registry**: Install community adapters from npm (packages with `switchyardAdapter` field)
 10. **Embedded Terminal**: Full PTY terminal via `/ws/terminal/:id` with ANSI colors and resize support
 11. **Git Integration**: Branch tracking, worktrees, ahead/behind counts, PR status polling via `gh` CLI
 12. **Docker Containers**: Optional sandboxing with the working directory mounted at `/workspace`; provider auth (`~/.claude`, `~/.codex`) is seeded into the container as a writable copy via `docker cp`
@@ -460,15 +464,15 @@ All state is file-based (no database):
 
 | Data | Location | Format |
 |------|----------|--------|
-| Sessions | `~/.campfire/sessions/` | JSON per session |
-| Recordings | `~/.campfire/recordings/` | JSONL per session |
-| Environments | `~/.campfire/envs/` | JSON per profile |
-| Cron jobs | `~/.campfire/cron/` | JSON per job |
-| Gallery entries | `~/.campfire/gallery/` | JSON per entry |
-| Webhooks | `~/.campfire/webhooks/` | JSON per webhook |
-| Adapters | `~/.campfire/adapters/` | npm packages |
-| Settings | `~/.campfire/settings.json` | Single JSON file |
-| Session names | `~/.campfire/session-names.json` | Single JSON file |
+| Sessions | `~/.switchyard/sessions/` | JSON per session |
+| Recordings | `~/.switchyard/recordings/` | JSONL per session |
+| Environments | `~/.switchyard/envs/` | JSON per profile |
+| Cron jobs | `~/.switchyard/cron/` | JSON per job |
+| Gallery entries | `~/.switchyard/gallery/` | JSON per entry |
+| Webhooks | `~/.switchyard/webhooks/` | JSON per webhook |
+| Adapters | `~/.switchyard/adapters/` | npm packages |
+| Settings | `~/.switchyard/settings.json` | Single JSON file |
+| Session names | `~/.switchyard/session-names.json` | Single JSON file |
 
 ---
 
@@ -503,8 +507,8 @@ All state is file-based (no database):
 ### **Project Layout**
 
 ```
-campfire/
-├── web/                      # Main application (published as "the-campfire")
+switchyard/
+├── web/                      # Main application (published as "switchyard")
 │   ├── server/               # Bun + Hono backend (port 4567)
 │   │   ├── index.ts          # Server bootstrap
 │   │   ├── ws-bridge.ts      # Core message router
@@ -537,9 +541,9 @@ campfire/
 │   │   ├── App.tsx           # Root layout + routing
 │   │   ├── components/       # UI components
 │   │   └── *.test.tsx        # Frontend tests
-│   ├── bin/cli.ts            # CLI entry point (bunx the-campfire)
+│   ├── bin/cli.ts            # CLI entry point (bunx @gpsmith0/switchyard)
 │   ├── dist/                 # Built frontend assets
-│   └── package.json          # Published as "the-campfire"
+│   └── package.json          # Published as "switchyard"
 ├── desktop/                  # macOS Electron app (arm64 DMG). Thin shell: spawns the
 │                             # bundled Bun server sidecar (vendor/ staged by scripts/stage.sh)
 │                             # and loads the web UI. See desktop/README.md.
@@ -550,6 +554,6 @@ campfire/
 └── TODO.md                   # Roadmap
 
 **Landing Page**
-- `landing/`: separate Vite app for marketing site (campfire.sh)
+- `landing/`: separate Vite app for marketing site (switchyard.sh)
 - Started via `scripts/landing-start.sh` (idempotent: starts if down, no-op if up)
 - Never cd into `landing/` and run bun/vite manually

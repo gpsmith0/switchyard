@@ -169,9 +169,9 @@ export function registerSystemRoutes(api: Hono, deps: RouteDeps): void {
 
     setTimeout(async () => {
       try {
-        console.log(`[update] Updating the-campfire to ${state.latestVersion}...`);
+        console.log(`[update] Updating switchyard to ${state.latestVersion}...`);
         const proc = Bun.spawn(
-          ["bun", "install", "-g", `the-campfire@${state.latestVersion}`],
+          ["bun", "install", "-g", `@gpsmith0/switchyard@${state.latestVersion}`],
           { stdout: "pipe", stderr: "pipe" },
         );
         const exitCode = await proc.exited;
@@ -191,10 +191,10 @@ export function registerSystemRoutes(api: Hono, deps: RouteDeps): void {
         const isLinux = process.platform === "linux";
         const uid = typeof process.getuid === "function" ? process.getuid() : undefined;
         const restartCmd = isLinux
-          ? ["systemctl", "--user", "restart", "the-campfire.service"]
+          ? ["systemctl", "--user", "restart", "switchyard.service"]
           : uid !== undefined
-            ? ["launchctl", "kickstart", "-k", `gui/${uid}/sh.campfire.app`]
-            : ["launchctl", "kickstart", "-k", "sh.campfire.app"];
+            ? ["launchctl", "kickstart", "-k", `gui/${uid}/sh.switchyard.app`]
+            : ["launchctl", "kickstart", "-k", "sh.switchyard.app"];
 
         Bun.spawn(restartCmd, {
           stdout: "ignore",

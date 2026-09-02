@@ -21,13 +21,13 @@ function resolveEnvVars(
   let envVars: Record<string, string> | undefined = bodyEnv;
 
   if (envSlug) {
-    const campfireEnv = envManager.getEnv(envSlug);
-    if (campfireEnv) {
+    const switchyardEnv = envManager.getEnv(envSlug);
+    if (switchyardEnv) {
       console.log(
-        `[routes] Injecting env "${campfireEnv.name}" (${Object.keys(campfireEnv.variables).length} vars):`,
-        Object.keys(campfireEnv.variables).join(", "),
+        `[routes] Injecting env "${switchyardEnv.name}" (${Object.keys(switchyardEnv.variables).length} vars):`,
+        Object.keys(switchyardEnv.variables).join(", "),
       );
-      envVars = { ...campfireEnv.variables, ...bodyEnv };
+      envVars = { ...switchyardEnv.variables, ...bodyEnv };
     } else {
       console.warn(
         `[routes] Environment "${envSlug}" not found, ignoring`,
@@ -140,7 +140,7 @@ function setupContainer(
   if (!containerOpts) return undefined;
 
   const cConfig: ContainerConfig = {
-    image: containerOpts.image || "campfire-dev:latest",
+    image: containerOpts.image || "switchyard-dev:latest",
     ports: Array.isArray(containerOpts.ports)
       ? containerOpts.ports.map(Number).filter((n: number) => n > 0)
       : [],
@@ -430,7 +430,7 @@ export function registerSessionRoutes(api: Hono, deps: RouteDeps): void {
   api.post("/sessions/create-with-progress", async (c) => {
     const body = await c.req.json().catch(() => ({}));
     const backend = body.backend ?? "claude";
-    const image = body.container?.image || "campfire-dev:latest";
+    const image = body.container?.image || "switchyard-dev:latest";
 
     // Set up SSE stream
     const encoder = new TextEncoder();

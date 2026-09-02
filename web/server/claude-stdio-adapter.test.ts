@@ -79,14 +79,14 @@ describe("ClaudeStdioAdapter", () => {
   beforeEach(() => {
     mock = createMockProcess();
     messages = [];
-    adapter = new ClaudeStdioAdapter(mock.proc as never, "campfire-session-1", {
+    adapter = new ClaudeStdioAdapter(mock.proc as never, "switchyard-session-1", {
       model: "claude-sonnet-4-5-20250929",
       cwd: "/repo",
     });
     adapter.onBrowserMessage((msg) => messages.push(msg));
   });
 
-  it("translates Claude system init to a Campfire session_init", async () => {
+  it("translates Claude system init to a Switchyard session_init", async () => {
     mock.stdout.push(JSON.stringify(makeInitMsg()) + "\n");
     await new Promise((r) => setTimeout(r, 20));
 
@@ -94,7 +94,7 @@ describe("ClaudeStdioAdapter", () => {
     expect(messages[0]).toMatchObject({
       type: "session_init",
       session: {
-        session_id: "campfire-session-1",
+        session_id: "switchyard-session-1",
         backend_type: "claude",
         model: "claude-sonnet-4-5-20250929",
         cwd: "/repo",

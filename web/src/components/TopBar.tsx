@@ -201,40 +201,47 @@ export function TopBar() {
     setOverflowOpen(false);
   }
 
+  const iconBtn =
+    "flex items-center justify-center w-8 h-8 rounded-lg text-cc-muted hover:text-cc-fg hover:bg-cc-hover transition-colors duration-120 cursor-pointer";
+  const menuItem =
+    "w-full text-left px-3 h-9 text-[13px] text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer flex items-center gap-2.5 rounded-lg";
+
   return (
-    <header className="shrink-0 flex items-center justify-between px-3 h-11 bg-cc-bg border-b border-cc-border">
-      {/* ---- Left: sidebar toggle + session name + connection dot ---- */}
-      <div className="flex items-center gap-2 min-w-0">
-        {/* Sidebar toggle -- hidden for spectators */}
+    <header className="shrink-0 flex items-center justify-between pl-2 pr-3 h-[52px] bg-cc-bg">
+      {/* ---- Left: sidebar toggle + provider/model pill + session name ---- */}
+      <div className="flex items-center gap-1 min-w-0">
         {!isSpectator && (
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Toggle sidebar"
             aria-pressed={sidebarOpen}
-            className="flex items-center justify-center w-7 h-7 rounded text-cc-muted hover:text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer"
+            className={iconBtn}
           >
-            <svg viewBox="0 0 16 16" fill="none" className="w-4 h-4">
-              <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-[18px] h-[18px]">
+              <rect x="2.5" y="3.5" width="15" height="13" rx="2.5" />
+              <path d="M8 3.5v13" />
             </svg>
           </button>
         )}
 
-        {/* Spectator badge */}
         {isSpectator && (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono-code uppercase tracking-wider bg-cc-muted/10 text-cc-muted">
-            spectator
+          <span className="px-2.5 h-7 inline-flex items-center rounded-full text-[12px] font-medium bg-cc-hover text-cc-muted">
+            Spectator
           </span>
         )}
 
-        {/* Session name + connection dot */}
+        {/* Provider + model, rendered like ChatGPT's "ChatGPT ⌄" pill */}
+        {currentSessionId && isSessionView && !isSpectator && (
+          <div className="flex items-center gap-0.5 rounded-lg px-1 h-8 hover:bg-cc-hover transition-colors">
+            <ProviderSwitcher sessionId={currentSessionId} />
+            <span className="text-cc-muted/40 text-[12px] select-none">/</span>
+            <ModelSwitcher sessionId={currentSessionId} />
+          </div>
+        )}
+
+        {/* Session name + status */}
         {currentSessionId && (
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span
-              className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                isConnected ? "bg-cc-success" : "bg-cc-muted/30"
-              }`}
-              title={isConnected ? "Connected" : "Disconnected"}
-            />
+          <div className="flex items-center gap-2 min-w-0 pl-1">
             {editingName ? (
               <input
                 ref={nameInputRef}
@@ -245,13 +252,13 @@ export function TopBar() {
                   if (e.key === "Enter") handleNameSubmit();
                   if (e.key === "Escape") setEditingName(false);
                 }}
-                className="text-sm font-medium text-cc-fg bg-transparent border-b border-cc-primary/50 outline-none max-w-[12rem] sm:max-w-[20rem]"
+                className="text-[14px] font-medium text-cc-fg bg-transparent border-b border-cc-fg/40 outline-none max-w-[12rem] sm:max-w-[20rem]"
               />
             ) : (
               <span
                 onClick={handleNameClick}
-                className={`text-sm font-medium text-cc-fg max-w-[10rem] sm:max-w-[20rem] truncate ${
-                  !isSpectator ? "cursor-pointer hover:text-cc-primary transition-colors" : ""
+                className={`text-[14px] font-medium text-cc-fg max-w-[10rem] sm:max-w-[20rem] truncate ${
+                  !isSpectator ? "cursor-text hover:text-cc-muted transition-colors" : ""
                 }`}
                 title={sessionName || undefined}
               >
@@ -259,48 +266,41 @@ export function TopBar() {
               </span>
             )}
 
-            {/* Status indicators -- subtle inline */}
-            {status === "compacting" && (
-              <span className="text-[10px] text-cc-warning/70 font-mono-code animate-pulse ml-1">compacting</span>
-            )}
             {status === "running" && (
-              <div className="flex items-center gap-1 ml-1">
-                <span className="w-1 h-1 rounded-full bg-cc-primary/60 animate-breathing" />
-                <span className="text-[10px] text-cc-primary/70 font-mono-code">running</span>
-              </div>
-            )}
-            {isCompletedSubagent && (
-              <span className="text-[10px] text-cc-muted font-mono-code ml-1">
-                {terminalSubagentStatus ?? "completed"}
+              <span className="flex items-center gap-1.5 text-[12px] text-cc-muted">
+                <span className="w-1.5 h-1.5 rounded-full bg-cc-success animate-breathing" />
+                Working
               </span>
             )}
-
-            {/* Reconnect button */}
+            {status === "compacting" && (
+              <span className="text-[12px] text-cc-warning animate-pulse">Compacting</span>
+            )}
+            {isCompletedSubagent && (
+              <span className="text-[12px] text-cc-muted">{terminalSubagentStatus ?? "completed"}</span>
+            )}
             {!isConnected && !isSpectator && !isCompletedSubagent && (
               <button
                 onClick={() => currentSessionId && api.relaunchSession(currentSessionId).catch(console.error)}
-                className="text-[10px] text-cc-warning/80 hover:text-cc-warning font-medium font-mono-code cursor-pointer ml-1 hidden sm:inline"
+                className="text-[12px] text-cc-warning hover:underline cursor-pointer hidden sm:inline"
               >
-                reconnect
+                Reconnect
               </button>
             )}
           </div>
         )}
       </div>
 
-      {/* ---- Center/Right: tabs + actions ---- */}
+      {/* ---- Right: tabs + actions ---- */}
       {currentSessionId && isSessionView && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* Presence avatars */}
           {viewers.length > 1 && (
-            <div className="flex items-center gap-0.5 mr-1" title={`${viewers.length} viewers`}>
+            <div className="flex items-center -space-x-1.5 mr-1" title={`${viewers.length} viewers`}>
               {viewers.slice(0, 3).map((v) => (
                 <span
                   key={v.id}
-                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${
-                    v.role === "owner"
-                      ? "bg-cc-primary/15 text-cc-primary"
-                      : "bg-cc-hover text-cc-muted/60"
+                  className={`w-6 h-6 rounded-full ring-2 ring-cc-bg flex items-center justify-center text-[10px] font-semibold ${
+                    v.role === "owner" ? "bg-cc-fg text-cc-bg" : "bg-cc-active text-cc-muted"
                   }`}
                   title={`${v.name} (${v.role})`}
                 >
@@ -308,152 +308,124 @@ export function TopBar() {
                 </span>
               ))}
               {viewers.length > 3 && (
-                <span className="text-[9px] text-cc-muted/40 ml-0.5">+{viewers.length - 3}</span>
+                <span className="text-[11px] text-cc-muted pl-2.5">+{viewers.length - 3}</span>
               )}
             </div>
           )}
 
-          {/* Tab pills */}
-          <div className="flex items-center bg-cc-hover/50 rounded-md p-0.5">
-            <button
-              onClick={() => setActiveTab("chat")}
-              aria-pressed={activeTab === "chat"}
-              className={`text-[11px] px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                activeTab === "chat"
-                  ? "text-cc-fg bg-cc-active"
-                  : "text-cc-muted hover:text-cc-fg"
-              }`}
-            >
-              Log
-            </button>
-            <button
-              onClick={() => setActiveTab("diff")}
-              aria-pressed={activeTab === "diff"}
-              className={`text-[11px] px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1 ${
-                activeTab === "diff"
-                  ? "text-cc-fg bg-cc-active"
-                  : "text-cc-muted hover:text-cc-fg"
-              }`}
-            >
-              Diff
-              {changedFilesCount > 0 && (
-                <span className="text-[9px] text-cc-warning tabular-nums">{changedFilesCount}</span>
-              )}
-            </button>
-            <button
-              onClick={() => setActiveTab("files")}
-              aria-pressed={activeTab === "files"}
-              className={`text-[11px] px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
-                activeTab === "files"
-                  ? "text-cc-fg bg-cc-active"
-                  : "text-cc-muted hover:text-cc-fg"
-              }`}
-            >
-              Files
-            </button>
+          {/* View switcher */}
+          <div className="flex items-center bg-cc-hover rounded-full p-0.5">
+            {([
+              ["chat", "Log", 0],
+              ["diff", "Diff", changedFilesCount],
+              ["files", "Files", 0],
+            ] as const).map(([tab, label, count]) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                aria-pressed={activeTab === tab}
+                className={`text-[13px] px-3 h-7 rounded-full transition-colors duration-120 cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === tab
+                    ? "text-cc-fg bg-cc-card shadow-panel"
+                    : "text-cc-muted hover:text-cc-fg"
+                }`}
+              >
+                {label}
+                {count > 0 && (
+                  <span className="text-[11px] text-cc-muted tabular-nums">{count}</span>
+                )}
+              </button>
+            ))}
           </div>
 
           {/* Cost */}
           {totalCost > 0 && (
             <span
-              className="text-[11px] text-cc-muted font-mono-code tabular-nums"
+              className="hidden sm:inline text-[12px] text-cc-muted tabular-nums px-1"
               title={`Session cost: $${totalCost.toFixed(4)}`}
             >
               ${totalCost < 0.01 ? totalCost.toFixed(4) : totalCost.toFixed(2)}
             </span>
           )}
 
-          {/* Provider + Model switcher */}
+          {/* Share */}
           {!isSpectator && (
-            <div className="flex items-center gap-0.5">
-              <ProviderSwitcher sessionId={currentSessionId} />
-              <span className="text-cc-border text-[10px] select-none">/</span>
-              <ModelSwitcher sessionId={currentSessionId} />
+            <div className="relative">
+              <button
+                onClick={() => { setShareMenuOpen(!shareMenuOpen); setOverflowOpen(false); }}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-full border border-cc-border text-[13px] font-medium text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer"
+                aria-label="Share session"
+              >
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
+                  <path d="M10 12.5v-9M6.5 7L10 3.5 13.5 7" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M4 10.5v4a2 2 0 002 2h8a2 2 0 002-2v-4" strokeLinecap="round" />
+                </svg>
+                <span className="hidden sm:inline">{shareCopied ? "Copied" : "Share"}</span>
+              </button>
+              {shareMenuOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShareMenuOpen(false)} />
+                  <div className="absolute right-0 top-full mt-1.5 z-50 bg-cc-card border border-cc-border rounded-xl shadow-float p-1 min-w-[220px] animate-slide-down">
+                    <div className="px-3 pt-2 pb-1 text-[12px] text-cc-muted">Copy an invite link</div>
+                    <button onClick={() => handleShare("collaborator")} className={menuItem}>
+                      <span className="flex flex-col leading-tight">
+                        <span>Collaborator</span>
+                        <span className="text-[12px] text-cc-muted">Can approve and send</span>
+                      </span>
+                    </button>
+                    <button onClick={() => handleShare("spectator")} className={menuItem}>
+                      <span className="flex flex-col leading-tight">
+                        <span>Spectator</span>
+                        <span className="text-[12px] text-cc-muted">Watch only</span>
+                      </span>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
-          {/* Overflow menu -- hidden for spectators */}
+          {/* Overflow menu */}
           {!isSpectator && (
             <div className="relative" ref={overflowRef}>
               <button
-                onClick={() => setOverflowOpen(!overflowOpen)}
+                onClick={() => { setOverflowOpen(!overflowOpen); setShareMenuOpen(false); }}
                 aria-label="More actions"
-                className="flex items-center justify-center w-7 h-7 rounded text-cc-muted hover:text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer"
+                className={iconBtn}
               >
-                <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
-                  <circle cx="8" cy="3" r="1.5" />
-                  <circle cx="8" cy="8" r="1.5" />
-                  <circle cx="8" cy="13" r="1.5" />
+                <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
+                  <circle cx="4.5" cy="10" r="1.5" />
+                  <circle cx="10" cy="10" r="1.5" />
+                  <circle cx="15.5" cy="10" r="1.5" />
                 </svg>
               </button>
               {overflowOpen && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => { setOverflowOpen(false); setShareMenuOpen(false); }} />
-                  <div className="absolute right-0 top-full mt-1 z-50 bg-cc-card border border-cc-border rounded-md shadow-panel py-1 min-w-[180px]">
-                    {/* Fork */}
+                  <div className="fixed inset-0 z-40" onClick={() => setOverflowOpen(false)} />
+                  <div className="absolute right-0 top-full mt-1.5 z-50 bg-cc-card border border-cc-border rounded-xl shadow-float p-1 min-w-[200px] animate-slide-down">
                     {cwd && (
                       <button
                         onClick={() => { handleFork(); setOverflowOpen(false); }}
                         disabled={forking}
-                        className="w-full text-left px-3 py-1.5 text-[11px] text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer font-mono-code flex items-center gap-2 disabled:opacity-40"
+                        className={`${menuItem} disabled:opacity-40`}
                       >
-                        <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 shrink-0">
+                        <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-cc-muted shrink-0">
                           <path fillRule="evenodd" d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z" />
                         </svg>
-                        {forking ? "Forking..." : "Fork session"}
+                        {forking ? "Forking…" : "Fork session"}
                       </button>
                     )}
-
-                    {/* Share sub-menu */}
-                    <div className="relative">
-                      <button
-                        onClick={() => setShareMenuOpen(!shareMenuOpen)}
-                        className="w-full text-left px-3 py-1.5 text-[11px] text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer font-mono-code flex items-center gap-2"
-                      >
-                        <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 shrink-0">
-                          <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                        </svg>
-                        {shareCopied ? "Copied!" : "Share"}
-                        <svg viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3 ml-auto">
-                          <path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      </button>
-                      {shareMenuOpen && (
-                        <div className="absolute right-full top-0 mr-1 bg-cc-card border border-cc-border rounded-md shadow-panel py-1 min-w-[150px]">
-                          <button
-                            onClick={() => handleShare("collaborator")}
-                            className="w-full text-left px-3 py-1.5 text-[11px] text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer font-mono-code"
-                          >
-                            <span className="font-medium">Collaborator</span>
-                            <span className="block text-cc-muted/60 text-[9px]">approve & send</span>
-                          </button>
-                          <button
-                            onClick={() => handleShare("spectator")}
-                            className="w-full text-left px-3 py-1.5 text-[11px] text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer font-mono-code"
-                          >
-                            <span className="font-medium">Spectator</span>
-                            <span className="block text-cc-muted/60 text-[9px]">watch only</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="my-1 border-t border-cc-border" />
-
-                    {/* Edit CLAUDE.md */}
                     {cwd && (
                       <button
                         onClick={() => { setClaudeMdOpen(true); setOverflowOpen(false); }}
-                        className="w-full text-left px-3 py-1.5 text-[11px] text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer font-mono-code flex items-center gap-2"
+                        className={menuItem}
                       >
-                        <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 shrink-0">
+                        <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-cc-muted shrink-0">
                           <path d="M4 1.5a.5.5 0 01.5-.5h7a.5.5 0 01.354.146l2 2A.5.5 0 0114 3.5v11a.5.5 0 01-.5.5h-11a.5.5 0 01-.5-.5v-13zm1 .5v12h8V4h-1.5a.5.5 0 01-.5-.5V2H5zm6 0v1h1l-1-1zM6.5 7a.5.5 0 000 1h5a.5.5 0 000-1h-5zm0 2a.5.5 0 000 1h5a.5.5 0 000-1h-5zm0 2a.5.5 0 000 1h3a.5.5 0 000-1h-3z" />
                         </svg>
                         Edit CLAUDE.md
                       </button>
                     )}
-
-                    {/* View in gallery */}
                     <button
                       onClick={() => {
                         window.location.hash = currentSessionId
@@ -461,22 +433,16 @@ export function TopBar() {
                           : "#/gallery";
                         setOverflowOpen(false);
                       }}
-                      className="w-full text-left px-3 py-1.5 text-[11px] text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer font-mono-code flex items-center gap-2"
+                      className={menuItem}
                     >
-                      <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 shrink-0">
+                      <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 text-cc-muted shrink-0">
                         <path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v1H2V3zm0 2.5h12v7a1 1 0 01-1 1H3a1 1 0 01-1-1v-7zM4 7v3h3V7H4zm5 0v1h3V7H9zm3 2.5H9V11h3V9.5z" />
                       </svg>
                       View in gallery
                     </button>
-
-                    <div className="my-1 border-t border-cc-border" />
-
-                    {/* Copy session ID */}
-                    <button
-                      onClick={handleCopySessionId}
-                      className="w-full text-left px-3 py-1.5 text-[11px] text-cc-muted hover:text-cc-fg hover:bg-cc-hover transition-colors cursor-pointer font-mono-code flex items-center gap-2"
-                    >
-                      <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5 shrink-0">
+                    <div className="my-1 h-px bg-cc-border" />
+                    <button onClick={handleCopySessionId} className={`${menuItem} text-cc-muted hover:text-cc-fg`}>
+                      <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 shrink-0">
                         <path d="M5.75 1a.75.75 0 00-.75.75v1.5a.75.75 0 001.5 0V2.5h5v9h-.75a.75.75 0 000 1.5h1.5a.75.75 0 00.75-.75v-10.5A.75.75 0 0012.25 1h-6.5zM3.75 4a.75.75 0 00-.75.75v10.5a.75.75 0 00.75.75h6.5a.75.75 0 00.75-.75V4.75a.75.75 0 00-.75-.75h-6.5zM4.5 5.5h5v9h-5v-9z" />
                       </svg>
                       Copy session ID
@@ -492,14 +458,11 @@ export function TopBar() {
             onClick={() => setTaskPanelOpen(!taskPanelOpen)}
             aria-label="Toggle session panel"
             aria-pressed={taskPanelOpen}
-            className={`flex items-center justify-center w-7 h-7 rounded transition-colors cursor-pointer ${
-              taskPanelOpen
-                ? "text-cc-primary bg-cc-active"
-                : "text-cc-muted hover:text-cc-fg hover:bg-cc-hover"
-            }`}
+            className={`${iconBtn} ${taskPanelOpen ? "text-cc-fg bg-cc-active" : ""}`}
           >
-            <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4">
-              <path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1zm1 2v2h3V4H4zm5 0v1h3V4H9zm-5 3v2h3V7H4zm5 0v1h3V7H9zm-5 3v2h2V10H4z" />
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-[18px] h-[18px]">
+              <rect x="2.5" y="3.5" width="15" height="13" rx="2.5" />
+              <path d="M12 3.5v13" />
             </svg>
           </button>
         </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
-import { api, type AgentProfileInfo, type AgentExecutionInfo, type CampfireEnv } from "../api.js";
+import { api, type AgentProfileInfo, type AgentExecutionInfo, type SwitchyardEnv } from "../api.js";
 
 const CodeEditor = lazy(() => import("./CodeEditor.js").then((m) => ({ default: m.CodeEditor })));
 import { getModelsForBackend, getDefaultModel, getModesForBackend, getDefaultMode } from "../utils/backends.js";
@@ -107,7 +107,7 @@ export function AgentsPage({ embedded = false }: Readonly<{ embedded?: boolean }
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [executions, setExecutions] = useState<AgentExecutionInfo[]>([]);
   const [filter, setFilter] = useState<"all" | "enabled" | "scheduled" | "webhook">("all");
-  const [envs, setEnvs] = useState<CampfireEnv[]>([]);
+  const [envs, setEnvs] = useState<SwitchyardEnv[]>([]);
 
   const refresh = useCallback(() => {
     api.listAgents().then(setAgents).catch(() => {}).finally(() => setLoading(false));

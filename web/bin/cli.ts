@@ -4,13 +4,13 @@ import { fileURLToPath } from "node:url";
 
 // Package root so the server can find dist/ regardless of CWD
 const __dirname = dirname(fileURLToPath(import.meta.url));
-process.env.__CAMPFIRE_PACKAGE_ROOT = resolve(__dirname, "..");
+process.env.__SWITCHYARD_PACKAGE_ROOT = resolve(__dirname, "..");
 
 const command = process.argv[2];
 
 function printUsage(): void {
   console.log(`
-Usage: the-campfire [command]
+Usage: switchyard [command]
 
 Commands:
   (none)      Start the server in foreground (default)
@@ -88,14 +88,14 @@ switch (command) {
     const { status } = await import("../server/service.js");
     const result = await status();
     if (!result.installed) {
-      console.log("Campfire is not installed as a service.");
-      console.log("Run: the-campfire install");
+      console.log("Switchyard is not installed as a service.");
+      console.log("Run: switchyard install");
     } else if (result.running) {
-      console.log(`Campfire is running (PID: ${result.pid})`);
+      console.log(`Switchyard is running (PID: ${result.pid})`);
       console.log(`  URL: http://localhost:${result.port}`);
     } else {
-      console.log("Campfire is installed but not running.");
-      console.log("Check logs at ~/.campfire/logs/");
+      console.log("Switchyard is installed but not running.");
+      console.log("Check logs at ~/.switchyard/logs/");
     }
     break;
   }
@@ -116,15 +116,15 @@ switch (command) {
     const { join } = await import("node:path");
     const { homedir } = await import("node:os");
     const { spawn } = await import("node:child_process");
-    const logFile = join(homedir(), ".campfire/logs/campfire.log");
-    const errFile = join(homedir(), ".campfire/logs/campfire.error.log");
+    const logFile = join(homedir(), ".switchyard/logs/switchyard.log");
+    const errFile = join(homedir(), ".switchyard/logs/switchyard.error.log");
     const { existsSync } = await import("node:fs");
     if (!existsSync(logFile) && !existsSync(errFile)) {
-      console.error("No log files found at ~/.campfire/logs/");
+      console.error("No log files found at ~/.switchyard/logs/");
       console.error("The service may not have been started yet.");
       process.exit(1);
     }
-    console.log("Tailing logs from ~/.campfire/logs/");
+    console.log("Tailing logs from ~/.switchyard/logs/");
     const tail = spawn("tail", ["-f", logFile, errFile], { stdio: "inherit" });
     tail.on("exit", () => process.exit(0));
     break;
@@ -133,7 +133,7 @@ switch (command) {
   case "install-adapter": {
     const pkg = process.argv[3];
     if (!pkg) {
-      console.error("Usage: the-campfire install-adapter <npm-package>");
+      console.error("Usage: switchyard install-adapter <npm-package>");
       process.exit(1);
     }
     const { AdapterRegistry } = await import("../server/adapter-registry.js");
@@ -154,7 +154,7 @@ switch (command) {
   case "uninstall-adapter": {
     const name = process.argv[3];
     if (!name) {
-      console.error("Usage: the-campfire uninstall-adapter <adapter-name>");
+      console.error("Usage: switchyard uninstall-adapter <adapter-name>");
       process.exit(1);
     }
     const { AdapterRegistry: AR } = await import("../server/adapter-registry.js");

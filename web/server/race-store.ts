@@ -50,7 +50,7 @@ export interface RaceResult {
   cascade?: boolean;
 }
 
-const RACES_DIR = join(homedir(), ".campfire", "races");
+const RACES_DIR = join(homedir(), ".switchyard", "races");
 
 function ensureDir(): void {
   mkdirSync(RACES_DIR, { recursive: true });

@@ -11,7 +11,7 @@
  * catalog and pass the scan. User-initiated `mcp_set_servers` is never
  * blocked — the scan runs there in warn-only mode for visibility.
  *
- * Escape hatch: CAMPFIRE_MCP_AUTO_INJECT_POLICY=permissive restores the old
+ * Escape hatch: SWITCHYARD_MCP_AUTO_INJECT_POLICY=permissive restores the old
  * scan-free behavior (findings are still logged).
  */
 
@@ -98,7 +98,7 @@ export function scanMcpServers(servers: Record<string, McpServerConfig>): McpSca
 }
 
 function isPermissive(): boolean {
-  return process.env.CAMPFIRE_MCP_AUTO_INJECT_POLICY === "permissive";
+  return process.env.SWITCHYARD_MCP_AUTO_INJECT_POLICY === "permissive";
 }
 
 /**

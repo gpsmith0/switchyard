@@ -1,4 +1,4 @@
-/** Default port for Campfire (user-facing, all modes). */
+/** Default port for Switchyard (user-facing, all modes). */
 export const DEFAULT_PORT = 4567;
 
 /** Internal backend port used only in dev mode (Vite proxies to this). Never user-facing. */

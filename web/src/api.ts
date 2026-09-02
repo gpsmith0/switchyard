@@ -4,7 +4,7 @@ import { captureEvent, captureException } from "./analytics.js";
 const BASE = "/api";
 
 // Auth token management
-const AUTH_TOKEN_KEY = "campfire-auth-token";
+const AUTH_TOKEN_KEY = "switchyard-auth-token";
 
 export function getAuthToken(): string | null {
   try { return localStorage.getItem(AUTH_TOKEN_KEY); } catch { return null; }
@@ -272,7 +272,7 @@ export interface WorktreeCreateResult {
   isNew: boolean;
 }
 
-export interface CampfireEnv {
+export interface SwitchyardEnv {
   name: string;
   slug: string;
   variables: Record<string, string>;
@@ -747,7 +747,7 @@ export interface PluginInfo {
   blockReason?: string;
   skills: PluginSkillInfo[];
   commands: PluginCommandInfo[];
-  disabledInCampfire: boolean;
+  disabledInSwitchyard: boolean;
 }
 
 export interface SessionFolder {
@@ -808,15 +808,15 @@ export const api = {
     ),
 
   // Environments
-  listEnvs: () => get<CampfireEnv[]>("/envs"),
+  listEnvs: () => get<SwitchyardEnv[]>("/envs"),
   getEnv: (slug: string) =>
-    get<CampfireEnv>(`/envs/${encodeURIComponent(slug)}`),
+    get<SwitchyardEnv>(`/envs/${encodeURIComponent(slug)}`),
   createEnv: (name: string, variables: Record<string, string>) =>
-    post<CampfireEnv>("/envs", { name, variables }),
+    post<SwitchyardEnv>("/envs", { name, variables }),
   updateEnv: (
     slug: string,
     data: { name?: string; variables?: Record<string, string> },
-  ) => put<CampfireEnv>(`/envs/${encodeURIComponent(slug)}`, data),
+  ) => put<SwitchyardEnv>(`/envs/${encodeURIComponent(slug)}`, data),
   deleteEnv: (slug: string) => del(`/envs/${encodeURIComponent(slug)}`),
 
   // Settings
@@ -1060,7 +1060,7 @@ export const api = {
 
   // ClawHub
   getClawHubStatus: () => get<{ available: boolean }>("/clawhub/status"),
-  exportToClawHub: (id: string, options?: { campfireBaseUrl?: string; prompt?: string; dryRun?: boolean }) =>
+  exportToClawHub: (id: string, options?: { switchyardBaseUrl?: string; prompt?: string; dryRun?: boolean }) =>
     post<{ ok: boolean; skillDir?: string; output?: string; error?: string }>(`/gallery/${encodeURIComponent(id)}/export-clawhub`, options || {}),
   previewSkillMd: (id: string, baseUrl?: string) =>
     get<{ markdown: string }>(`/gallery/${encodeURIComponent(id)}/skill-preview${baseUrl ? `?baseUrl=${encodeURIComponent(baseUrl)}` : ""}`),
@@ -1071,7 +1071,7 @@ export const api = {
 
   // Moltbook
   getMoltbookStatus: () => get<{ available: boolean; agent?: { name: string; karma?: number }; error?: string }>("/moltbook/status"),
-  postToMoltbook: (id: string, options?: { campfireBaseUrl?: string; submolt?: string }) =>
+  postToMoltbook: (id: string, options?: { switchyardBaseUrl?: string; submolt?: string }) =>
     post<{ ok: boolean; postUrl?: string; postId?: string; error?: string }>(`/gallery/${encodeURIComponent(id)}/post-moltbook`, options || {}),
 
   // Public Replay

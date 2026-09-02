@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { homedir } from "node:os";
 
-const AUTH_FILE = join(homedir(), ".campfire", "auth.json");
+const AUTH_FILE = join(homedir(), ".switchyard", "auth.json");
 
 interface AuthConfig {
   /** Salted scrypt hash (`scrypt:<saltHex>:<hashHex>`), or a legacy unsalted SHA-256 hex digest. */
@@ -63,8 +63,8 @@ function save(config: AuthConfig): void {
 
 /** Check if auth is enabled (either via env var or saved config) */
 export function isAuthEnabled(): boolean {
-  // CAMPFIRE_PASSWORD env var takes priority
-  if (process.env.CAMPFIRE_PASSWORD) return true;
+  // SWITCHYARD_PASSWORD env var takes priority
+  if (process.env.SWITCHYARD_PASSWORD) return true;
   return load().enabled;
 }
 
@@ -88,7 +88,7 @@ export function disableAuth(): void {
 /** Check the supplied password against the env var or saved config.
  *  Returns whether it matched and whether a legacy hash should be upgraded. */
 function checkPassword(password: string, config: AuthConfig): { valid: boolean; upgradeLegacy: boolean } {
-  const envPassword = process.env.CAMPFIRE_PASSWORD;
+  const envPassword = process.env.SWITCHYARD_PASSWORD;
   if (envPassword) {
     // Hash both sides so the comparison is constant-time for any input length.
     return { valid: constantTimeEqualHex(sha256(password), sha256(envPassword)), upgradeLegacy: false };
@@ -139,7 +139,7 @@ export function logout(token: string): void {
 
 /** Get auth status (for the frontend) */
 export function getAuthStatus(): { enabled: boolean; hasPassword: boolean; activeSessions: number } {
-  const envPassword = !!process.env.CAMPFIRE_PASSWORD;
+  const envPassword = !!process.env.SWITCHYARD_PASSWORD;
   const config = load();
   const now = Date.now();
   const activeSessions = config.sessions.filter(

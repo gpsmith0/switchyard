@@ -2,9 +2,9 @@
 //
 // These validate the boot-time decisions the Electron main process makes:
 //   - picking a free port for the sidecar (skipping occupied ones)
-//   - recognizing a running Campfire server by its /api/backends shape
+//   - recognizing a running Switchyard server by its /api/backends shape
 //     (so the app attaches to an existing service instead of double-spawning
-//     against the same ~/.campfire state)
+//     against the same ~/.switchyard state)
 //   - waiting for readiness with early abort when the sidecar dies
 const { test, expect } = require("bun:test");
 const net = require("node:net");
@@ -12,8 +12,8 @@ const http = require("node:http");
 const {
   isPortFree,
   findFreePort,
-  probeCampfire,
-  waitForCampfire,
+  probeSwitchyard,
+  waitForSwitchyard,
 } = require("../main/net-utils.js");
 
 function listen(server, port = 0) {
@@ -38,7 +38,7 @@ test("findFreePort: skips occupied ports and returns the next free one", async (
   await new Promise((r) => blocker.close(r));
 });
 
-test("probeCampfire: accepts a Campfire-shaped /api/backends response", async () => {
+test("probeSwitchyard: accepts a Switchyard-shaped /api/backends response", async () => {
   const server = http.createServer((req, res) => {
     if (req.url === "/api/backends") {
       res.setHeader("content-type", "application/json");
@@ -49,36 +49,36 @@ test("probeCampfire: accepts a Campfire-shaped /api/backends response", async ()
     }
   });
   const port = await listen(server);
-  expect(await probeCampfire(port)).toBe(true);
+  expect(await probeSwitchyard(port)).toBe(true);
   await new Promise((r) => server.close(r));
 });
 
-test("probeCampfire: rejects non-Campfire services and dead ports", async () => {
-  // A generic web app answering 200 with HTML must not be mistaken for Campfire.
+test("probeSwitchyard: rejects non-Switchyard services and dead ports", async () => {
+  // A generic web app answering 200 with HTML must not be mistaken for Switchyard.
   const server = http.createServer((_req, res) => res.end("<html>hello</html>"));
   const port = await listen(server);
-  expect(await probeCampfire(port)).toBe(false);
+  expect(await probeSwitchyard(port)).toBe(false);
   await new Promise((r) => server.close(r));
   // Nothing listening at all → false, not a thrown error.
-  expect(await probeCampfire(port)).toBe(false);
+  expect(await probeSwitchyard(port)).toBe(false);
 });
 
-test("waitForCampfire: resolves once the server comes up mid-wait", async () => {
+test("waitForSwitchyard: resolves once the server comes up mid-wait", async () => {
   const server = http.createServer((_req, res) => {
     res.setHeader("content-type", "application/json");
     res.end(JSON.stringify([{ id: "codex" }]));
   });
   const port = await findFreePort(20567);
   setTimeout(() => listen(server, port), 300);
-  expect(await waitForCampfire(port, 5000, () => true, 100)).toBe(true);
+  expect(await waitForSwitchyard(port, 5000, () => true, 100)).toBe(true);
   await new Promise((r) => server.close(r));
 });
 
-test("waitForCampfire: aborts early when the sidecar process dies", async () => {
+test("waitForSwitchyard: aborts early when the sidecar process dies", async () => {
   const port = await findFreePort(21567);
   const start = Date.now();
   // isAlive=false simulates the spawned server exiting during boot; the wait
   // must bail immediately rather than burning the full 10s deadline.
-  expect(await waitForCampfire(port, 10000, () => false, 50)).toBe(false);
+  expect(await waitForSwitchyard(port, 10000, () => false, 50)).toBe(false);
   expect(Date.now() - start).toBeLessThan(2000);
 });

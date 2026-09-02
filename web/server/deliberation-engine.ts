@@ -2,7 +2,7 @@
  * Layer 2: Deliberation Protocol
  *
  * Structured debate before agents execute significant actions (large refactors,
- * architectural changes, file deletions). Extends Campfire's existing binary
+ * architectural changes, file deletions). Extends Switchyard's existing binary
  * permission voting into nuanced multi-stakeholder deliberation.
  *
  * Flow: Agent proposes → humans/agents respond → consensus engine resolves.

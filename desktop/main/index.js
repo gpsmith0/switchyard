@@ -1,6 +1,6 @@
-// Campfire desktop — Electron main process.
+// Switchyard desktop — Electron main process.
 //
-// The app is a thin native shell: it boots the full Campfire server (the same
+// The app is a thin native shell: it boots the full Switchyard server (the same
 // Bun + Hono backend the web/npm distribution runs) as a bundled sidecar, then
 // points a BrowserWindow at it. Every feature — all agent backends, sessions,
 // collaboration, replay, gallery, webhooks, cron, memory — is served by that
@@ -13,7 +13,7 @@ const { readFileSync, writeFileSync } = require("node:fs");
 const { ServerManager } = require("./server-manager.js");
 const { buildMenu } = require("./menu.js");
 
-const SMOKE = process.env.CAMPFIRE_SMOKE === "1";
+const SMOKE = process.env.SWITCHYARD_SMOKE === "1";
 const REPO_ROOT = join(__dirname, "..", "..");
 
 const serverManager = new ServerManager({
@@ -28,7 +28,7 @@ let quitting = false;
 
 // ── Single instance ──────────────────────────────────────────────────────────
 if (!app.requestSingleInstanceLock()) {
-  console.log("[desktop] Another Campfire instance is already running — focusing it instead.");
+  console.log("[desktop] Another Switchyard instance is already running — focusing it instead.");
   app.exit(0);
 }
 app.on("second-instance", () => {
@@ -59,7 +59,7 @@ function saveBounds(win) {
 const SPLASH_HTML = `<!doctype html><meta charset="utf-8">
 <body style="margin:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0b0b0c;color:#e7e5e4;font:15px -apple-system,system-ui">
 <div style="font-size:56px">🔥</div>
-<div style="font-weight:600;font-size:18px;letter-spacing:.2px">Campfire</div>
+<div style="font-weight:600;font-size:18px;letter-spacing:.2px">Switchyard</div>
 <div id="s" style="color:#a8a29e">Starting the server…</div>
 </body>`;
 
@@ -71,13 +71,13 @@ function createWindow() {
     minHeight: 600,
     show: false,
     backgroundColor: "#0b0b0c",
-    title: "Campfire",
+    title: "Switchyard",
     webPreferences: {
       preload: join(__dirname, "..", "preload.cjs"),
       contextIsolation: true,
       nodeIntegration: false,
       spellcheck: false,
-      additionalArguments: [`--campfire-version=${app.getVersion()}`],
+      additionalArguments: [`--switchyard-version=${app.getVersion()}`],
     },
   });
 
@@ -132,8 +132,8 @@ async function bootAndLoad(win) {
     }
     dialog.showMessageBoxSync({
       type: "error",
-      title: "Campfire could not start",
-      message: "Campfire could not start",
+      title: "Switchyard could not start",
+      message: "Switchyard could not start",
       detail: String(err.message || err),
     });
     app.exit(1);
@@ -144,7 +144,7 @@ async function bootAndLoad(win) {
   const origin = serverManager.origin();
   console.log(
     result.external
-      ? `[desktop] Attached to existing Campfire server at ${origin}`
+      ? `[desktop] Attached to existing Switchyard server at ${origin}`
       : `[desktop] Sidecar server ready at ${origin}`,
   );
 
@@ -165,9 +165,9 @@ serverManager.onUnexpectedExit = (code) => {
   if (!mainWindow) return;
   const choice = dialog.showMessageBoxSync(mainWindow, {
     type: "error",
-    title: "Campfire server stopped",
-    message: `The Campfire server stopped unexpectedly (exit code ${code}).`,
-    detail: "Session state is persisted in ~/.campfire and will be restored on relaunch.",
+    title: "Switchyard server stopped",
+    message: `The Switchyard server stopped unexpectedly (exit code ${code}).`,
+    detail: "Session state is persisted in ~/.switchyard and will be restored on relaunch.",
     buttons: ["Relaunch", "Quit"],
     defaultId: 0,
   });

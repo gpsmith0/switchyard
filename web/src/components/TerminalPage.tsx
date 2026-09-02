@@ -14,7 +14,7 @@ export function TerminalPage() {
           <div>
             <h1 className="text-xl font-semibold text-cc-fg">Terminal</h1>
             <p className="mt-1 text-sm text-cc-muted">
-              Run shell commands in a project folder without leaving Campfire.
+              Run shell commands in a project folder without leaving Switchyard.
             </p>
           </div>
           <button
