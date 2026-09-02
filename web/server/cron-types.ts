@@ -26,6 +26,18 @@ export interface CronJob {
   /** Codex-only: enable internet access */
   codexInternetAccess?: boolean;
 
+  // ── Automation options (docs/roadmap.md #2) ──
+  /** "schedule" runs on the cron/one-shot schedule; "manual" only runs via Run now / the API */
+  trigger?: "schedule" | "manual";
+  /** Run every execution in a fresh git worktree on its own branch */
+  useWorktree?: boolean;
+  /** After a run finishes with changes, push the branch and open a GitHub PR */
+  autoPr?: boolean;
+  /** Interrupt the run once its cost exceeds this many USD */
+  budgetUsd?: number;
+  /** URL of the most recent PR opened by this automation */
+  lastPrUrl?: string;
+
   // ── Tracking ──
   createdAt: number;
   updatedAt: number;
@@ -54,6 +66,15 @@ export interface CronJobExecution {
   error?: string;
   /** Cost in USD */
   costUsd?: number;
+  /** Worktree branch the run executed on (when useWorktree) */
+  branch?: string;
+  /** Lines added/removed reported by the bridge at completion */
+  linesAdded?: number;
+  linesRemoved?: number;
+  /** PR opened for this run (when autoPr) */
+  prUrl?: string;
+  /** True when the run was interrupted for exceeding budgetUsd */
+  budgetExceeded?: boolean;
 }
 
 /** Input for creating a cron job (without auto-generated fields) */

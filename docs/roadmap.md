@@ -89,6 +89,11 @@ what to build next, ranked by value toward that goal.
 2. **Automations (Codex-style).** Merge Cron and Agents into one concept:
    prompt, repo, schedule or trigger, always a fresh worktree, result to the
    inbox and optionally a PR. Per-automation budget caps.
+   _Status: v1 shipped 2026-09-02 (`#/automations`, built on the cron store):
+   schedule / once / manual triggers, fresh worktree per run on
+   `auto/<name>/<stamp>`, budget cap that interrupts the run, auto-PR via gh,
+   run tracking with cost and line stats. Next: fold the webhook-triggered
+   Agents page into the same list; per-automation model for Codex._
 3. **Loop runner.** A Ralph-style mode: brief in, task list out, bounded
    iterations with fresh context, progress tracked in a writable Kanban, stop
    on done or budget. Then let the orchestrator fan out tasks in parallel

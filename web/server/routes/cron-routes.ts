@@ -38,6 +38,10 @@ export function registerCronRoutes(api: Hono, deps: RouteDeps): void {
         enabled: body.enabled ?? true,
         permissionMode: body.permissionMode || "bypassPermissions",
         codexInternetAccess: body.codexInternetAccess,
+        trigger: body.trigger === "manual" ? "manual" : "schedule",
+        useWorktree: body.useWorktree === true,
+        autoPr: body.autoPr === true,
+        budgetUsd: typeof body.budgetUsd === "number" ? body.budgetUsd : undefined,
       });
       if (job.enabled) cronScheduler?.scheduleJob(job);
       return c.json(job, 201);
@@ -51,7 +55,7 @@ export function registerCronRoutes(api: Hono, deps: RouteDeps): void {
     const body = await c.req.json().catch(() => ({}));
     try {
       const allowed: Record<string, unknown> = {};
-      for (const key of ["name", "prompt", "schedule", "recurring", "backendType", "model", "cwd", "envSlug", "enabled", "permissionMode", "codexInternetAccess"] as const) {
+      for (const key of ["name", "prompt", "schedule", "recurring", "backendType", "model", "cwd", "envSlug", "enabled", "permissionMode", "codexInternetAccess", "trigger", "useWorktree", "autoPr", "budgetUsd"] as const) {
         if (key in body) allowed[key] = body[key];
       }
       const job = cronStore.updateJob(id, allowed);
@@ -91,6 +95,13 @@ export function registerCronRoutes(api: Hono, deps: RouteDeps): void {
     if (!job) return c.json({ error: "Job not found" }, 404);
     cronScheduler?.executeJobManually(id);
     return c.json({ ok: true, message: "Job triggered" });
+  });
+
+  api.get("/cron/executions", (c) => {
+    const limit = Math.min(200, Math.max(1, Number(c.req.query("limit")) || 50));
+    const all = cronStore.listJobs().flatMap((j) => cronScheduler?.getExecutions(j.id) ?? []);
+    all.sort((a, b) => b.startedAt - a.startedAt);
+    return c.json(all.slice(0, limit));
   });
 
   api.get("/cron/jobs/:id/executions", (c) => {

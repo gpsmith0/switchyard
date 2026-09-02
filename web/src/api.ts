@@ -420,6 +420,11 @@ export interface CronJobInfo {
   enabled: boolean;
   permissionMode: string;
   codexInternetAccess?: boolean;
+  trigger?: "schedule" | "manual";
+  useWorktree?: boolean;
+  autoPr?: boolean;
+  budgetUsd?: number;
+  lastPrUrl?: string;
   createdAt: number;
   updatedAt: number;
   lastRunAt?: number;
@@ -437,6 +442,11 @@ export interface CronJobExecution {
   success?: boolean;
   error?: string;
   costUsd?: number;
+  branch?: string;
+  linesAdded?: number;
+  linesRemoved?: number;
+  prUrl?: string;
+  budgetExceeded?: boolean;
 }
 
 // ─── Agent Profiles ──────────────────────────────────────────────────────────
@@ -1000,6 +1010,7 @@ export const api = {
   deleteCronJob: (id: string) => del(`/cron/jobs/${encodeURIComponent(id)}`),
   toggleCronJob: (id: string) => post<CronJobInfo>(`/cron/jobs/${encodeURIComponent(id)}/toggle`),
   runCronJob: (id: string) => post(`/cron/jobs/${encodeURIComponent(id)}/run`),
+  listCronExecutions: (limit = 50) => get<CronJobExecution[]>(`/cron/executions?limit=${limit}`),
   getCronJobExecutions: (id: string) =>
     get<CronJobExecution[]>(`/cron/jobs/${encodeURIComponent(id)}/executions`),
 
