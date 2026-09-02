@@ -17,6 +17,7 @@ import { CostCard } from "./CostCard.js";
 import { GalleryCard } from "./GalleryCard.js";
 import { EnvironmentPanel } from "./EnvironmentPanel.js";
 import { InboxRow } from "./InboxPage.js";
+import { RunGroupRows, type RunGroup } from "./AutomationsPage.js";
 import type { InboxItem } from "../api.js";
 import type { GalleryEntryInfo } from "../api.js";
 
@@ -587,11 +588,51 @@ const INBOX_ITEMS: InboxItem[] = [
     linesAdded: 0, linesRemoved: 0, outcome: "failed", hasChanges: false, review: "pending",
   },
   {
+    id: "loop:pg-5", kind: "loop", title: "Rate limiting for the public API", subtitle: "Loop · 5/7 tasks",
+    summary: "Done: Add a token bucket helper; Wire the limiter into the API router; Return 429 with Retry-After; Add limiter unit tests; Document the limits\nBlocked: Per-key limits (needs the auth middleware to expose the API key); Load test (no k6 in CI)\nStopped at the iteration cap (6).",
+    cwd: "/Users/stan/.switchyard/worktrees/project/auto--rate-limits--20260902-1710", branch: "auto/rate-limits/20260902-1710", isWorktree: true,
+    sessionId: "pg-5f", cronJobId: "rate-limits", loopRunId: "20260902-1710-a1b2c3", completedAt: INBOX_NOW - 50 * 60_000, costUsd: 2.41,
+    linesAdded: 312, linesRemoved: 20, outcome: "completed", hasChanges: true, review: "pending",
+  },
+  {
     id: "session:pg-4", kind: "session", title: "Explain the WebSocket reconnect path", subtitle: "Codex",
     summary: "Reconnect replays events from the last acknowledged sequence number; see ws-bridge.ts for the buffer.",
     cwd: "/Users/stan/Dev/project", branch: "", isWorktree: false, backend: "codex",
     sessionId: "pg-4", completedAt: INBOX_NOW - 3 * 86_400_000, costUsd: 0.04,
     linesAdded: 0, linesRemoved: 0, outcome: "completed", hasChanges: false, review: "reviewed", reviewedAt: INBOX_NOW - 86_400_000,
+  },
+];
+
+// ─── Automation run history fixtures (loop runner) ──────────────────────────
+
+const LOOP_START = INBOX_NOW - 95 * 60_000;
+const LOOP_RUN_GROUPS: RunGroup[] = [
+  {
+    run: {
+      sessionId: "pg-5f", jobId: "rate-limits", startedAt: LOOP_START, completedAt: INBOX_NOW - 50 * 60_000, success: true,
+      costUsd: 2.41, branch: "auto/rate-limits/20260902-1710", linesAdded: 312, linesRemoved: 20,
+      loopRunId: "20260902-1710-a1b2c3", loopRole: "loop", loopStatus: "stopped", stopReason: "max_iterations",
+      iterationsUsed: 6, maxIterations: 6, tasksDone: 5, tasksTotal: 7, tasksBlocked: 2, prUrl: "https://github.com/o/r/pull/12",
+    },
+    iterations: [
+      { sessionId: "pg-5a", jobId: "rate-limits", startedAt: LOOP_START, completedAt: LOOP_START + 4 * 60_000, success: true, costUsd: 0.12, loopRunId: "20260902-1710-a1b2c3", loopRole: "planning", iteration: 0 },
+      { sessionId: "pg-5b", jobId: "rate-limits", startedAt: LOOP_START + 4 * 60_000, completedAt: LOOP_START + 12 * 60_000, success: true, costUsd: 0.41, linesAdded: 80, linesRemoved: 0, loopRunId: "20260902-1710-a1b2c3", loopRole: "task", iteration: 1, taskId: "t1", taskTitle: "Add a token bucket helper" },
+      { sessionId: "pg-5c", jobId: "rate-limits", startedAt: LOOP_START + 12 * 60_000, completedAt: LOOP_START + 21 * 60_000, success: true, costUsd: 0.55, linesAdded: 120, linesRemoved: 12, loopRunId: "20260902-1710-a1b2c3", loopRole: "task", iteration: 2, taskId: "t2", taskTitle: "Wire the limiter into the API router" },
+      { sessionId: "pg-5d", jobId: "rate-limits", startedAt: LOOP_START + 21 * 60_000, completedAt: LOOP_START + 27 * 60_000, success: false, error: "Agent reported an error", costUsd: 0.3, loopRunId: "20260902-1710-a1b2c3", loopRole: "task", iteration: 3, taskId: "t6", taskTitle: "Per-key limits" },
+      { sessionId: "pg-5e", jobId: "rate-limits", startedAt: LOOP_START + 27 * 60_000, success: true, costUsd: 0.08, loopRunId: "20260902-1710-a1b2c3", loopRole: "task", iteration: 4, taskId: "t4", taskTitle: "Add limiter unit tests" },
+    ],
+  },
+  {
+    run: {
+      sessionId: "pg-6", jobId: "rate-limits", startedAt: INBOX_NOW - 20 * 60_000, loopRunId: "20260902-1825-d4e5f6", loopRole: "loop", loopStatus: "planning", iterationsUsed: 0, maxIterations: 6, branch: "auto/rate-limits/20260902-1825",
+    },
+    iterations: [
+      { sessionId: "pg-6a", jobId: "rate-limits", startedAt: INBOX_NOW - 20 * 60_000, loopRunId: "20260902-1825-d4e5f6", loopRole: "planning", iteration: 0 },
+    ],
+  },
+  {
+    run: { sessionId: "pg-7", jobId: "nightly-tests", startedAt: INBOX_NOW - 3 * 3_600_000, completedAt: INBOX_NOW - 3 * 3_600_000 + 9 * 60_000, success: true, costUsd: 0.83, branch: "auto/nightly-tests/20260902-0200", linesAdded: 41, linesRemoved: 12 },
+    iterations: [],
   },
 ];
 
@@ -923,6 +964,15 @@ export function Playground() {
               <InboxRow key={item.id} item={item} now={INBOX_NOW} onReview={() => {}} onOpenPr={async () => {}} onRetry={async () => {}} />
             ))}
           </ul>
+        </Section>
+
+        {/* ─── Automation run history ─────────────────────────────────── */}
+        <Section title="Automation run history" description="Run rows from #/automations — a finished loop run with its planning and task iterations nested underneath (Board link opens the Kanban page), a loop that is still planning, and a plain single-session run">
+          <div className="max-w-3xl border border-cc-border rounded-2xl bg-cc-bg px-5 py-3">
+            <ul className="divide-y divide-cc-border/60">
+              {LOOP_RUN_GROUPS.map((g) => <RunGroupRows key={g.run.loopRunId || g.run.sessionId} group={g} />)}
+            </ul>
+          </div>
         </Section>
 
         {/* ─── Thread layout (ChatGPT / Codex desktop style) ───────────── */}

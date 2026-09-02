@@ -425,6 +425,8 @@ export interface CronJobInfo {
   autoPr?: boolean;
   budgetUsd?: number;
   lastPrUrl?: string;
+  /** Loop runner (docs/roadmap.md #3): plan a task list, one task per fresh session */
+  loop?: CronLoopOptions;
   createdAt: number;
   updatedAt: number;
   lastRunAt?: number;
@@ -433,6 +435,24 @@ export interface CronJobInfo {
   totalRuns: number;
   nextRunAt?: number | null;
 }
+
+export interface CronLoopOptions {
+  enabled: boolean;
+  maxIterations: number;
+}
+
+export type LoopTaskStatus = "pending" | "in_progress" | "done" | "blocked";
+
+export interface LoopTask {
+  id: string;
+  title: string;
+  description: string;
+  status: LoopTaskStatus;
+  notes: string;
+}
+
+export type LoopStatus = "planning" | "running" | "completed" | "stopped" | "failed";
+export type LoopStopReason = "done" | "max_iterations" | "budget" | "error";
 
 export interface CronJobExecution {
   sessionId: string;
@@ -447,6 +467,46 @@ export interface CronJobExecution {
   linesRemoved?: number;
   prUrl?: string;
   budgetExceeded?: boolean;
+  // Loop runner: shared id, role ("loop" = parent record), iteration + task, and parent-only progress
+  loopRunId?: string;
+  loopRole?: "loop" | "planning" | "task";
+  iteration?: number;
+  taskId?: string;
+  taskTitle?: string;
+  cwd?: string;
+  loopStatus?: LoopStatus;
+  stopReason?: LoopStopReason;
+  iterationsUsed?: number;
+  maxIterations?: number;
+  tasksDone?: number;
+  tasksTotal?: number;
+  tasksBlocked?: number;
+  tasks?: LoopTask[];
+}
+
+/** A loop run's parent record plus its automation's name (GET /cron/loops) */
+export type LoopRunInfo = CronJobExecution & { jobName: string };
+
+/** Task board for one loop run (GET /cron/jobs/:id/loops/:runId/tasks) */
+export interface LoopTasksResponse {
+  jobId: string;
+  jobName: string;
+  runId: string;
+  loopStatus: LoopStatus;
+  stopReason?: LoopStopReason;
+  error?: string;
+  iterationsUsed: number;
+  maxIterations: number;
+  startedAt: number;
+  completedAt?: number;
+  sessionId?: string;
+  branch?: string;
+  cwd?: string;
+  costUsd: number;
+  tasks: LoopTask[];
+  /** "file" while the worktree's tasks.json is readable, "snapshot" afterwards */
+  source: "file" | "snapshot";
+  fileError?: string;
 }
 
 // ─── Agent Profiles ──────────────────────────────────────────────────────────
@@ -770,7 +830,7 @@ export interface SessionFolder {
 
 // ─── Review Inbox ───────────────────────────────────────────────────────────
 
-export type InboxItemKind = "session" | "race" | "pipeline";
+export type InboxItemKind = "session" | "race" | "pipeline" | "loop";
 export type InboxReviewStatus = "pending" | "reviewed" | "dismissed";
 export type InboxOutcome = "completed" | "failed" | "cancelled";
 
@@ -788,6 +848,7 @@ export interface InboxItem {
   raceId?: string;
   runId?: string;
   cronJobId?: string;
+  loopRunId?: string;
   completedAt: number;
   costUsd: number;
   linesAdded: number;
@@ -1013,6 +1074,10 @@ export const api = {
   listCronExecutions: (limit = 50) => get<CronJobExecution[]>(`/cron/executions?limit=${limit}`),
   getCronJobExecutions: (id: string) =>
     get<CronJobExecution[]>(`/cron/jobs/${encodeURIComponent(id)}/executions`),
+  // Loop runs (docs/roadmap.md #3)
+  listLoopRuns: () => get<LoopRunInfo[]>("/cron/loops"),
+  getLoopTasks: (jobId: string, runId: string) =>
+    get<LoopTasksResponse>(`/cron/jobs/${encodeURIComponent(jobId)}/loops/${encodeURIComponent(runId)}/tasks`),
 
   // Agent profiles
   listAgents: () => get<AgentProfileInfo[]>("/agents"),

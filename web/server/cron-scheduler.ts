@@ -1,6 +1,7 @@
 import { Cron } from "croner";
+import { randomUUID } from "node:crypto";
 import type { CronJob, CronJobExecution } from "./cron-types.js";
-import type { CliLauncher } from "./cli-launcher.js";
+import type { CliLauncher, SdkSessionInfo } from "./cli-launcher.js";
 import type { WsBridge } from "./ws-bridge.js";
 import type { WorktreeTracker } from "./worktree-tracker.js";
 import * as cronStore from "./cron-store.js";
@@ -8,7 +9,8 @@ import * as envManager from "./env-manager.js";
 import * as sessionNames from "./session-names.js";
 import * as gitUtils from "./git-utils.js";
 import { createPullRequest } from "./inbox-pr.js";
-import { isTurnFinished, lastResult } from "./inbox.js";
+import { isTurnFinished, lastResult, summarizeLoop } from "./inbox.js";
+import { LoopRunner, clampMaxIterations } from "./loop-runner.js";
 
 /** Max consecutive failures before auto-disabling a job */
 const MAX_CONSECUTIVE_FAILURES = 5;
@@ -28,8 +30,16 @@ export interface CronSchedulerOptions {
   trackPollMs?: number;
 }
 
+type WorktreeInfo = NonNullable<Parameters<CliLauncher["launch"]>[0]>["worktreeInfo"];
+
+interface RunContext {
+  cwd: string;
+  worktreeInfo?: WorktreeInfo;
+  envVars?: Record<string, string>;
+}
+
 /**
- * CronScheduler — runs automations (docs/roadmap.md #2).
+ * CronScheduler — runs automations (docs/roadmap.md #2 and #3).
  *
  * Every job is a prompt + repo + backend with a trigger (schedule, one-shot,
  * or manual). Optional automation features layered on the original cron job:
@@ -37,6 +47,10 @@ export interface CronSchedulerOptions {
  * - `useWorktree`: each run gets a fresh git worktree on `auto/<job>/<stamp>`
  * - `budgetUsd`: the run is interrupted once its cost passes the cap
  * - `autoPr`: when a run finishes with changes, push and open a GitHub PR
+ * - `loop`: run the prompt as a bounded Ralph-style loop (see loop-runner.ts):
+ *   a planning session writes `.switchyard/tasks.json`, then one fresh session
+ *   per task until done, the iteration cap, or the budget. The loop is one
+ *   parent execution record with an iteration record nested under it.
  *
  * Runs are tracked to completion by polling the bridge's message history, so
  * execution records carry cost, line stats, branch and PR URL. Finished runs
@@ -49,15 +63,24 @@ export class CronScheduler {
   private worktreeTracker?: WorktreeTracker;
   private trackPollMs: number;
   private trackers = new Set<ReturnType<typeof setTimeout>>();
-  /** In-memory execution history (last N per job) */
+  private loopRunner: LoopRunner;
+  /** Loop runs in flight, by job id — prevents overlapping loops between iterations */
+  private activeLoops = new Map<string, Promise<CronJobExecution>>();
+  /** In-memory execution history (last N per job; loop iterations count) */
   private executions = new Map<string, CronJobExecution[]>();
-  private static readonly MAX_EXECUTIONS_PER_JOB = 50;
+  private static readonly MAX_EXECUTIONS_PER_JOB = 200;
 
   constructor(launcher: CliLauncher, wsBridge: WsBridge, options: CronSchedulerOptions = {}) {
     this.launcher = launcher;
     this.wsBridge = wsBridge;
     this.worktreeTracker = options.worktreeTracker;
     this.trackPollMs = options.trackPollMs ?? DEFAULT_TRACK_POLL_MS;
+    this.loopRunner = new LoopRunner({
+      launcher,
+      bridge: wsBridge,
+      pollMs: this.trackPollMs,
+      maxTurnMs: MAX_TRACK_MS,
+    });
   }
 
   /** Start all enabled jobs from disk. Called once at server startup. */
@@ -137,6 +160,10 @@ export class CronScheduler {
       console.log(`[cron-scheduler] Skipping "${job.name}" — previous execution still running (${job.lastSessionId})`);
       return;
     }
+    if (this.activeLoops.has(jobId)) {
+      console.log(`[cron-scheduler] Skipping "${job.name}" — a loop run is still in progress`);
+      return;
+    }
 
     console.log(`[cron-scheduler] Executing job "${job.name}" (${jobId})`);
 
@@ -156,7 +183,7 @@ export class CronScheduler {
 
       // Fresh worktree per run (automation option)
       let cwd = job.cwd;
-      let worktreeInfo: NonNullable<Parameters<CliLauncher["launch"]>[0]>["worktreeInfo"];
+      let worktreeInfo: WorktreeInfo;
       if (job.useWorktree) {
         const repoInfo = gitUtils.getRepoInfo(job.cwd);
         if (!repoInfo) throw new Error(`"Run in a fresh worktree" needs a git repository at ${job.cwd}`);
@@ -176,41 +203,15 @@ export class CronScheduler {
         execution.branch = wt.actualBranch || wt.branch;
       }
 
-      // Launch the session via CliLauncher
-      // For Codex, explicitly set sandbox and internet access for full autonomy
-      const sessionInfo = this.launcher.launch({
-        model: job.model,
-        permissionMode: job.permissionMode,
-        cwd,
-        env: envVars,
-        backendType: job.backendType,
-        worktreeInfo,
-        codexInternetAccess: job.backendType === "codex" ? (job.codexInternetAccess ?? true) : undefined,
-        codexSandbox: job.backendType === "codex"
-          ? (job.permissionMode === "bypassPermissions" ? "danger-full-access" : "workspace-write")
-          : undefined,
-      });
+      const ctx: RunContext = { cwd, worktreeInfo, envVars };
 
-      execution.sessionId = sessionInfo.sessionId;
-
-      if (worktreeInfo) {
-        this.worktreeTracker?.addMapping({
-          sessionId: sessionInfo.sessionId,
-          repoRoot: worktreeInfo.repoRoot,
-          branch: worktreeInfo.branch,
-          actualBranch: worktreeInfo.actualBranch,
-          worktreePath: worktreeInfo.worktreePath,
-          createdAt: Date.now(),
-        });
+      if (job.loop?.enabled) {
+        this.startLoop(job, execution, ctx);
+        return;
       }
 
-      // Tag the session as cron-originated
-      sessionInfo.cronJobId = jobId;
-      sessionInfo.cronJobName = job.name;
-
-      // Set the session name
-      const runLabel = `⏰ ${job.name}`;
-      sessionNames.setName(sessionInfo.sessionId, runLabel);
+      const sessionInfo = this.launchJobSession(job, ctx, { label: `⏰ ${job.name}` });
+      execution.sessionId = sessionInfo.sessionId;
 
       // Wait for CLI to connect, then send the prompt
       await this.waitForCLIConnection(sessionInfo.sessionId);
@@ -236,21 +237,7 @@ export class CronScheduler {
       execution.error = err instanceof Error ? err.message : String(err);
       execution.completedAt = Date.now();
       this.addExecution(jobId, execution);
-
-      const failures = job.consecutiveFailures + 1;
-      const updates: Partial<CronJob> = {
-        consecutiveFailures: failures,
-        lastRunAt: Date.now(),
-      };
-
-      // Auto-disable after too many failures
-      if (failures >= MAX_CONSECUTIVE_FAILURES) {
-        updates.enabled = false;
-        this.stopJob(jobId);
-        console.warn(`[cron-scheduler] Job "${job.name}" disabled after ${failures} consecutive failures`);
-      }
-
-      cronStore.updateJob(jobId, updates);
+      this.recordFailure(job);
     }
   }
 
@@ -259,6 +246,157 @@ export class CronScheduler {
     this.executeJob(jobId, { force: true }).catch((err) => {
       console.error(`[cron-scheduler] Manual execution of job "${jobId}" failed:`, err);
     });
+  }
+
+  /**
+   * Spawn a session for a job run: launch in the run's cwd / worktree, record
+   * the worktree mapping, tag it with the job (and loop iteration), and name
+   * it. Does not wait for the CLI to connect.
+   */
+  private launchJobSession(
+    job: CronJob,
+    ctx: RunContext,
+    meta: { label: string; loopRunId?: string; loopIteration?: number },
+  ): SdkSessionInfo {
+    // For Codex, explicitly set sandbox and internet access for full autonomy
+    const sessionInfo = this.launcher.launch({
+      model: job.model,
+      permissionMode: job.permissionMode,
+      cwd: ctx.cwd,
+      env: ctx.envVars,
+      backendType: job.backendType,
+      worktreeInfo: ctx.worktreeInfo,
+      codexInternetAccess: job.backendType === "codex" ? (job.codexInternetAccess ?? true) : undefined,
+      codexSandbox: job.backendType === "codex"
+        ? (job.permissionMode === "bypassPermissions" ? "danger-full-access" : "workspace-write")
+        : undefined,
+    });
+
+    if (ctx.worktreeInfo) {
+      this.worktreeTracker?.addMapping({
+        sessionId: sessionInfo.sessionId,
+        repoRoot: ctx.worktreeInfo.repoRoot,
+        branch: ctx.worktreeInfo.branch,
+        actualBranch: ctx.worktreeInfo.actualBranch,
+        worktreePath: ctx.worktreeInfo.worktreePath,
+        createdAt: Date.now(),
+      });
+    }
+
+    // Tag the session as cron-originated
+    sessionInfo.cronJobId = job.id;
+    sessionInfo.cronJobName = job.name;
+    if (meta.loopRunId) {
+      sessionInfo.loopRunId = meta.loopRunId;
+      sessionInfo.loopIteration = meta.loopIteration;
+    }
+
+    sessionNames.setName(sessionInfo.sessionId, meta.label);
+    return sessionInfo;
+  }
+
+  // ─── Loop runs (docs/roadmap.md #3) ───────────────────────────────────────
+
+  /**
+   * Kick off a loop run. Returns immediately; the loop runs in the background
+   * and its parent record is updated in place as iterations finish.
+   */
+  private startLoop(job: CronJob, parent: CronJobExecution, ctx: RunContext): void {
+    const loopRunId = `${runStamp()}-${randomUUID().slice(0, 6)}`;
+    parent.loopRunId = loopRunId;
+    parent.loopRole = "loop";
+    parent.loopStatus = "planning";
+    parent.maxIterations = clampMaxIterations(job.loop?.maxIterations);
+    parent.iterationsUsed = 0;
+    parent.cwd = ctx.cwd;
+    this.addExecution(job.id, parent);
+
+    cronStore.updateJob(job.id, {
+      lastRunAt: Date.now(),
+      totalRuns: job.totalRuns + 1,
+    });
+
+    const run = this.loopRunner.run({
+      job,
+      cwd: ctx.cwd,
+      loopRunId,
+      parent,
+      launchSession: async ({ label, loopRunId: runId, iteration }) => {
+        const info = this.launchJobSession(job, ctx, { label, loopRunId: runId, loopIteration: iteration });
+        cronStore.updateJob(job.id, { lastSessionId: info.sessionId });
+        await this.waitForCLIConnection(info.sessionId);
+        return info.sessionId;
+      },
+      onIteration: (exec) => this.addExecution(job.id, exec),
+    });
+    this.activeLoops.set(job.id, run);
+
+    run
+      .then((finished) => this.finishLoop(job, finished, ctx.cwd))
+      .catch((err) => {
+        console.error(`[cron-scheduler] Loop "${job.name}" crashed:`, err);
+        parent.error = parent.error ?? (err instanceof Error ? err.message : String(err));
+        parent.success = false;
+        parent.loopStatus = "failed";
+        parent.completedAt = parent.completedAt ?? Date.now();
+        this.recordFailure(job);
+      })
+      .finally(() => {
+        if (this.activeLoops.get(job.id) === run) this.activeLoops.delete(job.id);
+      });
+  }
+
+  /** After the loop ends: open one PR for the worktree branch (autoPr) and update failure counters. */
+  private finishLoop(job: CronJob, parent: CronJobExecution, cwd: string): void {
+    const changed = (parent.linesAdded ?? 0) + (parent.linesRemoved ?? 0) > 0;
+    if (job.autoPr && changed && parent.branch) {
+      try {
+        const pr = createPullRequest(cwd, {
+          title: `${job.name} · ${new Date(parent.startedAt).toLocaleDateString()}`,
+          body: [
+            `Loop run of **${job.name}** (${job.id}): ${parent.tasksDone ?? 0}/${parent.tasksTotal ?? 0} tasks in ${parent.iterationsUsed ?? 0} iteration(s).`,
+            "",
+            summarizeLoop(parent),
+            "",
+            `Last session: ${parent.sessionId}`,
+            "",
+            "_Opened by Switchyard._",
+          ].join("\n"),
+        });
+        parent.prUrl = pr.url;
+        cronStore.updateJob(job.id, { lastPrUrl: pr.url });
+      } catch (err) {
+        parent.error = `PR failed: ${err instanceof Error ? err.message : String(err)}`;
+        console.error(`[cron-scheduler] Auto-PR for loop "${job.name}" failed:`, err);
+      }
+    }
+
+    if (parent.loopStatus === "failed") {
+      this.recordFailure(job);
+    } else {
+      cronStore.updateJob(job.id, { consecutiveFailures: 0 });
+    }
+  }
+
+  /** Loop run for a job that is still in flight, if any (tests await it). */
+  getActiveLoop(jobId: string): Promise<CronJobExecution> | undefined {
+    return this.activeLoops.get(jobId);
+  }
+
+  /** Bump the failure counter; auto-disable after too many consecutive failures. */
+  private recordFailure(job: CronJob): void {
+    const current = cronStore.getJob(job.id);
+    const failures = (current?.consecutiveFailures ?? job.consecutiveFailures) + 1;
+    const updates: Partial<CronJob> = {
+      consecutiveFailures: failures,
+      lastRunAt: Date.now(),
+    };
+    if (failures >= MAX_CONSECUTIVE_FAILURES) {
+      updates.enabled = false;
+      this.stopJob(job.id);
+      console.warn(`[cron-scheduler] Job "${job.name}" disabled after ${failures} consecutive failures`);
+    }
+    cronStore.updateJob(job.id, updates);
   }
 
   /**
@@ -352,9 +490,23 @@ export class CronScheduler {
     return timer.nextRun() || null;
   }
 
-  /** Get recent executions for a job. */
+  /** Get recent executions for a job (loop iterations included, parent first). */
   getExecutions(jobId: string): CronJobExecution[] {
     return this.executions.get(jobId) || [];
+  }
+
+  /** Parent records of loop runs across all jobs, newest first. */
+  listLoopRuns(): CronJobExecution[] {
+    const runs: CronJobExecution[] = [];
+    for (const list of this.executions.values()) {
+      for (const e of list) if (e.loopRole === "loop") runs.push(e);
+    }
+    return runs.sort((a, b) => b.startedAt - a.startedAt);
+  }
+
+  /** Find a loop run's parent record. */
+  getLoopRun(jobId: string, loopRunId: string): CronJobExecution | undefined {
+    return this.getExecutions(jobId).find((e) => e.loopRole === "loop" && e.loopRunId === loopRunId);
   }
 
   private addExecution(jobId: string, execution: CronJobExecution): void {
@@ -376,6 +528,8 @@ export class CronScheduler {
     this.timers.clear();
     for (const t of this.trackers) clearTimeout(t);
     this.trackers.clear();
+    this.loopRunner.destroy();
+    this.activeLoops.clear();
     this.executions.clear();
   }
 }

@@ -307,3 +307,121 @@ describe("InboxReviewStore", () => {
     expect(new InboxReviewStore(path).getAll()).toEqual({});
   });
 });
+
+// ─── Loop runs (docs/roadmap.md #3) ─────────────────────────────────────────
+
+import { loopRunToInboxItem, summarizeLoop, describeStopReason, type InboxLoopSource } from "./inbox.js";
+import type { CronJobExecution } from "./cron-types.js";
+
+function loopRun(overrides: Partial<CronJobExecution> = {}): CronJobExecution {
+  return {
+    sessionId: "sess-last",
+    jobId: "rate-limits",
+    startedAt: 5_000,
+    completedAt: 9_000,
+    success: true,
+    costUsd: 1.25,
+    branch: "auto/rate-limits/20260902-1710",
+    cwd: "/wt/rate-limits",
+    linesAdded: 40,
+    linesRemoved: 3,
+    loopRunId: "20260902-1710-abc123",
+    loopRole: "loop",
+    loopStatus: "stopped",
+    stopReason: "max_iterations",
+    iterationsUsed: 3,
+    maxIterations: 3,
+    tasksDone: 2,
+    tasksTotal: 4,
+    tasksBlocked: 1,
+    tasks: [
+      { id: "t1", title: "Add limiter", description: "", status: "done", notes: "" },
+      { id: "t2", title: "Wire router", description: "", status: "done", notes: "" },
+      { id: "t3", title: "Per-key limits", description: "", status: "blocked", notes: "needs auth middleware" },
+      { id: "t4", title: "Docs", description: "", status: "pending", notes: "" },
+    ],
+    ...overrides,
+  };
+}
+
+describe("loopRunToInboxItem", () => {
+  it("builds one item per finished loop with the task tally as subtitle and done/blocked in the summary", () => {
+    // Validates the item shape the inbox row relies on: `loop:<runId>` id,
+    // kind "loop", "Loop · done/total tasks", Open → last session, Retry via
+    // cronJobId, Board via loopRunId, and diff stats summed over iterations.
+    const item = loopRunToInboxItem({ execution: loopRun(), jobName: "Rate limits" })!;
+    expect(item.id).toBe("loop:20260902-1710-abc123");
+    expect(item.kind).toBe("loop");
+    expect(item.title).toBe("Rate limits");
+    expect(item.subtitle).toBe("Loop · 2/4 tasks");
+    expect(item.summary).toContain("Done: Add limiter; Wire router");
+    expect(item.summary).toContain("Blocked: Per-key limits (needs auth middleware)");
+    expect(item.summary).toContain("Not started: Docs");
+    expect(item.summary).toContain("Stopped at the iteration cap (3).");
+    expect(item.sessionId).toBe("sess-last");
+    expect(item.cronJobId).toBe("rate-limits");
+    expect(item.loopRunId).toBe("20260902-1710-abc123");
+    expect(item.cwd).toBe("/wt/rate-limits");
+    expect(item.branch).toBe("auto/rate-limits/20260902-1710");
+    expect(item.isWorktree).toBe(true);
+    expect(item.completedAt).toBe(9_000);
+    expect(item.costUsd).toBe(1.25);
+    expect(item.linesAdded).toBe(40);
+    expect(item.hasChanges).toBe(true);
+    expect(item.outcome).toBe("completed");
+    expect(item.review).toBe("pending");
+  });
+
+  it("falls back to the job id as title, skips running loops, and flags failed ones", () => {
+    expect(loopRunToInboxItem({ execution: loopRun() })!.title).toBe("rate-limits");
+    expect(loopRunToInboxItem({ execution: loopRun({ completedAt: undefined }) })).toBeNull();
+    expect(loopRunToInboxItem({ execution: loopRun({ loopRole: "task" }) })).toBeNull();
+    const failed = loopRunToInboxItem({ execution: loopRun({ loopStatus: "failed", stopReason: "error", error: "Planning did not produce a valid .switchyard/tasks.json" }) })!;
+    expect(failed.outcome).toBe("failed");
+    expect(failed.summary).toContain("Failed: Planning did not produce");
+  });
+
+  it("describes every stop reason", () => {
+    expect(describeStopReason({ stopReason: "done" })).toBe("All tasks finished.");
+    expect(describeStopReason({ stopReason: "max_iterations", maxIterations: 7 })).toBe("Stopped at the iteration cap (7).");
+    expect(describeStopReason({ stopReason: "budget" })).toBe("Stopped at the budget cap.");
+    expect(describeStopReason({ stopReason: "error" })).toBe("Failed.");
+    expect(describeStopReason({})).toBe("");
+    expect(summarizeLoop({ tasks: [], stopReason: "done" })).toBe("All tasks finished.");
+  });
+});
+
+describe("loop iteration sessions in the inbox", () => {
+  it("hides successful iteration sessions (they are reviewed through the loop item)", () => {
+    const item = sessionToInboxItem(finishedSession({ cronJobId: "rate-limits", cronJobName: "Rate limits", loopRunId: "run-1", loopIteration: 2 }));
+    expect(item).toBeNull();
+  });
+
+  it("still shows a failed iteration session, labelled with its loop and iteration", () => {
+    // Validates: a crashed iteration is not swallowed by the loop summary; it
+    // surfaces on its own so the human can open the session that failed.
+    const failed = finishedSession({
+      cronJobId: "rate-limits", cronJobName: "Rate limits", loopRunId: "run-1", loopIteration: 2,
+      messages: [userMsg("go", 2_000), assistantMsg("boom", 2_100), resultMsg(true), statusMsg("idle")],
+    });
+    const item = sessionToInboxItem(failed)!;
+    expect(item).not.toBeNull();
+    expect(item.outcome).toBe("failed");
+    expect(item.subtitle).toBe("Loop · Rate limits · iteration 2");
+    const planning = sessionToInboxItem(finishedSession({ ...failed, loopIteration: 0 }))!;
+    expect(planning.subtitle).toBe("Loop · Rate limits · planning");
+  });
+
+  it("buildInboxItems includes loop runs, applies reviews to them, and sorts by completion", () => {
+    const loops: InboxLoopSource[] = [{ execution: loopRun({ completedAt: 10_000 }), jobName: "Rate limits" }];
+    const items = buildInboxItems({
+      sessions: [finishedSession()],
+      loops,
+      reviews: { "loop:20260902-1710-abc123": { status: "reviewed", at: 11_000 } },
+    });
+    expect(items.map((i) => i.id)).toEqual(["loop:20260902-1710-abc123", "session:sess-1234-abcd"]);
+    expect(items[0].review).toBe("reviewed");
+    expect(items[0].reviewedAt).toBe(11_000);
+    expect(countInbox(items)).toEqual({ pending: 1, reviewed: 1, dismissed: 0 });
+  });
+});

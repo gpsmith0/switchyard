@@ -11,8 +11,10 @@ import { FolderPicker } from "./FolderPicker.js";
  *
  * An automation is a prompt + project folder + backend with a trigger
  * (schedule, one-shot, or manual). Options: run each execution in a fresh
- * git worktree, open a PR when it finishes with changes, and cap the spend.
- * Finished runs land in the review inbox.
+ * git worktree, open a PR when it finishes with changes, cap the spend, and
+ * run as a bounded loop (docs/roadmap.md #3: plan a task list, then one task
+ * per fresh session). Finished runs land in the review inbox; loop runs show
+ * their iterations nested under the run in the history.
  *
  * Backed by the cron job store (`/api/cron/*`), so existing scheduled tasks
  * show up here unchanged.
@@ -35,7 +37,12 @@ export interface AutomationFormData {
   budgetUsd: string;
   permissionMode: string;
   envSlug: string;
+  /** Run as a loop (docs/roadmap.md #3) */
+  loop: boolean;
+  maxIterations: string;
 }
+
+export const DEFAULT_LOOP_ITERATIONS = 10;
 
 const EMPTY_FORM: AutomationFormData = {
   name: "",
@@ -52,6 +59,8 @@ const EMPTY_FORM: AutomationFormData = {
   budgetUsd: "",
   permissionMode: "bypassPermissions",
   envSlug: "",
+  loop: false,
+  maxIterations: String(DEFAULT_LOOP_ITERATIONS),
 };
 
 const PERMISSION_MODES: Array<{ value: string; label: string }> = [
@@ -78,6 +87,8 @@ function jobToForm(job: CronJobInfo): AutomationFormData {
     budgetUsd: job.budgetUsd != null ? String(job.budgetUsd) : "",
     permissionMode: job.permissionMode || "bypassPermissions",
     envSlug: job.envSlug || "",
+    loop: !!job.loop?.enabled,
+    maxIterations: String(job.loop?.maxIterations ?? DEFAULT_LOOP_ITERATIONS),
   };
 }
 
@@ -92,6 +103,7 @@ function toLocalInput(iso: string): string {
 export function formToPayload(form: AutomationFormData): Partial<CronJobInfo> {
   const manual = form.trigger === "manual";
   const budget = form.budgetUsd.trim() === "" ? undefined : Number(form.budgetUsd);
+  const iterations = Number(form.maxIterations);
   return {
     name: form.name.trim(),
     prompt: form.prompt.trim(),
@@ -106,8 +118,66 @@ export function formToPayload(form: AutomationFormData): Partial<CronJobInfo> {
     budgetUsd: budget != null && Number.isFinite(budget) && budget > 0 ? budget : undefined,
     permissionMode: form.permissionMode,
     envSlug: form.envSlug || undefined,
+    loop: {
+      enabled: form.loop,
+      maxIterations: Number.isFinite(iterations) && iterations >= 1 ? Math.min(100, Math.floor(iterations)) : DEFAULT_LOOP_ITERATIONS,
+    },
     enabled: true,
   };
+}
+
+/** A run plus, for loop runs, the iterations recorded under it. */
+export interface RunGroup {
+  run: CronJobExecution;
+  iterations: CronJobExecution[];
+}
+
+/**
+ * Nest loop iterations under their parent record and order runs newest
+ * first. Input is the API's chronological list (parent pushed before its
+ * iterations), so display order is simply the reverse. Iterations whose parent was evicted from history show up as
+ * plain rows. Exported for tests and the Playground.
+ */
+export function groupRuns(runs: CronJobExecution[]): RunGroup[] {
+  const groups: RunGroup[] = [];
+  const byLoop = new Map<string, RunGroup>();
+  for (const run of runs) {
+    if (run.loopRunId && run.loopRole !== "loop") {
+      const parent = byLoop.get(run.loopRunId);
+      if (parent) {
+        parent.iterations.push(run);
+        continue;
+      }
+    }
+    const group: RunGroup = { run, iterations: [] };
+    groups.push(group);
+    if (run.loopRunId && run.loopRole === "loop") byLoop.set(run.loopRunId, group);
+  }
+  // The API list is chronological (push order); newest first for display.
+  return groups.reverse();
+}
+
+function formatUsd(cost: number): string {
+  return `$${cost < 0.01 ? cost.toFixed(4) : cost.toFixed(2)}`;
+}
+
+function boardHref(run: CronJobExecution): string {
+  return `#/kanban?job=${encodeURIComponent(run.jobId)}&run=${encodeURIComponent(run.loopRunId ?? "")}`;
+}
+
+/** Status line for a loop's parent row, e.g. "Loop · 5/7 tasks · 6 iterations · stopped at cap". */
+export function describeLoopRun(run: CronJobExecution): string {
+  const used = run.iterationsUsed ?? 0;
+  const max = run.maxIterations ?? 0;
+  if (run.completedAt == null) {
+    if (run.loopStatus === "planning" || run.loopStatus == null) return "Loop · planning";
+    return `Loop · iteration ${used}/${max} · ${run.tasksDone ?? 0}/${run.tasksTotal ?? 0} tasks`;
+  }
+  const parts = [`Loop · ${run.tasksDone ?? 0}/${run.tasksTotal ?? 0} tasks`, `${used} iteration${used === 1 ? "" : "s"}`];
+  if ((run.tasksBlocked ?? 0) > 0) parts.push(`${run.tasksBlocked} blocked`);
+  if (run.stopReason === "max_iterations") parts.push("stopped at cap");
+  else if (run.stopReason === "budget") parts.push("stopped at budget");
+  return parts.join(" · ");
 }
 
 function folderName(cwd: string): string {
@@ -152,25 +222,41 @@ function Toggle({ on, onChange, label: aria }: { on: boolean; onChange: () => vo
   );
 }
 
-function RunRow({ run }: { run: CronJobExecution }) {
-  const status = run.completedAt == null
-    ? run.error ? "failed" : "running"
-    : run.success === false ? "failed" : "done";
-  const dot = status === "running" ? "bg-cc-success animate-breathing" : status === "failed" ? "bg-cc-error" : "bg-cc-muted/50";
+function RunStats({ run }: { run: CronJobExecution }) {
   return (
-    <li className="flex items-center gap-3 py-1.5 text-[12.5px]">
-      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
-      <span className="text-cc-muted tabular-nums w-20 shrink-0">{formatRelative(run.startedAt)}</span>
-      <span className="text-cc-fg">
-        {status === "running" ? "Running" : status === "failed" ? (run.error || "Failed") : "Finished"}
-        {run.budgetExceeded && <span className="text-cc-warning"> · stopped at budget</span>}
-      </span>
+    <>
       {(run.linesAdded || run.linesRemoved) ? (
         <span className="tabular-nums text-cc-muted"><span className="text-cc-success">+{run.linesAdded ?? 0}</span> <span className="text-cc-error">-{run.linesRemoved ?? 0}</span></span>
       ) : null}
-      {run.costUsd ? <span className="text-cc-muted tabular-nums">${run.costUsd < 0.01 ? run.costUsd.toFixed(4) : run.costUsd.toFixed(2)}</span> : null}
+      {run.costUsd ? <span className="text-cc-muted tabular-nums">{formatUsd(run.costUsd)}</span> : null}
+    </>
+  );
+}
+
+function RunRow({ run }: { run: CronJobExecution }) {
+  const isLoop = run.loopRole === "loop";
+  const status = run.completedAt == null
+    ? run.error ? "failed" : "running"
+    : run.success === false || run.loopStatus === "failed" ? "failed" : "done";
+  const dot = status === "running" ? "bg-cc-success animate-breathing" : status === "failed" ? "bg-cc-error" : "bg-cc-muted/50";
+  const text = isLoop
+    ? status === "failed" ? (run.error || "Loop failed") : describeLoopRun(run)
+    : status === "running" ? "Running" : status === "failed" ? (run.error || "Failed") : "Finished";
+  return (
+    <li className="flex items-center gap-3 py-1.5 text-[12.5px]" data-run-role={run.loopRole ?? "single"}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
+      <span className="text-cc-muted tabular-nums w-20 shrink-0">{formatRelative(run.startedAt)}</span>
+      <span className="text-cc-fg">
+        {text}
+        {run.budgetExceeded && !isLoop && <span className="text-cc-warning"> · stopped at budget</span>}
+        {isLoop && status === "failed" && run.error && run.stopReason !== "error" && <span className="text-cc-error"> · {run.error}</span>}
+      </span>
+      <RunStats run={run} />
       {run.branch && <span className="font-mono-code text-cc-muted truncate max-w-[180px]">{run.branch}</span>}
       <span className="flex-1" />
+      {isLoop && run.loopRunId && (
+        <a href={boardHref(run)} className="text-cc-muted hover:text-cc-fg">Board</a>
+      )}
       {run.prUrl && (
         <a href={run.prUrl} target="_blank" rel="noopener noreferrer" className="text-cc-link hover:underline">PR</a>
       )}
@@ -178,6 +264,45 @@ function RunRow({ run }: { run: CronJobExecution }) {
         <button onClick={() => openSession(run.sessionId)} className="text-cc-muted hover:text-cc-fg cursor-pointer">Open session</button>
       )}
     </li>
+  );
+}
+
+/** One iteration of a loop run, nested under the parent row. */
+function IterationRow({ run }: { run: CronJobExecution }) {
+  const status = run.completedAt == null ? "running" : run.success === false ? "failed" : "done";
+  const dot = status === "running" ? "bg-cc-success animate-breathing" : status === "failed" ? "bg-cc-error" : "bg-cc-muted/50";
+  const label = run.loopRole === "planning" ? "Plan" : run.taskTitle || run.taskId || "Task";
+  return (
+    <li className="flex items-center gap-3 py-1 text-[12.5px]" data-run-role={run.loopRole ?? "task"}>
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} />
+      <span className="text-cc-muted tabular-nums w-6 shrink-0">#{run.iteration ?? 0}</span>
+      <span className="text-cc-fg truncate">{label}</span>
+      <span className="text-cc-muted shrink-0">
+        {status === "running" ? "Running" : status === "failed" ? (run.error || "Failed") : "Finished"}
+        {run.budgetExceeded && <span className="text-cc-warning"> · stopped at budget</span>}
+      </span>
+      <RunStats run={run} />
+      <span className="flex-1" />
+      {run.sessionId && (
+        <button onClick={() => openSession(run.sessionId)} className="text-cc-muted hover:text-cc-fg cursor-pointer">Open session</button>
+      )}
+    </li>
+  );
+}
+
+/** A run row plus, for loops, its iterations nested underneath. Exported for the Playground. */
+export function RunGroupRows({ group }: { group: RunGroup }) {
+  return (
+    <>
+      <RunRow run={group.run} />
+      {group.iterations.length > 0 && (
+        <li className="pb-1.5">
+          <ul className="ml-[3px] border-l border-cc-border/60 pl-4" aria-label={`Iterations of the ${formatRelative(group.run.startedAt)} run`}>
+            {group.iterations.map((it, i) => <IterationRow key={`${it.sessionId || i}-${it.startedAt}`} run={it} />)}
+          </ul>
+        </li>
+      )}
+    </>
   );
 }
 
@@ -192,14 +317,14 @@ export interface AutomationRowProps {
 
 export function AutomationRow({ job, onToggle, onRun, onEdit, onDelete, loadRuns }: AutomationRowProps) {
   const [open, setOpen] = useState(false);
-  const [runs, setRuns] = useState<CronJobExecution[] | null>(null);
+  const [runs, setRuns] = useState<RunGroup[] | null>(null);
   const [running, setRunning] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!open || !loadRuns) return;
     let active = true;
-    loadRuns(job).then((r) => { if (active) setRuns(r.slice().reverse()); }).catch(() => { if (active) setRuns([]); });
+    loadRuns(job).then((r) => { if (active) setRuns(groupRuns(r)); }).catch(() => { if (active) setRuns([]); });
     return () => { active = false; };
   }, [open, job, loadRuns]);
 
@@ -251,6 +376,7 @@ export function AutomationRow({ job, onToggle, onRun, onEdit, onDelete, loadRuns
             {job.useWorktree && <span className="text-[11px] border border-cc-border px-1.5 rounded-full leading-[18px]">Worktree</span>}
             {job.autoPr && <span className="text-[11px] border border-cc-border px-1.5 rounded-full leading-[18px]">Auto PR</span>}
             {job.budgetUsd != null && job.budgetUsd > 0 && <span className="text-[11px] border border-cc-border px-1.5 rounded-full leading-[18px] tabular-nums">Cap ${job.budgetUsd}</span>}
+            {job.loop?.enabled && <span className="text-[11px] border border-cc-border px-1.5 rounded-full leading-[18px] tabular-nums">Loop · {job.loop.maxIterations} iterations</span>}
           </div>
         </div>
 
@@ -283,7 +409,7 @@ export function AutomationRow({ job, onToggle, onRun, onEdit, onDelete, loadRuns
             <p className="text-[12.5px] text-cc-muted py-1.5">No runs yet. Use Run now to try it.</p>
           ) : (
             <ul className="divide-y divide-cc-border/60">
-              {runs.slice(0, 10).map((r, i) => <RunRow key={`${r.sessionId || i}-${r.startedAt}`} run={r} />)}
+              {runs.slice(0, 10).map((g, i) => <RunGroupRows key={`${g.run.loopRunId || g.run.sessionId || i}-${g.run.startedAt}`} group={g} />)}
             </ul>
           )}
         </div>
@@ -439,13 +565,24 @@ export function AutomationForm({
               <input type="checkbox" className="mt-0.5 accent-cc-fg" checked={form.autoPr} disabled={!form.useWorktree} onChange={(e) => update({ autoPr: e.target.checked })} />
               <span className="text-[13.5px] text-cc-fg">Open a pull request when done<span className="block text-[12px] text-cc-muted">Pushes the branch and opens a PR with gh if the run changed files.</span></span>
             </label>
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input type="checkbox" className="mt-0.5 accent-cc-fg" checked={form.loop} onChange={(e) => update({ loop: e.target.checked })} />
+              <span className="text-[13.5px] text-cc-fg">Run as a loop<span className="block text-[12px] text-cc-muted">Plans the prompt as a task list, then works one task per fresh session until every task is done, the cap is hit, or the budget runs out.</span></span>
+            </label>
+            {form.loop && (
+              <div className="flex items-center gap-3 ml-6">
+                <label className="text-[13.5px] text-cc-fg shrink-0 whitespace-nowrap" htmlFor="auto-iterations">Max iterations</label>
+                <input id="auto-iterations" type="number" min="1" max="100" step="1" className={`${input} w-24`} value={form.maxIterations} onChange={(e) => update({ maxIterations: e.target.value })} />
+                <span className="text-[12px] text-cc-muted">Planning is free; each work iteration is one fresh session.</span>
+              </div>
+            )}
             <div className="flex items-center gap-3">
               <label className="text-[13.5px] text-cc-fg shrink-0 whitespace-nowrap" htmlFor="auto-budget">Budget cap</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[13px] text-cc-muted">$</span>
                 <input id="auto-budget" type="number" min="0" step="0.5" className={`${input} w-28 pl-6`} value={form.budgetUsd} onChange={(e) => update({ budgetUsd: e.target.value })} placeholder="none" />
               </div>
-              <span className="text-[12px] text-cc-muted">Interrupts the run once it costs more than this.</span>
+              <span className="text-[12px] text-cc-muted">{form.loop ? "Stops the loop once all iterations together cost more than this." : "Interrupts the run once it costs more than this."}</span>
             </div>
           </div>
 

@@ -75,6 +75,10 @@ export interface SdkSessionInfo {
   cronJobId?: string;
   /** Human-readable name of the cron job that spawned this session */
   cronJobName?: string;
+  /** Loop run this session is one iteration of (docs/roadmap.md #3) */
+  loopRunId?: string;
+  /** Iteration number within the loop run: 0 = planning, 1.. = work */
+  loopIteration?: number;
   /** Environment variables injected at session creation (persisted for relaunch) */
   sessionEnv?: Record<string, string>;
   /** Session that spawned this one, when used as a sub-agent. */

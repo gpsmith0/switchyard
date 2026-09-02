@@ -214,3 +214,50 @@ describe("InboxRow", () => {
     expect(onReview).toHaveBeenCalledWith(expect.objectContaining({ id: "session:abc" }), "pending");
   });
 });
+
+// ─── Loop runs (docs/roadmap.md #3) ─────────────────────────────────────────
+
+describe("InboxRow for a loop run", () => {
+  const loopItem = (): InboxItem => item({
+    id: "loop:run-1",
+    kind: "loop",
+    title: "Rate limits",
+    subtitle: "Loop · 5/7 tasks",
+    summary: "Done: Add limiter; Wire router\nBlocked: Per-key limits (needs auth)\nStopped at the iteration cap (6).",
+    sessionId: "sess-last",
+    cronJobId: "rate-limits",
+    loopRunId: "run-1",
+    branch: "auto/rate-limits/20260902-1710",
+    isWorktree: true,
+    hasChanges: true,
+  });
+
+  it("shows the task tally, opens the last session, links to the board, and keeps PR / Retry", () => {
+    // Validates: one row per loop with "Loop · done/total tasks", Open → last
+    // session, Board → #/kanban?job=…&run=…, Open PR because the worktree
+    // branch has changes, Retry because it came from an automation.
+    render(<ul><InboxRow item={loopItem()} onReview={() => {}} onOpenPr={async () => {}} onRetry={async () => {}} /></ul>);
+    expect(screen.getByText("Loop · 5/7 tasks")).toBeInTheDocument();
+    expect(screen.getByTestId("loop-icon")).toBeInTheDocument();
+    expect(screen.getByText(/Done: Add limiter/)).toBeInTheDocument();
+    expect(screen.getByText("Board")).toHaveAttribute("href", "#/kanban?job=rate-limits&run=run-1");
+    expect(screen.getByText("Open PR")).toBeInTheDocument();
+    expect(screen.getByText("Retry")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText("Open"));
+    expect(mockStoreState.setCurrentSession).toHaveBeenCalledWith("sess-last");
+    expect(mockConnectSession).toHaveBeenCalledWith("sess-last");
+    expect(mockStoreState.setActiveTab).toHaveBeenCalledWith("chat");
+
+    fireEvent.click(screen.getByText("Diff"));
+    expect(mockStoreState.setActiveTab).toHaveBeenCalledWith("diff");
+  });
+
+  it("hides Open PR when the loop changed nothing", () => {
+    render(<ul><InboxRow item={loopItem()} onReview={() => {}} onOpenPr={async () => {}} onRetry={async () => {}} /></ul>);
+    expect(screen.getByText("Open PR")).toBeInTheDocument();
+    render(<ul><InboxRow item={{ ...loopItem(), id: "loop:run-2", hasChanges: false, linesAdded: 0, linesRemoved: 0 }} onReview={() => {}} onOpenPr={async () => {}} onRetry={async () => {}} /></ul>);
+    expect(screen.getAllByText("Open PR")).toHaveLength(1);
+    expect(screen.getAllByText("Board")).toHaveLength(2);
+  });
+});

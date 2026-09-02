@@ -98,6 +98,14 @@ what to build next, ranked by value toward that goal.
    iterations with fresh context, progress tracked in a writable Kanban, stop
    on done or budget. Then let the orchestrator fan out tasks in parallel
    worktrees with retries.
+   _Status: v1 shipped 2026-09-02 as the "Run as a loop" option on
+   automations (`web/server/loop-runner.ts`): a planning session writes
+   `.switchyard/tasks.json`, then one fresh session per task until done, the
+   iteration cap, or the budget; one inbox item per loop, iterations nested
+   in run history, read-only board at `#/kanban?job=…&run=…`. Anti-slop
+   levers: one task per session, tests gate "done", blocked is allowed, a
+   task unchanged after two attempts is auto-blocked. Next: writable Kanban,
+   parallel worktrees per task with retries._
 4. **Phone delivery.** Permission requests and results to Telegram or Slack
    with approve / deny replies. Preferred route: reuse Hermes Agent (already
    installed) or OpenClaw as the messaging gateway rather than finishing web

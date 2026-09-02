@@ -7,14 +7,14 @@
  * existing stores; only the review state (reviewed / dismissed) is persisted.
  */
 
-export type InboxItemKind = "session" | "race" | "pipeline";
+export type InboxItemKind = "session" | "race" | "pipeline" | "loop";
 
 export type InboxReviewStatus = "pending" | "reviewed" | "dismissed";
 
 export type InboxOutcome = "completed" | "failed" | "cancelled";
 
 export interface InboxItem {
-  /** Stable id: `session:<sessionId>` | `race:<raceId>` | `pipeline:<runId>` */
+  /** Stable id: `session:<sessionId>` | `race:<raceId>` | `pipeline:<runId>` | `loop:<loopRunId>` */
   id: string;
   kind: InboxItemKind;
   /** Primary label — session name, race prompt, pipeline name */
@@ -33,6 +33,8 @@ export interface InboxItem {
   runId?: string;
   /** Cron job that produced this session, if any (enables Retry) */
   cronJobId?: string;
+  /** Loop run id (kind "loop") — opens the task board at #/kanban?job=…&run=… */
+  loopRunId?: string;
   completedAt: number;
   costUsd: number;
   linesAdded: number;
