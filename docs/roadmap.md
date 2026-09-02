@@ -1,6 +1,6 @@
 # Switchyard roadmap
 
-_Last updated 2026-09-02._
+_Last updated 2026-09-02 (evening)._
 
 Switchyard's goal is a single desktop-style console for AI coding agents
 (Claude Code, Codex, and friends) that lets one person run agents that do the
@@ -78,51 +78,60 @@ what to build next, ranked by value toward that goal.
   work first; keep judgment calls; structured workflows beat fully autonomous
   agents.
 
+## Layers: what runs where
+
+Three tools, three jobs. Keep the split and the integration surface stays
+small (Switchyard's REST API + webhooks).
+
+| Layer | Tool | Owns |
+|---|---|---|
+| Talk to me | **Hermes Agent** (installed) | phone delivery, cron with chat delivery, personal memory, self-improving skills, named bots |
+| Decide what to work on | **Paperclip** (MIT) | org chart, roles, goals, budgets, heartbeats; any runtime that accepts a heartbeat is "hired" |
+| Do and review the code work | **Switchyard** | sessions, worktrees, diffs, permissions, races, automations, the review inbox, playbooks |
+
+Rule of thumb: Hermes talks to you, Paperclip decides, Switchyard executes
+and gates quality. Grok Bot is the closed, $300/month version of Hermes +
+Paperclip; watch it, don't depend on it.
+
+Not building in Switchyard: roles-with-memory, post-run reflection / skill
+learning, non-code agents. Those are Hermes and Paperclip features; integrate
+instead.
+
+## Anti-slop levers
+
+Quality comes from small verified steps, not from agents running overnight.
+
+- Every loop iteration ends with passing tests or is marked failed.
+- Each playbook step has a definition-of-done checklist the agent must satisfy.
+- A human gate between playbook steps (the inbox).
+- Budget and iteration caps on every automation.
+- Race the risky steps and pick the better attempt instead of fixing a bad one.
+
 ## Ranked backlog
 
-1. **Review inbox.** One screen where every finished automation, race, or
-   subagent run lands with a summary, diff, cost, and Approve / Open PR /
-   Retry / Dismiss actions. Makes "agents work, I review" real.
-   _Status: v1 shipped 2026-09-02 (`#/inbox`, `GET /api/inbox`). Next: land
-   agent-bridge subagent results and Hermes cron results as items; add a
-   per-item "Approve and merge" for worktree branches._
-2. **Automations (Codex-style).** Merge Cron and Agents into one concept:
-   prompt, repo, schedule or trigger, always a fresh worktree, result to the
-   inbox and optionally a PR. Per-automation budget caps.
-   _Status: v1 shipped 2026-09-02 (`#/automations`, built on the cron store):
-   schedule / once / manual triggers, fresh worktree per run on
-   `auto/<name>/<stamp>`, budget cap that interrupts the run, auto-PR via gh,
-   run tracking with cost and line stats. Next: fold the webhook-triggered
-   Agents page into the same list; per-automation model for Codex._
-3. **Loop runner.** A Ralph-style mode: brief in, task list out, bounded
-   iterations with fresh context, progress tracked in a writable Kanban, stop
-   on done or budget. Then let the orchestrator fan out tasks in parallel
-   worktrees with retries.
-4. **Phone delivery.** Permission requests and results to Telegram or Slack
-   with approve / deny replies. Preferred route: reuse Hermes Agent (already
-   installed) or OpenClaw as the messaging gateway rather than finishing web
-   push. Switchyard emits webhooks on `permission.requested` and
-   `session.completed`; a Hermes bot can forward those to any channel and post
-   the reply back through the REST API.
-5. **Roles with their own memory.** Agent profiles as persistent "staff":
-   persona, default model, own memory namespace, standing routines, weekly
-   activity view.
-6. **Post-run reflection.** After a session ends, a cheap model proposes a
-   skill or memory update; one-click accept. Preferred route: hand the
-   session transcript to Hermes's skill-creation loop and surface the proposed
-   skill in the inbox for approval, instead of building a second learning loop.
-7. **Sandbox UI.** Surface the Docker backend in session creation so
+1. **Review inbox.** _Shipped 2026-09-02_ (`#/inbox`).
+2. **Automations.** _Shipped 2026-09-02_ (`#/automations`): schedule / once /
+   manual, fresh worktree per run, budget cap, auto-PR, run tracking.
+3. **Loop runner** (next). Give an automation a brief; it plans a task list,
+   works one task per iteration in a fresh session with fresh context, and
+   stops on done, iteration cap, or budget. Each iteration lands in the inbox;
+   the task list is visible on the Kanban page (read-only in v1). Pattern:
+   the Ralph loop + a Beads-style task file. Prompt: `docs/prompts/loop-runner.md`.
+4. **Hermes hookup** (one afternoon). Forward `permission.requested` and
+   `session.completed` webhooks to a Hermes bot that posts to your phone and
+   replies through the REST API. A small Hermes skill wrapping
+   `POST /api/cron/jobs/:id/run` and `GET /api/inbox`.
+5. **Playbooks.** Turn the orchestrator into "chain automations with a human
+   checkpoint between each." First real playbook: New product = scaffold →
+   MVP loop → deploy → landing page → Stripe → launch posts. Using it on an
+   actual side project is the acceptance test for the whole product.
+6. **Sandbox UI.** Surface the Docker backend in session creation so
    autonomous runs can use bypass mode safely.
-8. **Non-code agents through the bridge.** Research, writing, and support
-   tasks over the existing `ask_*` MCP bridge, growing the coding console
-   into a company console.
+7. **Paperclip adapter**, only if more than three or four standing agents are
+   wanted: a Paperclip heartbeat creates a Switchyard automation per task.
 
-## Build-vs-reuse policy
-
-Relying on existing tools is fine and preferred: Hermes Agent (installed),
-OpenClaw, Paperclip, and similar can provide messaging, cron delivery, and
-learning loops. Switchyard's job is the console: sessions, review, and
-orchestration across whichever agents and gateways are plugged in.
+Fun test: take the smallest app idea, run it through 3 to 5, count the prompts
+you had to write. Under ten means it's working.
 
 ## Sources
 
