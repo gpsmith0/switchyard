@@ -21,7 +21,7 @@ import { UpdateBanner } from "./components/UpdateBanner.js";
 import { UpdateOverlay } from "./components/UpdateOverlay.js";
 import { SettingsPage } from "./components/SettingsPage.js";
 import { EnvManager } from "./components/EnvManager.js";
-import { CronManager } from "./components/CronManager.js";
+import { AutomationsPage } from "./components/AutomationsPage.js";
 import { TerminalPage } from "./components/TerminalPage.js";
 import { SessionReplay } from "./components/SessionReplay.js";
 import { GalleryPage } from "./components/GalleryPage.js";
@@ -99,7 +99,7 @@ export default function App() {
   const isSettingsPage = hash === "#/settings";
   const isTerminalPage = hash === "#/terminal";
   const isEnvironmentsPage = hash === "#/environments";
-  const isScheduledPage = hash === "#/scheduled";
+  const isScheduledPage = hash === "#/scheduled" || hash === "#/automations";
   const isHubPage = hash === "#/hub";
   const isMonitorPage = hash === "#/monitor";
   const isCommandsPage = hash === "#/commands";
@@ -279,7 +279,7 @@ export default function App() {
 
           {isScheduledPage && (
             <div className="absolute inset-0">
-              <CronManager embedded />
+              <AutomationsPage embedded />
             </div>
           )}
 

@@ -69,7 +69,11 @@ export function getJob(id: string): CronJob | null {
 export function createJob(data: CronJobCreateInput): CronJob {
   if (!data.name || !data.name.trim()) throw new Error("Job name is required");
   if (!data.prompt || !data.prompt.trim()) throw new Error("Job prompt is required");
-  if (!data.schedule || !data.schedule.trim()) throw new Error("Job schedule is required");
+  const isManual = data.trigger === "manual";
+  if (!isManual && (!data.schedule || !data.schedule.trim())) throw new Error("Job schedule is required");
+  if (data.budgetUsd != null && (!Number.isFinite(data.budgetUsd) || data.budgetUsd < 0)) {
+    throw new Error("Budget must be a non-negative number");
+  }
   if (!data.cwd || !data.cwd.trim()) throw new Error("Job working directory is required");
 
   const id = slugify(data.name.trim());
@@ -86,7 +90,7 @@ export function createJob(data: CronJobCreateInput): CronJob {
     id,
     name: data.name.trim(),
     prompt: data.prompt.trim(),
-    schedule: data.schedule.trim(),
+    schedule: (data.schedule ?? "").trim(),
     cwd: data.cwd.trim(),
     createdAt: now,
     updatedAt: now,

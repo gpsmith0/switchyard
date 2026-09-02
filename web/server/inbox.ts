@@ -108,7 +108,7 @@ function lastStatus(messages: BrowserIncomingMessage[]): "idle" | "running" | "c
   return null;
 }
 
-function lastResult(messages: BrowserIncomingMessage[]) {
+export function lastResult(messages: BrowserIncomingMessage[]) {
   for (let i = messages.length - 1; i >= 0; i--) {
     const m = messages[i];
     if (m.type === "result") return m.data;
@@ -126,6 +126,17 @@ function lastTimestamp(messages: BrowserIncomingMessage[], fallback: number): nu
 
 function hasUserTurn(messages: BrowserIncomingMessage[]): boolean {
   return messages.some((m) => m.type === "user_message");
+}
+
+/**
+ * True once the most recent user turn has produced a `result` and no later
+ * status says the agent is still running. Shared by the inbox and the
+ * automation run tracker so "finished" means the same thing everywhere.
+ */
+export function isTurnFinished(messages: BrowserIncomingMessage[]): boolean {
+  const status = lastStatus(messages);
+  if (status === "running" || status === "compacting") return false;
+  return hasResultAfterLastUserMessage(messages);
 }
 
 function hasResultAfterLastUserMessage(messages: BrowserIncomingMessage[]): boolean {

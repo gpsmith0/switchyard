@@ -93,11 +93,12 @@ const NAV_DATA: NavItem[] = [
     ),
   },
   {
-    label: "Scheduled",
-    hash: "#/scheduled",
+    label: "Automations",
+    hash: "#/automations",
     icon: (
-      <svg viewBox="0 0 16 16" fill="currentColor" className="w-3.5 h-3.5">
-        <path d="M8 2a6 6 0 100 12A6 6 0 008 2zM0 8a8 8 0 1116 0A8 8 0 010 8zm9-3a1 1 0 10-2 0v3a1 1 0 00.293.707l2 2a1 1 0 001.414-1.414L9 7.586V5z" />
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5">
+        <circle cx="8" cy="8" r="6" />
+        <path d="M8 4.5V8l2.5 1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     ),
   },
@@ -666,6 +667,7 @@ export function Sidebar() {
 
   function isNavItemActive(item: NavItem): boolean {
     if (item.hash === "#/integrations") return hash.startsWith("#/integrations");
+    if (item.hash === "#/automations") return hash === "#/automations" || hash === "#/scheduled";
     return hash === item.hash;
   }
 

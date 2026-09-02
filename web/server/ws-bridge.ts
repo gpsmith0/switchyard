@@ -1263,6 +1263,18 @@ export class WsBridge {
     this.routeBrowserMessage(session, { type: "user_message", content });
   }
 
+  /** Interrupt a running turn programmatically (no browser required).
+   *  Used by the cron scheduler to enforce per-run budget caps. */
+  interruptSession(sessionId: string): boolean {
+    const session = this.sessions.get(sessionId);
+    if (!session) {
+      console.error(`[ws-bridge] Cannot interrupt: session ${sessionId} not found`);
+      return false;
+    }
+    this.routeBrowserMessage(session, { type: "interrupt" });
+    return true;
+  }
+
   /** Inject an agent message into a session and broadcast to connected browsers.
    *  Used by the OpenClaw channel plugin to deliver agent responses. */
   injectAgentMessage(sessionId: string, content: string, _metadata?: Record<string, unknown>): void {
