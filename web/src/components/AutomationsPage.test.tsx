@@ -39,7 +39,7 @@ vi.mock("./FolderPicker.js", () => ({
   ),
 }));
 
-import { AutomationsPage, formToPayload, type AutomationFormData } from "./AutomationsPage.js";
+import { AutomationsPage, formToPayload, groupRuns, describeLoopRun, type AutomationFormData } from "./AutomationsPage.js";
 
 function job(overrides: Partial<CronJobInfo> = {}): CronJobInfo {
   return {
@@ -96,7 +96,26 @@ const baseForm: AutomationFormData = {
   budgetUsd: "2",
   permissionMode: "bypassPermissions",
   envSlug: "",
+  loop: false,
+  maxIterations: "10",
 };
+
+/** A finished loop run (parent) with planning + task iterations, chronological like the API. */
+function loopRuns(): CronJobExecution[] {
+  const start = Date.now() - 2 * 3_600_000;
+  return [
+    {
+      sessionId: "sess-l3", jobId: "nightly-tests", startedAt: start, completedAt: start + 30 * 60_000, success: true,
+      costUsd: 1.5, branch: "auto/nightly-tests/20260902-1500", linesAdded: 80, linesRemoved: 4, prUrl: "https://github.com/o/r/pull/11",
+      loopRunId: "run-1", loopRole: "loop", loopStatus: "stopped", stopReason: "max_iterations",
+      iterationsUsed: 3, maxIterations: 3, tasksDone: 2, tasksTotal: 3, tasksBlocked: 0,
+    },
+    { sessionId: "sess-l0", jobId: "nightly-tests", startedAt: start, completedAt: start + 60_000, success: true, costUsd: 0.1, loopRunId: "run-1", loopRole: "planning", iteration: 0 },
+    { sessionId: "sess-l1", jobId: "nightly-tests", startedAt: start + 60_000, completedAt: start + 600_000, success: true, costUsd: 0.5, linesAdded: 40, loopRunId: "run-1", loopRole: "task", iteration: 1, taskId: "t1", taskTitle: "First task" },
+    { sessionId: "sess-l2", jobId: "nightly-tests", startedAt: start + 600_000, completedAt: start + 900_000, success: false, error: "Agent reported an error", costUsd: 0.4, loopRunId: "run-1", loopRole: "task", iteration: 2, taskId: "t2", taskTitle: "Second task" },
+    { sessionId: "sess-l3", jobId: "nightly-tests", startedAt: start + 900_000, completedAt: start + 1_800_000, success: true, costUsd: 0.5, linesAdded: 40, linesRemoved: 4, loopRunId: "run-1", loopRole: "task", iteration: 3, taskId: "t3", taskTitle: "Third task" },
+  ];
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -137,6 +156,43 @@ describe("formToPayload", () => {
     const payload = formToPayload({ ...baseForm, recurring: false, onceAt: "2030-01-02T09:30" });
     expect(payload.recurring).toBe(false);
     expect(payload.schedule).toBe(new Date("2030-01-02T09:30").toISOString());
+  });
+
+  it("sends the loop option with a sane iteration cap", () => {
+    // Validates (docs/roadmap.md #3): the checkbox maps to loop.enabled, the
+    // cap is a whole number in 1..100, and junk input falls back to 10.
+    expect(formToPayload(baseForm).loop).toEqual({ enabled: false, maxIterations: 10 });
+    expect(formToPayload({ ...baseForm, loop: true, maxIterations: "3" }).loop).toEqual({ enabled: true, maxIterations: 3 });
+    expect(formToPayload({ ...baseForm, loop: true, maxIterations: "2.9" }).loop).toEqual({ enabled: true, maxIterations: 2 });
+    expect(formToPayload({ ...baseForm, loop: true, maxIterations: "500" }).loop).toEqual({ enabled: true, maxIterations: 100 });
+    expect(formToPayload({ ...baseForm, loop: true, maxIterations: "abc" }).loop).toEqual({ enabled: true, maxIterations: 10 });
+    expect(formToPayload({ ...baseForm, loop: true, maxIterations: "0" }).loop).toEqual({ enabled: true, maxIterations: 10 });
+  });
+});
+
+// ─── Loop run history helpers ───────────────────────────────────────────────
+
+describe("groupRuns", () => {
+  it("nests iterations under their loop parent and orders runs newest first", () => {
+    // Validates: the API's chronological list becomes one group per run; a
+    // plain run has no iterations; an iteration whose parent was evicted from
+    // history still shows as its own row rather than disappearing.
+    const plain = run({ sessionId: "sess-old", startedAt: Date.now() - 5 * 3_600_000 });
+    const orphan: CronJobExecution = { sessionId: "sess-o", jobId: "nightly-tests", startedAt: Date.now() - 60_000, loopRunId: "run-gone", loopRole: "task", iteration: 4 };
+    const groups = groupRuns([plain, ...loopRuns(), orphan]);
+    expect(groups.map((g) => g.run.sessionId)).toEqual(["sess-o", "sess-l3", "sess-old"]);
+    expect(groups[1].iterations.map((i) => i.iteration)).toEqual([0, 1, 2, 3]);
+    expect(groups[0].iterations).toEqual([]);
+    expect(groups[2].iterations).toEqual([]);
+  });
+
+  it("describes a loop run in every phase", () => {
+    const [parent] = loopRuns();
+    expect(describeLoopRun(parent)).toBe("Loop · 2/3 tasks · 3 iterations · stopped at cap");
+    expect(describeLoopRun({ ...parent, completedAt: undefined, loopStatus: "planning" })).toBe("Loop · planning");
+    expect(describeLoopRun({ ...parent, completedAt: undefined, loopStatus: "running", iterationsUsed: 2 })).toBe("Loop · iteration 2/3 · 2/3 tasks");
+    expect(describeLoopRun({ ...parent, stopReason: "budget", tasksBlocked: 1 })).toBe("Loop · 2/3 tasks · 3 iterations · 1 blocked · stopped at budget");
+    expect(describeLoopRun({ ...parent, stopReason: "done", iterationsUsed: 1 })).toBe("Loop · 2/3 tasks · 1 iteration");
   });
 });
 
@@ -189,6 +245,62 @@ describe("AutomationsPage", () => {
     fireEvent.click(openButtons[openButtons.length - 1]);
     expect(mockStoreState.setCurrentSession).toHaveBeenCalledWith("sess-1");
     expect(mockConnectSession).toHaveBeenCalledWith("sess-1");
+  });
+
+  it("shows the loop badge and nests iterations under a loop run in the history", async () => {
+    // Validates the roadmap #3 UI: "Loop · N iterations" on the row; the
+    // expanded history shows the loop's summary line with a Board link and
+    // the planning / task iterations underneath, including a failed one.
+    mockApi.listCronJobs.mockResolvedValue([job({ loop: { enabled: true, maxIterations: 3 }, budgetUsd: undefined, autoPr: false })]);
+    mockApi.getCronJobExecutions.mockResolvedValue(loopRuns());
+    render(<AutomationsPage embedded />);
+    await screen.findByText("Nightly tests");
+    expect(screen.getByText("Loop · 3 iterations")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText("Show runs for Nightly tests"));
+    expect(await screen.findByText("Loop · 2/3 tasks · 3 iterations · stopped at cap")).toBeInTheDocument();
+    expect(screen.getByText("Board")).toHaveAttribute("href", "#/kanban?job=nightly-tests&run=run-1");
+    expect(screen.getByText("PR")).toHaveAttribute("href", "https://github.com/o/r/pull/11");
+
+    const nested = screen.getByLabelText(/Iterations of the/);
+    expect(nested.querySelectorAll("li")).toHaveLength(4);
+    expect(screen.getByText("Plan")).toBeInTheDocument();
+    expect(screen.getByText("#0")).toBeInTheDocument();
+    expect(screen.getByText("First task")).toBeInTheDocument();
+    expect(screen.getByText("Second task")).toBeInTheDocument();
+    expect(screen.getByText("Agent reported an error")).toBeInTheDocument();
+    expect(screen.getByText("Third task")).toBeInTheDocument();
+
+    // Parent + 4 iterations each open their own session; the parent opens the last one.
+    const openButtons = screen.getAllByText("Open session");
+    expect(openButtons).toHaveLength(5);
+    fireEvent.click(openButtons[0]);
+    expect(mockStoreState.setCurrentSession).toHaveBeenCalledWith("sess-l3");
+  });
+
+  it("creates a loop automation with an iteration cap from the form", async () => {
+    mockApi.listCronJobs.mockResolvedValue([]);
+    mockApi.createCronJob.mockResolvedValue(job());
+    render(<AutomationsPage embedded />);
+    await screen.findByText("No automations yet");
+
+    fireEvent.click(screen.getByText("New automation"));
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Rate limits" } });
+    fireEvent.change(screen.getByLabelText("Prompt"), { target: { value: "Add rate limiting with tests" } });
+    fireEvent.click(screen.getByLabelText("Pick project folder"));
+    fireEvent.click(screen.getByText("mock-pick-folder"));
+    fireEvent.click(screen.getByText("Manual"));
+    expect(screen.queryByLabelText("Max iterations")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText(/Run as a loop/));
+    fireEvent.change(screen.getByLabelText("Max iterations"), { target: { value: "3" } });
+    fireEvent.click(screen.getByText("Save automation"));
+
+    await waitFor(() => expect(mockApi.createCronJob).toHaveBeenCalledTimes(1));
+    expect(mockApi.createCronJob).toHaveBeenCalledWith(expect.objectContaining({
+      name: "Rate limits",
+      trigger: "manual",
+      loop: { enabled: true, maxIterations: 3 },
+    }));
   });
 
   it("creates an automation from the form with the expected payload", async () => {

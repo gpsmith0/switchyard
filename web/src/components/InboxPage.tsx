@@ -6,9 +6,10 @@ import { connectSession } from "../ws.js";
 /**
  * InboxPage — the review inbox (docs/roadmap.md #1).
  *
- * Every finished session, race, and pipeline run lands here as one row with
- * the final summary, diff stats, cost, and actions: Open, Diff, Open PR,
- * Retry (cron-spawned sessions), Mark reviewed, Dismiss. Rows follow the
+ * Every finished session, race, pipeline run, and loop run lands here as one
+ * row with the final summary, diff stats, cost, and actions: Open, Diff,
+ * Open PR, Board (loop runs), Retry (automation-spawned work), Mark reviewed,
+ * Dismiss. Rows follow the
  * ChatGPT-style list treatment from design.md: no cards inside cards, hairline
  * separators, hover fill, actions on the right.
  */
@@ -57,6 +58,14 @@ function KindIcon({ kind, outcome }: { kind: InboxItem["kind"]; outcome: InboxIt
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className={cls}>
         <circle cx="3" cy="8" r="1.5" /><circle cx="8" cy="8" r="1.5" /><circle cx="13" cy="8" r="1.5" />
         <path d="M4.5 8h2M9.5 8h2" />
+      </svg>
+    );
+  }
+  if (kind === "loop") {
+    return (
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className={cls} data-testid="loop-icon">
+        <path d="M13 8a5 5 0 01-8.6 3.5M3 8a5 5 0 018.6-3.5" strokeLinecap="round" />
+        <path d="M11.5 2v2.5H14M4.5 14v-2.5H2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     );
   }
@@ -109,6 +118,10 @@ export function InboxRow({ item, onReview, onOpenPr, onRetry, now }: InboxRowPro
       setBusy(null);
     }
   }
+
+  const boardHref = item.kind === "loop" && item.cronJobId && item.loopRunId
+    ? `#/kanban?job=${encodeURIComponent(item.cronJobId)}&run=${encodeURIComponent(item.loopRunId)}`
+    : null;
 
   function handleOpen() {
     if (item.kind === "race" && item.raceId) {
@@ -183,16 +196,19 @@ export function InboxRow({ item, onReview, onOpenPr, onRetry, now }: InboxRowPro
           )}
 
           <div className="flex items-center gap-1 mt-2.5 flex-wrap">
-            {item.sessionId && item.kind === "session" && (
+            {item.sessionId && (item.kind === "session" || item.kind === "loop") && (
               <button onClick={() => openSession(item.sessionId!, "chat")} className={outlineBtn}>Open</button>
             )}
-            {item.kind !== "session" && (
+            {item.kind !== "session" && item.kind !== "loop" && (
               <button onClick={handleOpen} className={outlineBtn}>Open</button>
+            )}
+            {boardHref && (
+              <a href={boardHref} className={`${outlineBtn} inline-flex items-center`}>Board</a>
             )}
             {item.sessionId && item.hasChanges && (
               <button onClick={() => openSession(item.sessionId!, "diff")} className={outlineBtn}>Diff</button>
             )}
-            {item.kind === "session" && item.hasChanges && item.branch && (
+            {(item.kind === "session" || item.kind === "loop") && item.hasChanges && item.branch && (
               <button onClick={handlePr} disabled={busy !== null} className={primaryBtn}>
                 {busy === "pr" ? "Opening PR…" : "Open PR"}
               </button>
@@ -311,7 +327,7 @@ export function InboxPage({ embedded }: { embedded?: boolean }) {
         <div>
           <h1 className="text-[22px] font-medium text-cc-fg tracking-[-0.01em]">Inbox</h1>
           <p className="text-[13px] text-cc-muted mt-0.5">
-            Finished sessions, races, and pipelines waiting for your review.
+            Finished sessions, races, pipelines, and loop runs waiting for your review.
           </p>
         </div>
         <button onClick={refresh} className={ghostBtn} aria-label="Refresh inbox">

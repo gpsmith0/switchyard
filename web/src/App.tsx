@@ -125,7 +125,7 @@ export default function App() {
   const isCollectiveMindPage = hash === "#/collective";
   const isOrchestratorPage = hash === "#/orchestrator";
   const isRacesPage = hash === "#/races" || hash.startsWith("#/races/");
-  const isKanbanPage = hash === "#/kanban";
+  const isKanbanPage = hash === "#/kanban" || hash.startsWith("#/kanban?");
   const isSkillsPage = hash === "#/skills";
   const isInboxPage = hash === "#/inbox";
   // Replay routes: #/replay/:filename or #/replay/session/:id

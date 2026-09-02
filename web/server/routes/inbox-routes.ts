@@ -11,9 +11,10 @@
 import type { Hono } from "hono";
 import type { RouteDeps } from "./route-deps.js";
 import * as sessionNames from "../session-names.js";
+import * as cronStore from "../cron-store.js";
 import { listRaces } from "../race-store.js";
 import { listRuns } from "../orchestrator-store.js";
-import { buildInboxItems, countInbox, InboxReviewStore, type InboxSessionSource } from "../inbox.js";
+import { buildInboxItems, countInbox, InboxReviewStore, type InboxLoopSource, type InboxSessionSource } from "../inbox.js";
 import { createPullRequest } from "../inbox-pr.js";
 import type { InboxItem, InboxReviewStatus } from "../inbox-types.js";
 
@@ -38,14 +39,23 @@ export function registerInboxRoutes(api: Hono, deps: RouteDeps, reviewStore: Inb
         cronJobName: s.cronJobName,
         orchestrationRole: s.orchestrationRole,
         parentSessionId: s.parentSessionId,
+        loopRunId: s.loopRunId,
+        loopIteration: s.loopIteration,
         bridge: live?.state ?? null,
         messages: live?.messageHistory ?? [],
       };
     });
+    // Loop runs (docs/roadmap.md #3): one item per finished loop, named after its automation.
+    let loops: InboxLoopSource[] = [];
+    if (cronScheduler && typeof cronScheduler.listLoopRuns === "function") {
+      const jobNames = new Map(cronStore.listJobs().map((j) => [j.id, j.name] as const));
+      loops = cronScheduler.listLoopRuns().map((execution) => ({ execution, jobName: jobNames.get(execution.jobId) }));
+    }
     return buildInboxItems({
       sessions,
       races: listRaces(),
       runs: listRuns(),
+      loops,
       reviews: reviewStore.getAll(),
     });
   }
@@ -98,7 +108,7 @@ export function registerInboxRoutes(api: Hono, deps: RouteDeps, reviewStore: Inb
     const id = c.req.param("id");
     const item = findItem(id);
     if (!item) return c.json({ error: "Inbox item not found" }, 404);
-    if (!item.cronJobId) return c.json({ error: "Only cron-spawned sessions can be retried from the inbox" }, 400);
+    if (!item.cronJobId) return c.json({ error: "Only automation-spawned sessions and loop runs can be retried from the inbox" }, 400);
     if (!cronScheduler) return c.json({ error: "Cron scheduler is not available" }, 503);
     cronScheduler.executeJobManually(item.cronJobId);
     return c.json({ ok: true, cronJobId: item.cronJobId });

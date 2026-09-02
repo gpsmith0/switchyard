@@ -13,6 +13,7 @@ import { dirname, join } from "node:path";
 import { homedir } from "node:os";
 import type { BrowserIncomingMessage, SessionState } from "./session-types.js";
 import type { PipelineRun } from "./orchestrator-types.js";
+import type { CronJobExecution } from "./cron-types.js";
 import type {
   InboxCounts,
   InboxItem,
@@ -37,6 +38,9 @@ export interface InboxSessionSource {
   cronJobName?: string;
   orchestrationRole?: "lead" | "subagent" | "race_entry";
   parentSessionId?: string;
+  /** Loop run this session is one iteration of — surfaces through the loop item unless it failed */
+  loopRunId?: string;
+  loopIteration?: number;
   /** Bridge state (cost, lines, branch). Optional for sessions that never connected. */
   bridge?: Partial<SessionState> | null;
   /** Full browser-facing message history for this session. */
@@ -62,10 +66,17 @@ export interface InboxRaceSource {
   }>;
 }
 
+/** A loop run's parent execution record plus the automation's display name. */
+export interface InboxLoopSource {
+  execution: CronJobExecution;
+  jobName?: string;
+}
+
 export interface BuildInboxInput {
   sessions: InboxSessionSource[];
   races?: InboxRaceSource[];
   runs?: PipelineRun[];
+  loops?: InboxLoopSource[];
   reviews?: Record<string, InboxReviewRecord>;
 }
 
@@ -184,11 +195,15 @@ export function sessionToInboxItem(s: InboxSessionSource): InboxItem | null {
   if (!hasResultAfterLastUserMessage(s.messages)) return null;
 
   const result = lastResult(s.messages);
+  // Loop iterations are reviewed through their loop's item; only failures surface on their own.
+  if (s.loopRunId && !result?.is_error) return null;
   const bridge = s.bridge ?? {};
   const linesAdded = bridge.total_lines_added ?? 0;
   const linesRemoved = bridge.total_lines_removed ?? 0;
   const outcome: InboxOutcome = result?.is_error ? "failed" : "completed";
-  const origin = s.cronJobName ? `Cron · ${s.cronJobName}` : backendLabel(s.backendType ?? bridge.backend_type);
+  const origin = s.loopRunId
+    ? `Loop · ${s.cronJobName ?? s.cronJobId ?? "automation"} · ${s.loopIteration === 0 ? "planning" : `iteration ${s.loopIteration ?? "?"}`}`
+    : s.cronJobName ? `Cron · ${s.cronJobName}` : backendLabel(s.backendType ?? bridge.backend_type);
 
   return {
     id: `session:${s.sessionId}`,
@@ -272,6 +287,62 @@ export function pipelineRunToInboxItem(run: PipelineRun): InboxItem | null {
   };
 }
 
+/** Human-readable reason a loop stopped, for the inbox and run history. */
+export function describeStopReason(exec: Pick<CronJobExecution, "stopReason" | "maxIterations" | "error">): string {
+  switch (exec.stopReason) {
+    case "done": return "All tasks finished.";
+    case "max_iterations": return `Stopped at the iteration cap (${exec.maxIterations ?? "?"}).`;
+    case "budget": return "Stopped at the budget cap.";
+    case "error": return exec.error ? `Failed: ${exec.error}` : "Failed.";
+    default: return "";
+  }
+}
+
+/** Inbox summary for a loop: done and blocked tasks plus why the loop stopped. */
+export function summarizeLoop(exec: Pick<CronJobExecution, "tasks" | "stopReason" | "maxIterations" | "error">): string {
+  const tasks = exec.tasks ?? [];
+  const lines: string[] = [];
+  const done = tasks.filter((t) => t.status === "done");
+  const blocked = tasks.filter((t) => t.status === "blocked");
+  const left = tasks.filter((t) => t.status === "pending" || t.status === "in_progress");
+  if (done.length) lines.push(`Done: ${done.map((t) => t.title).join("; ")}`);
+  if (blocked.length) lines.push(`Blocked: ${blocked.map((t) => (t.notes.trim() ? `${t.title} (${t.notes.trim()})` : t.title)).join("; ")}`);
+  if (left.length) lines.push(`Not started: ${left.map((t) => t.title).join("; ")}`);
+  const reason = describeStopReason(exec);
+  if (reason) lines.push(reason);
+  return lines.join("\n");
+}
+
+/** One inbox item per finished loop run. Open goes to the last session; the board link uses loopRunId. */
+export function loopRunToInboxItem(src: InboxLoopSource): InboxItem | null {
+  const e = src.execution;
+  if (e.loopRole !== "loop" || !e.loopRunId) return null;
+  if (e.completedAt == null) return null;
+  const linesAdded = e.linesAdded ?? 0;
+  const linesRemoved = e.linesRemoved ?? 0;
+  const outcome: InboxOutcome = e.loopStatus === "failed" ? "failed" : "completed";
+  return {
+    id: `loop:${e.loopRunId}`,
+    kind: "loop",
+    title: src.jobName || e.jobId,
+    subtitle: `Loop · ${e.tasksDone ?? 0}/${e.tasksTotal ?? 0} tasks`,
+    summary: trimSummary(summarizeLoop(e)),
+    cwd: e.cwd ?? "",
+    branch: e.branch ?? "",
+    isWorktree: !!e.branch,
+    sessionId: e.sessionId || undefined,
+    cronJobId: e.jobId,
+    loopRunId: e.loopRunId,
+    completedAt: e.completedAt,
+    costUsd: e.costUsd ?? 0,
+    linesAdded,
+    linesRemoved,
+    outcome,
+    hasChanges: linesAdded + linesRemoved > 0,
+    review: "pending",
+  };
+}
+
 export function buildInboxItems(input: BuildInboxInput): InboxItem[] {
   const reviews = input.reviews ?? {};
   const items: InboxItem[] = [];
@@ -285,6 +356,10 @@ export function buildInboxItems(input: BuildInboxInput): InboxItem[] {
   }
   for (const run of input.runs ?? []) {
     const item = pipelineRunToInboxItem(run);
+    if (item) items.push(item);
+  }
+  for (const loop of input.loops ?? []) {
+    const item = loopRunToInboxItem(loop);
     if (item) items.push(item);
   }
   return items
